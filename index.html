@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spend Board</title>
+<style>
+body{font-family:Arial;background:#f4f5fb;padding:14px;color:#222}
+h1{text-align:center;color:#6d28d9}
+.card{background:#fff;border-radius:18px;padding:16px;margin-bottom:16px;box-shadow:0 3px 10px rgba(0,0,0,.08)}
+.top{background:linear-gradient(135deg,#5b21b6,#8b5cf6);color:#fff}
+.flex{display:flex;gap:10px}
+.summary{display:flex;justify-content:space-between;align-items:center}
+input,select,button{width:100%;padding:12px;border-radius:12px;border:1px solid #ddd;box-sizing:border-box}
+button{background:linear-gradient(135deg,#5b21b6,#8b5cf6);color:#fff;border:none}
+.small{width:auto;padding:8px 12px}
+.hidden{display:none}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
+.barwrap{display:flex;align-items:flex-end;gap:6px;height:90px;margin-top:12px}
+.barbox{flex:1;text-align:center}
+.bar{background:rgba(255,255,255,.35);border-radius:8px 8px 0 0}
+.active{background:#fff}
+.label{font-size:11px}
+.note{font-size:11px;color:#666}
+#lockScreen{position:fixed;inset:0;background:linear-gradient(135deg,#5b21b6,#8b5cf6);display:flex;align-items:center;justify-content:center;z-index:9999}
+#lockBox{background:#fff;border-radius:24px;padding:32px 24px;width:90%;max-width:340px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+#lockBox h2{color:#6d28d9;margin:0 0 6px 0}
+#lockBox p{color:#888;font-size:13px;margin:0 0 20px 0}
+#lockInput{margin-bottom:12px;letter-spacing:2px}
+#lockError{color:#e53e3e;font-size:12px;margin-top:8px;min-height:16px}
+#logoutBtn{position:fixed;top:14px;right:14px;width:auto;padding:8px 14px;font-size:12px;background:rgba(109,40,217,.15);color:#6d28d9;border:1px solid #c4b5fd;border-radius:10px;z-index:100}
+</style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div id="lockScreen">
+<div id="lockBox">
+<h2>🔒 Spend Board</h2>
+<p>Family access only. Enter password to continue.</p>
+<input id="lockInput" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')tryUnlock()">
+<button onclick="tryUnlock()">Unlock</button>
+<div id="lockError"></div>
+</div>
+</div>
+
+<!-- LOGOUT BUTTON (shown after login) -->
+<button id="logoutBtn" class="hidden" onclick="logout()">🔓 Logout</button>
+
+
+<h1>Spend Board</h1>
+
+<div class="card top">
+<div class="summary">
+<div>Total Spend</div>
+<select id="topYear" style="width:120px;background:rgba(255,255,255,.2);color:white;border:none" onchange="renderAll()"></select>
+</div>
+<h1 id="totalSpend" style="margin:2px 0 10px 0;font-size:64px;line-height:1;color:white;text-shadow:0 1px 2px rgba(0,0,0,.25)">₹0</h1>
+<div class="barwrap" id="bars"></div>
+</div>
+
+<div class="card">
+<div class="flex">
+<select id="viewYear" onchange="renderAll()"></select>
+<select id="viewMonth" onchange="renderAll()"></select>
+</div>
+</div>
+
+<div class="card">
+<div class="summary">
+<h3>Manage Nature of Expense</h3>
+<button class="small" id="natureBtn" onclick="toggleNature()">+</button>
+</div>
+
+<div id="natureSection" class="hidden">
+<div class="flex">
+<input id="natureInput" placeholder="Add Nature">
+<button class="small" onclick="addNature()">Add</button>
+</div>
+<div id="natureList"></div>
+</div>
+</div>
+
+<div class="card">
+<h3>Add / Edit Expense</h3>
+
+<input type="hidden" id="editId">
+
+<input type="date" id="date"><br><br>
+
+<select id="natureDD"></select><br><br>
+
+<select id="category">
+<option>Fixed</option>
+<option>Variable</option>
+</select><br><br>
+
+<input id="description" placeholder="Description"><br><br>
+
+<input type="number" id="amount" placeholder="Amount"><br><br>
+
+<select id="paid">
+<option>Cash</option>
+<option>Card</option>
+<option>UPI</option>
+</select><br><br>
+
+<button id="saveBtn" onclick="saveExpense()">Add Expense</button>
+</div>
+
+<div class="card">
+<h3>Expense Entry Filters</h3>
+
+<div class="flex">
+<select id="fCategory" onchange="renderEntries()">
+<option value="">All Categories</option>
+<option>Fixed</option>
+<option>Variable</option>
+</select>
+
+<select id="fNature" onchange="renderEntries()">
+<option value="">All Nature</option>
+</select>
+</div><br>
+
+<div class="flex">
+<select id="fPaid" onchange="renderEntries()">
+<option value="">All Paid Via</option>
+<option>Cash</option>
+<option>Card</option>
+<option>UPI</option>
+</select>
+
+<select id="fAmountType" onchange="renderEntries()">
+<option value="">Amount Filter</option>
+<option value="gt">Greater Than</option>
+<option value="lt">Less Than</option>
+</select>
+</div><br>
+
+<input id="fAmount" type="number" placeholder="Enter amount" oninput="renderEntries()">
+</div>
+
+<div class="card">
+<div class="summary">
+<h3>Expense Entries</h3>
+<button class="small" id="entryBtn" onclick="toggleEntries()">+</button>
+</div>
+
+<div id="entrySection" class="hidden">
+<div id="entries"></div>
+<div class="note">Long press row for Edit/Delete.</div>
+</div>
+</div>
+
+<div class="card">
+<h3>Category Summary</h3>
+<div id="categorySummary"></div>
+</div>
+
+<div class="card">
+<div class="summary">
+<h3>Nature of Expense Summary</h3>
+<select id="sortNature" style="width:150px" onchange="renderNatureSummary()">
+<option value="high">Highest First</option>
+<option value="low">Lowest First</option>
+<option value="alpha">Alphabetical</option>
+</select>
+</div>
+<div id="natureSummary"></div>
+</div>
+
+<div class="card">
+<button onclick="window.print()">Export as PDF</button>
+</div>
+
+<script>
+let expenses=[];
+const API_URL="https://script.google.com/macros/s/AKfycbxYy0h-Nn-qfg5-_wDwif-LjleQt01M4Nula3IxzUQ1jeBfF_mNKAIvFcD5Q4r1294Y/exec";
+let natures=[];
+
+const months=["All Months","January","February","March","April","May","June","July","August","September","October","November","December"];
+const shortM=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+async function save(){
+// Expenses are saved individually via saveExpense(); this is a no-op placeholder.
+}
+
+
+async function loadExpenses(){
+try{
+const res=await fetch(API_URL);
+expenses=await res.json();
+if(!Array.isArray(expenses)){expenses=[];}
+renderAll();
+}catch(e){
+console.log('Cloud Sync Error',e);
+}
+}
+
+function indian(n){
+return Number(n||0).toLocaleString('en-IN');
+}
+
+function compact(n){
+n=Number(n||0);
+if(n>=100000){
+return (n/100000).toFixed(2).replace(/\.00$/,'')+'L';
+}
+if(n>=1000){
+return (n/1000).toFixed(2).replace(/\.00$/,'')+'k';
+}
+return n.toString();
+}
+
+function toggleNature(){
+natureSection.classList.toggle("hidden");
+natureBtn.innerText=natureSection.classList.contains("hidden")?"+":"-";
+}
+
+function toggleEntries(){
+entrySection.classList.toggle("hidden");
+entryBtn.innerText=entrySection.classList.contains("hidden")?"+":"-";
+}
+
+async function addNature(){
+let v=natureInput.value.trim();
+if(v && !natures.includes(v)){
+await saveNatureToCloud(v);
+}
+natureInput.value="";
+await fetchNatureMaster();
+renderNatureControls();
+}
+
+async function editNature(oldName){
+let nv=prompt("Edit Nature",oldName);
+if(!nv)return;
+nv=nv.trim();
+if(!nv)return;
+
+try{
+await fetch(API_URL,{
+method:'POST',
+body:JSON.stringify({
+sheet:'NatureMaster',
+action:'rename',
+oldName:oldName,
+newName:nv
+})
+});
+}catch(e){
+console.log('Edit nature cloud error',e);
+}
+
+await fetchNatureMaster();
+renderAll();
+}
+
+async function deleteNature(n){
+if(!confirm("Delete nature?"))return;
+
+try{
+await fetch(API_URL,{
+method:'POST',
+body:JSON.stringify({
+sheet:'NatureMaster',
+action:'delete',
+name:n
+})
+});
+}catch(e){
+console.log('Delete nature cloud error',e);
+}
+
+await fetchNatureMaster();
+renderNatureControls();
+}
+
+
+async function fetchNatureMaster(){
+try{
+const res = await fetch(API_URL + '?sheet=NatureMaster');
+const data = await res.json();
+
+if(Array.isArray(data) && data.length){
+natures = data.map(x => x.name).filter(Boolean);
+}
+}catch(e){
+console.log(e);
+}
+}
+
+async function saveNatureToCloud(name){
+try{
+await fetch(API_URL,{
+method:'POST',
+body:JSON.stringify({
+sheet:'NatureMaster',
+name:name
+})
+});
+}catch(e){
+console.log(e);
+}
+}
+
+
+function renderNatureControls(){
+natureList.innerHTML="";
+natureDD.innerHTML="";
+fNature.innerHTML='<option value="">All Nature</option>';
+
+natures.sort().forEach(n=>{
+
+natureList.innerHTML+=`
+<div class="summary" style="margin-top:10px;background:#f3f0ff;padding:10px;border-radius:12px">
+<div>${n}</div>
+
+<div class="flex">
+<button class="small" onclick="editNature('${n}')">✏️</button>
+<button class="small" onclick="deleteNature('${n}')">🗑</button>
+</div>
+</div>`;
+
+natureDD.innerHTML+=`<option>${n}</option>`;
+fNature.innerHTML+=`<option>${n}</option>`;
+
+});
+}
+
+function years(){
+return [...new Set(expenses.map(e=>e.date.substring(0,4)))].sort().reverse();
+}
+
+function renderFilters(){
+topYear.innerHTML="";
+viewYear.innerHTML="";
+
+years().forEach(y=>{
+topYear.innerHTML+=`<option>${y}</option>`;
+viewYear.innerHTML+=`<option>${y}</option>`;
+});
+
+if(years().length){
+topYear.value=years()[0];
+viewYear.value=years()[0];
+}
+
+viewMonth.innerHTML="";
+
+months.forEach((m,i)=>{
+if(i===0){
+viewMonth.innerHTML+=`<option value="all">${m}</option>`;
+}else{
+viewMonth.innerHTML+=`<option value="${i-1}">${m}</option>`;
+}
+});
+
+if(!viewMonth.value){
+viewMonth.value="all";
+}
+}
+
+function currentData(){
+let y=viewYear.value;
+let m=viewMonth.value;
+
+return expenses.filter(e=>{
+
+let d=new Date(e.date);
+
+if(m==="all"){
+return d.getFullYear()==y;
+}
+
+return d.getFullYear()==y && d.getMonth()==m;
+
+});
+}
+
+function filteredData(){
+let data=currentData();
+
+return data.filter(e=>{
+
+if(fCategory.value && e.category!==fCategory.value)return false;
+if(fNature.value && e.nature!==fNature.value)return false;
+if(fPaid.value && e.paid!==fPaid.value)return false;
+
+let v=Number(fAmount.value||0);
+
+if(fAmountType.value==="gt" && !(e.amount>v))return false;
+if(fAmountType.value==="lt" && !(e.amount<v))return false;
+
+return true;
+
+});
+}
+
+function renderTop(){
+let y=topYear.value;
+
+let data=expenses.filter(e=>e.date.substring(0,4)===y);
+
+let total=data.reduce((a,b)=>a+b.amount,0);
+
+totalSpend.innerText="₹"+indian(total);
+
+let monthly=Array(12).fill(0);
+
+data.forEach(e=>{
+monthly[new Date(e.date).getMonth()]+=e.amount;
+});
+
+let max=Math.max(...monthly,1);
+
+bars.innerHTML="";
+
+monthly.forEach((v,i)=>{
+
+let h=(v/max)*70;
+
+bars.innerHTML+=`
+<div class="barbox">
+<div class="label" style="margin-bottom:4px;font-size:10px;color:white">${v?compact(v):''}</div>
+<div class="bar ${viewMonth.value==i?'active':''}" style="height:${h}px"></div>
+<div class="label">${shortM[i]}</div>
+</div>`;
+
+});
+}
+
+async function saveExpense(){
+
+let obj={
+id:editId.value || Date.now(),
+date:date.value,
+nature:natureDD.value,
+category:category.value,
+description:description.value,
+amount:Number(amount.value||0),
+paid:paid.value
+};
+
+if(editId.value){
+
+expenses=expenses.map(e=>e.id==editId.value?obj:e);
+
+}else{
+
+expenses.push(obj);
+
+}
+
+await fetch(API_URL,{
+method:'POST',
+body:JSON.stringify(obj)
+});
+
+await loadExpenses();
+
+clearForm();
+
+if(entrySection.classList.contains("hidden")){
+toggleEntries();
+}
+}
+
+function clearForm(){
+editId.value="";
+date.value="";
+description.value="";
+amount.value="";
+category.value="Fixed";
+paid.value="Cash";
+saveBtn.innerText="Add Expense";
+}
+
+function editExpense(id){
+
+let e=expenses.find(x=>x.id==id);
+
+if(!e)return;
+
+editId.value=e.id;
+date.value=e.date;
+natureDD.value=e.nature;
+category.value=e.category;
+description.value=e.description;
+amount.value=e.amount;
+paid.value=e.paid;
+
+saveBtn.innerText="Save Changes";
+
+window.scrollTo({
+top:0,
+behavior:'smooth'
+});
+}
+
+function deleteExpense(id){
+
+if(!confirm("Delete transaction?"))return;
+
+expenses=expenses.filter(e=>e.id!=id);
+
+save();
+
+renderAll();
+}
+
+let timer;
+
+function showActionMenu(id){
+let action=confirm("Press OK to Edit\nPress Cancel to Delete");
+if(action){
+editExpense(id);
+}else{
+deleteExpense(id);
+}
+}
+
+function pressStart(id){
+
+timer=setTimeout(()=>{
+showActionMenu(id);
+},700);
+}
+
+function pressEnd(){
+clearTimeout(timer);
+}
+
+function renderEntries(){
+
+let data=filteredData();
+
+entries.innerHTML=`
+<table>
+
+<thead>
+<tr>
+<th>Date</th>
+<th>Category</th>
+<th>Nature</th>
+<th>Description</th>
+<th>Amount</th>
+<th>Paid</th>
+</tr>
+</thead>
+
+<tbody>
+
+${data.map(e=>{
+
+let d=new Date(e.date);
+
+return `
+<tr ontouchstart="pressStart(${e.id})" ontouchend="pressEnd()" onmousedown="pressStart(${e.id})" onmouseup="pressEnd()">
+
+<td>${String(d.getDate()).padStart(2,'0')}-${shortM[d.getMonth()]}<br>${d.getFullYear()}</td>
+<td>${e.category}</td>
+<td>${e.nature}</td>
+<td>${e.description}</td>
+<td>₹${indian(e.amount)}</td>
+<td>${e.paid}</td>
+
+</tr>`;
+
+}).join("")}
+
+</tbody>
+</table>`;
+}
+
+function renderCategorySummary(){
+
+let obj={};
+
+currentData().forEach(e=>{
+
+if(!obj[e.category]){
+obj[e.category]={count:0,total:0};
+}
+
+obj[e.category].count++;
+obj[e.category].total+=e.amount;
+
+});
+
+categorySummary.innerHTML=`
+<table>
+
+<thead>
+<tr>
+<th>Category</th>
+<th>#</th>
+<th>Total</th>
+<th>Avg</th>
+</tr>
+</thead>
+
+<tbody>
+
+${Object.keys(obj).map(k=>`
+<tr>
+<td>${k}</td>
+<td>${obj[k].count}</td>
+<td>₹${indian(obj[k].total)}</td>
+<td>₹${indian(Math.round(obj[k].total/obj[k].count))}</td>
+</tr>`).join("")}
+
+</tbody>
+</table>`;
+}
+
+function renderNatureSummary(){
+
+let obj={};
+
+currentData().forEach(e=>{
+
+if(!obj[e.nature]){
+obj[e.nature]={count:0,total:0};
+}
+
+obj[e.nature].count++;
+obj[e.nature].total+=e.amount;
+
+});
+
+let arr=Object.entries(obj);
+
+if(sortNature.value==="high"){
+arr.sort((a,b)=>b[1].total-a[1].total);
+}
+
+if(sortNature.value==="low"){
+arr.sort((a,b)=>a[1].total-b[1].total);
+}
+
+if(sortNature.value==="alpha"){
+arr.sort((a,b)=>a[0].localeCompare(b[0]));
+}
+
+let grand=0;
+
+natureSummary.innerHTML=`
+<table>
+
+<thead>
+<tr>
+<th>Nature</th>
+<th>#</th>
+<th>Total</th>
+<th>Avg</th>
+</tr>
+</thead>
+
+<tbody>
+
+${arr.map(([k,v])=>{
+
+grand+=v.total;
+
+return `
+<tr>
+<td>${k}</td>
+<td>${v.count}</td>
+<td>₹${indian(v.total)}</td>
+<td>₹${indian(Math.round(v.total/v.count))}</td>
+</tr>`;
+
+}).join("")}
+
+</tbody>
+</table>
+
+<h3>Total Expense: ₹${indian(grand)}</h3>`;
+}
+
+function renderAll(){
+renderFilters();
+renderTop();
+renderEntries();
+renderCategorySummary();
+renderNatureSummary();
+}
+
+
+// ── PASSWORD PROTECTION ──────────────────────────────
+const FAMILY_PASSWORD = "spendboard2024"; // ← Change this to your password
+
+function checkAuth(){
+  if(localStorage.getItem("sb_auth")==="yes"){
+    document.getElementById("lockScreen").style.display="none";
+    document.getElementById("logoutBtn").classList.remove("hidden");
+  }
+}
+
+function tryUnlock(){
+  const val = document.getElementById("lockInput").value;
+  if(val === FAMILY_PASSWORD){
+    localStorage.setItem("sb_auth","yes");
+    document.getElementById("lockScreen").style.display="none";
+    document.getElementById("logoutBtn").classList.remove("hidden");
+    document.getElementById("lockError").innerText="";
+  } else {
+    document.getElementById("lockError").innerText="❌ Incorrect password. Try again.";
+    document.getElementById("lockInput").value="";
+    document.getElementById("lockInput").focus();
+  }
+}
+
+function logout(){
+  localStorage.removeItem("sb_auth");
+  document.getElementById("logoutBtn").classList.add("hidden");
+  document.getElementById("lockInput").value="";
+  document.getElementById("lockError").innerText="";
+  document.getElementById("lockScreen").style.display="flex";
+}
+// ────────────────────────────────────────────────────
+
+checkAuth();
+renderNatureControls();
+renderFilters();
+fetchNatureMaster().then(()=>renderNatureControls());
+loadExpenses();
+</script>
+
+</body>
+</html>
