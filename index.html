@@ -41,37 +41,36 @@ display:flex;
 flex-direction:column;
 align-items:center;
 justify-content:center;
-z-index:99999;
+z-index:999999;
 color:white;
 font-family:Arial,sans-serif;
 transition:opacity .4s ease;
 }
 .loader-ring{
-width:72px;
-height:72px;
-border:6px solid rgba(255,255,255,.25);
-border-top:6px solid white;
+width:70px;
+height:70px;
+border:6px solid rgba(255,255,255,.2);
+border-top:6px solid #fff;
 border-radius:50%;
 animation:spin 1s linear infinite;
-margin-bottom:20px;
-box-shadow:0 0 30px rgba(255,255,255,.25);
+margin-bottom:22px;
 }
 .loader-title{
-font-size:26px;
+font-size:28px;
 font-weight:700;
 margin-bottom:8px;
 }
 .loader-sub{
 font-size:14px;
-opacity:.92;
+opacity:.9;
 }
 @keyframes spin{
-to{transform:rotate(360deg)}
+100%{transform:rotate(360deg);}
 }
 .logout-fixed{
 position:fixed !important;
-top:14px;
-right:14px;
+top:12px;
+right:12px;
 z-index:9999;
 }
 .password-wrap{
@@ -80,14 +79,14 @@ display:flex;
 align-items:center;
 }
 .password-wrap input{
-padding-right:45px;
+padding-right:45px !important;
 }
 .eye-toggle{
 position:absolute;
 right:14px;
 cursor:pointer;
 font-size:18px;
-opacity:.7;
+opacity:.8;
 }
 </style>
 
@@ -802,24 +801,27 @@ loadExpenses();
 function togglePassword(){
 const p=document.getElementById('passwordInput');
 if(!p)return;
-p.type = p.type==='password' ? 'text' : 'password';
+p.type = p.type === 'password' ? 'text' : 'password';
 }
 
+// Fast local cache render
+window.addEventListener('DOMContentLoaded', () => {
 try{
-const cachedExpenses = localStorage.getItem('sb_cached_expenses');
-if(cachedExpenses && typeof expenses !== 'undefined'){
-expenses = JSON.parse(cachedExpenses);
+const cached = localStorage.getItem('sb_cached_expenses');
+if(cached && typeof expenses !== 'undefined'){
+expenses = JSON.parse(cached);
+
 if(typeof renderAll === 'function'){
-setTimeout(()=>renderAll(),50);
+renderAll();
 }
 }
 }catch(e){console.log(e);}
+});
 
-const originalLoadExpenses = typeof loadExpenses === 'function' ? loadExpenses : null;
+// Hide loader safely after full page load
+window.addEventListener('load', () => {
 
-if(originalLoadExpenses){
-loadExpenses = async function(){
-await originalLoadExpenses();
+setTimeout(() => {
 
 try{
 if(typeof expenses !== 'undefined'){
@@ -827,24 +829,24 @@ localStorage.setItem('sb_cached_expenses', JSON.stringify(expenses));
 }
 }catch(e){console.log(e);}
 
+const loader=document.getElementById('sbLoader');
+if(loader){
+loader.style.opacity='0';
+
 setTimeout(()=>{
-const l=document.getElementById('sbLoader');
-if(l){
-l.style.opacity='0';
-setTimeout(()=>{ if(l) l.remove(); },400);
-}
+loader.style.display='none';
 },500);
 }
-}
 
-window.addEventListener('load',()=>{
-setTimeout(()=>{
 const btns=[...document.querySelectorAll('button')];
 const logoutBtn=btns.find(b=>b.innerText.toLowerCase().includes('logout'));
+
 if(logoutBtn){
 logoutBtn.classList.add('logout-fixed');
 }
-},1000);
+
+},1800);
+
 });
 </script>
 
