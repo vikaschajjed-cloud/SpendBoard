@@ -31,15 +31,82 @@ th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:to
 #lockError{color:#e53e3e;font-size:12px;margin-top:8px;min-height:16px}
 #logoutBtn{position:fixed;top:14px;right:14px;width:auto;padding:8px 14px;font-size:12px;background:rgba(109,40,217,.15);color:#6d28d9;border:1px solid #c4b5fd;border-radius:10px;z-index:100}
 </style>
+
+<style>
+#sbLoader{
+position:fixed;
+inset:0;
+background:linear-gradient(135deg,#4c1d95,#7c3aed,#a855f7);
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+z-index:99999;
+color:white;
+font-family:Arial,sans-serif;
+transition:opacity .4s ease;
+}
+.loader-ring{
+width:72px;
+height:72px;
+border:6px solid rgba(255,255,255,.25);
+border-top:6px solid white;
+border-radius:50%;
+animation:spin 1s linear infinite;
+margin-bottom:20px;
+box-shadow:0 0 30px rgba(255,255,255,.25);
+}
+.loader-title{
+font-size:26px;
+font-weight:700;
+margin-bottom:8px;
+}
+.loader-sub{
+font-size:14px;
+opacity:.92;
+}
+@keyframes spin{
+to{transform:rotate(360deg)}
+}
+.logout-fixed{
+position:fixed !important;
+top:14px;
+right:14px;
+z-index:9999;
+}
+.password-wrap{
+position:relative;
+display:flex;
+align-items:center;
+}
+.password-wrap input{
+padding-right:45px;
+}
+.eye-toggle{
+position:absolute;
+right:14px;
+cursor:pointer;
+font-size:18px;
+opacity:.7;
+}
+</style>
+
 </head>
 <body>
+
+<div id="sbLoader">
+<div class="loader-ring"></div>
+<div class="loader-title">Loading Spend Board...</div>
+<div class="loader-sub">Syncing your family expenses securely</div>
+</div>
+
 
 <!-- LOCK SCREEN -->
 <div id="lockScreen">
 <div id="lockBox">
 <h2>🔒 Spend Board</h2>
 <p>Family access only. Enter password to continue.</p>
-<input id="lockInput" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')tryUnlock()">
+<div class="password-wrap"><input id="lockInput" type="password" id="passwordInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')tryUnlock()"><span class="eye-toggle" onclick="togglePassword()">👁️</span></div>
 <button onclick="tryUnlock()">Unlock</button>
 <div id="lockError"></div>
 </div>
@@ -728,6 +795,57 @@ renderNatureControls();
 renderFilters();
 fetchNatureMaster().then(()=>renderNatureControls());
 loadExpenses();
+</script>
+
+
+<script>
+function togglePassword(){
+const p=document.getElementById('passwordInput');
+if(!p)return;
+p.type = p.type==='password' ? 'text' : 'password';
+}
+
+try{
+const cachedExpenses = localStorage.getItem('sb_cached_expenses');
+if(cachedExpenses && typeof expenses !== 'undefined'){
+expenses = JSON.parse(cachedExpenses);
+if(typeof renderAll === 'function'){
+setTimeout(()=>renderAll(),50);
+}
+}
+}catch(e){console.log(e);}
+
+const originalLoadExpenses = typeof loadExpenses === 'function' ? loadExpenses : null;
+
+if(originalLoadExpenses){
+loadExpenses = async function(){
+await originalLoadExpenses();
+
+try{
+if(typeof expenses !== 'undefined'){
+localStorage.setItem('sb_cached_expenses', JSON.stringify(expenses));
+}
+}catch(e){console.log(e);}
+
+setTimeout(()=>{
+const l=document.getElementById('sbLoader');
+if(l){
+l.style.opacity='0';
+setTimeout(()=>{ if(l) l.remove(); },400);
+}
+},500);
+}
+}
+
+window.addEventListener('load',()=>{
+setTimeout(()=>{
+const btns=[...document.querySelectorAll('button')];
+const logoutBtn=btns.find(b=>b.innerText.toLowerCase().includes('logout'));
+if(logoutBtn){
+logoutBtn.classList.add('logout-fixed');
+}
+},1000);
+});
 </script>
 
 </body>
