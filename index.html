@@ -31,81 +31,15 @@ th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:to
 #lockError{color:#e53e3e;font-size:12px;margin-top:8px;min-height:16px}
 #logoutBtn{position:fixed;top:14px;right:14px;width:auto;padding:8px 14px;font-size:12px;background:rgba(109,40,217,.15);color:#6d28d9;border:1px solid #c4b5fd;border-radius:10px;z-index:100}
 </style>
-
-<style>
-#sbLoader{
-position:fixed;
-inset:0;
-background:linear-gradient(135deg,#4c1d95,#7c3aed,#a855f7);
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-z-index:999999;
-color:white;
-font-family:Arial,sans-serif;
-transition:opacity .4s ease;
-}
-.loader-ring{
-width:70px;
-height:70px;
-border:6px solid rgba(255,255,255,.2);
-border-top:6px solid #fff;
-border-radius:50%;
-animation:spin 1s linear infinite;
-margin-bottom:22px;
-}
-.loader-title{
-font-size:28px;
-font-weight:700;
-margin-bottom:8px;
-}
-.loader-sub{
-font-size:14px;
-opacity:.9;
-}
-@keyframes spin{
-100%{transform:rotate(360deg);}
-}
-.logout-fixed{
-position:fixed !important;
-top:12px;
-right:12px;
-z-index:9999;
-}
-.password-wrap{
-position:relative;
-display:flex;
-align-items:center;
-}
-.password-wrap input{
-padding-right:45px !important;
-}
-.eye-toggle{
-position:absolute;
-right:14px;
-cursor:pointer;
-font-size:18px;
-opacity:.8;
-}
-</style>
-
 </head>
 <body>
-
-<div id="sbLoader">
-<div class="loader-ring"></div>
-<div class="loader-title">Loading Spend Board...</div>
-<div class="loader-sub">Syncing your family expenses securely</div>
-</div>
-
 
 <!-- LOCK SCREEN -->
 <div id="lockScreen">
 <div id="lockBox">
 <h2>🔒 Spend Board</h2>
 <p>Family access only. Enter password to continue.</p>
-<div class="password-wrap"><input id="lockInput" type="password" id="passwordInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')tryUnlock()"><span class="eye-toggle" onclick="togglePassword()">👁️</span></div>
+<input id="lockInput" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')tryUnlock()">
 <button onclick="tryUnlock()">Unlock</button>
 <div id="lockError"></div>
 </div>
@@ -794,60 +728,6 @@ renderNatureControls();
 renderFilters();
 fetchNatureMaster().then(()=>renderNatureControls());
 loadExpenses();
-</script>
-
-
-<script>
-function togglePassword(){
-const p=document.getElementById('passwordInput');
-if(!p)return;
-p.type = p.type === 'password' ? 'text' : 'password';
-}
-
-// Fast local cache render
-window.addEventListener('DOMContentLoaded', () => {
-try{
-const cached = localStorage.getItem('sb_cached_expenses');
-if(cached && typeof expenses !== 'undefined'){
-expenses = JSON.parse(cached);
-
-if(typeof renderAll === 'function'){
-renderAll();
-}
-}
-}catch(e){console.log(e);}
-});
-
-// Hide loader safely after full page load
-window.addEventListener('load', () => {
-
-setTimeout(() => {
-
-try{
-if(typeof expenses !== 'undefined'){
-localStorage.setItem('sb_cached_expenses', JSON.stringify(expenses));
-}
-}catch(e){console.log(e);}
-
-const loader=document.getElementById('sbLoader');
-if(loader){
-loader.style.opacity='0';
-
-setTimeout(()=>{
-loader.style.display='none';
-},500);
-}
-
-const btns=[...document.querySelectorAll('button')];
-const logoutBtn=btns.find(b=>b.innerText.toLowerCase().includes('logout'));
-
-if(logoutBtn){
-logoutBtn.classList.add('logout-fixed');
-}
-
-},1800);
-
-});
 </script>
 
 </body>
