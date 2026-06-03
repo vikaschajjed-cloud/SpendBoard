@@ -29,17 +29,108 @@ th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:to
 #lockBox p{color:#888;font-size:13px;margin:0 0 20px 0}
 #lockInput{margin-bottom:12px;letter-spacing:2px}
 #lockError{color:#e53e3e;font-size:12px;margin-top:8px;min-height:16px}
-#logoutBtn{position:fixed;top:14px;right:14px;width:auto;padding:8px 14px;font-size:12px;background:rgba(109,40,217,.15);color:#6d28d9;border:1px solid #c4b5fd;border-radius:10px;z-index:100}
+#logoutBtn{position:fixed;top:14px;right:14px;width:auto;padding:8px 14px;font-size:12px;background:rgba(109,40,217,.15);color:#6d28d9;border:1px solid #c4b5fd;border-radius:10px;z-index:1000}
+
+/* ── PASSWORD EYE TOGGLE ── */
+.pw-wrap{position:relative;margin-bottom:12px}
+.pw-wrap input{width:100%;padding:12px;padding-right:44px;border-radius:12px;border:1px solid #ddd;box-sizing:border-box;letter-spacing:2px}
+.pw-eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:#a78bfa;width:auto;display:flex;align-items:center}
+.pw-eye svg{width:20px;height:20px;stroke:#8b5cf6;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s}
+.pw-eye:hover svg{stroke:#5b21b6}
+
+/* ── LOADING SKELETON ── */
+#loadingOverlay{
+  position:fixed;inset:0;
+  background:rgba(244,245,251,0.85);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:5000;
+  transition:opacity .4s ease;
+}
+#loadingOverlay.fade-out{opacity:0;pointer-events:none}
+.loader-card{
+  background:rgba(255,255,255,0.75);
+  backdrop-filter:blur(16px);
+  border-radius:24px;
+  padding:36px 40px;
+  text-align:center;
+  box-shadow:0 8px 40px rgba(109,40,217,.15),0 1px 0 rgba(255,255,255,.8) inset;
+  border:1px solid rgba(196,181,253,.35);
+  min-width:220px;
+}
+.loader-icon{
+  width:52px;height:52px;margin:0 auto 18px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#5b21b6,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(139,92,246,.45);
+  animation:pulse-glow 1.8s ease-in-out infinite;
+}
+.loader-icon svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@keyframes pulse-glow{
+  0%,100%{box-shadow:0 4px 20px rgba(139,92,246,.45);transform:scale(1)}
+  50%{box-shadow:0 4px 32px rgba(139,92,246,.75);transform:scale(1.06)}
+}
+.loader-title{font-size:15px;font-weight:600;color:#5b21b6;margin:0 0 4px}
+.loader-sub{font-size:12px;color:#a78bfa;margin:0 0 20px}
+.loader-bar-track{width:160px;height:4px;background:rgba(196,181,253,.3);border-radius:99px;overflow:hidden;margin:0 auto}
+.loader-bar-fill{height:100%;width:30%;background:linear-gradient(90deg,#5b21b6,#8b5cf6);border-radius:99px;animation:slide-bar 1.4s ease-in-out infinite}
+@keyframes slide-bar{
+  0%{width:10%;margin-left:0}
+  50%{width:55%;margin-left:30%}
+  100%{width:10%;margin-left:100%}
+}
+.skeleton-rows{margin-top:20px;display:flex;flex-direction:column;gap:8px;align-items:center}
+.skel{background:linear-gradient(90deg,rgba(196,181,253,.25) 25%,rgba(196,181,253,.5) 50%,rgba(196,181,253,.25) 75%);background-size:200% 100%;animation:shimmer 1.6s infinite;border-radius:8px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── CACHED DATA BADGE ── */
+#cacheBadge{
+  position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+  background:rgba(109,40,217,.9);color:#fff;
+  font-size:11px;padding:6px 16px;border-radius:99px;
+  z-index:2000;display:none;
+  box-shadow:0 4px 16px rgba(109,40,217,.3);
+  animation:badge-in .3s cubic-bezier(.34,1.56,.64,1);
+  white-space:nowrap;
+}
+@keyframes badge-in{from{transform:translateX(-50%) translateY(10px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
 </style>
 </head>
 <body>
+
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay">
+  <div class="loader-card">
+    <div class="loader-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+    </div>
+    <div class="loader-title">Loading Spend Board…</div>
+    <div class="loader-sub">Fetching your data</div>
+    <div class="loader-bar-track"><div class="loader-bar-fill"></div></div>
+    <div class="skeleton-rows">
+      <div class="skel" style="width:160px;height:12px"></div>
+      <div class="skel" style="width:120px;height:10px"></div>
+      <div class="skel" style="width:140px;height:10px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CACHE TOAST -->
+<div id="cacheBadge">✦ Showing cached data — syncing…</div>
 
 <!-- LOCK SCREEN -->
 <div id="lockScreen">
 <div id="lockBox">
 <h2>🔒 Spend Board</h2>
 <p>Family access only. Enter password to continue.</p>
-<input id="lockInput" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')tryUnlock()">
+<div class="pw-wrap">
+  <input id="lockInput" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')tryUnlock()">
+  <button class="pw-eye" type="button" onclick="togglePwEye()" id="eyeBtn" title="Show/hide password">
+    <svg id="eyeIcon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+  </button>
+</div>
 <button onclick="tryUnlock()">Unlock</button>
 <div id="lockError"></div>
 </div>
@@ -189,13 +280,67 @@ async function save(){
 
 
 async function loadExpenses(){
+const CACHE_KEY = 'sb_expenses_cache';
+
+// 1. Instantly show cached data if available
+const cached = localStorage.getItem(CACHE_KEY);
+if(cached){
+  try{
+    expenses = JSON.parse(cached);
+    if(!Array.isArray(expenses)) expenses=[];
+    renderAll();
+    hideLoader();
+    showCacheBadge();
+  }catch(e){ expenses=[]; }
+}
+
+// 2. Background fetch from cloud
 try{
 const res=await fetch(API_URL);
-expenses=await res.json();
-if(!Array.isArray(expenses)){expenses=[];}
-renderAll();
+const fresh=await res.json();
+if(Array.isArray(fresh)){
+  expenses=fresh;
+  localStorage.setItem(CACHE_KEY, JSON.stringify(fresh));
+  renderAll();
+  if(cached) hideCacheBadge();
+}
 }catch(e){
 console.log('Cloud Sync Error',e);
+}finally{
+hideLoader();
+}
+}
+
+function hideLoader(){
+const ov = document.getElementById('loadingOverlay');
+if(ov && ov.style.display !== 'none'){
+  ov.classList.add('fade-out');
+  setTimeout(()=>{ ov.style.display='none'; }, 400);
+}
+}
+
+function showCacheBadge(){
+const b = document.getElementById('cacheBadge');
+b.style.display = 'block';
+}
+
+function hideCacheBadge(){
+const b = document.getElementById('cacheBadge');
+b.style.opacity = '0';
+b.style.transition = 'opacity .5s';
+setTimeout(()=>{ b.style.display='none'; b.style.opacity=''; b.style.transition=''; }, 500);
+}
+
+function togglePwEye(){
+const inp = document.getElementById('lockInput');
+const icon = document.getElementById('eyeIcon');
+if(inp.type === 'password'){
+  inp.type = 'text';
+  // Eye with slash (hidden state)
+  icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+}else{
+  inp.type = 'password';
+  icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
 }
 }
 
@@ -697,6 +842,10 @@ function checkAuth(){
   if(localStorage.getItem("sb_auth")==="yes"){
     document.getElementById("lockScreen").style.display="none";
     document.getElementById("logoutBtn").classList.remove("hidden");
+  } else {
+    // Not logged in — hide loader immediately, show lock screen
+    const ov = document.getElementById('loadingOverlay');
+    if(ov) ov.style.display='none';
   }
 }
 
@@ -707,6 +856,10 @@ function tryUnlock(){
     document.getElementById("lockScreen").style.display="none";
     document.getElementById("logoutBtn").classList.remove("hidden");
     document.getElementById("lockError").innerText="";
+    // Show loader and kick off data load
+    const ov = document.getElementById('loadingOverlay');
+    if(ov){ ov.style.display='flex'; ov.classList.remove('fade-out'); }
+    loadExpenses();
   } else {
     document.getElementById("lockError").innerText="❌ Incorrect password. Try again.";
     document.getElementById("lockInput").value="";
@@ -718,6 +871,8 @@ function logout(){
   localStorage.removeItem("sb_auth");
   document.getElementById("logoutBtn").classList.add("hidden");
   document.getElementById("lockInput").value="";
+  document.getElementById("lockInput").type="password";
+  document.getElementById("eyeIcon").innerHTML='<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
   document.getElementById("lockError").innerText="";
   document.getElementById("lockScreen").style.display="flex";
 }
@@ -727,7 +882,10 @@ checkAuth();
 renderNatureControls();
 renderFilters();
 fetchNatureMaster().then(()=>renderNatureControls());
-loadExpenses();
+// Only auto-load if already authenticated
+if(localStorage.getItem("sb_auth")==="yes"){
+  loadExpenses();
+}
 </script>
 
 </body>
