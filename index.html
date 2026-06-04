@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Spend Board</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
+
 body{font-family:Arial;background:#f4f5fb;padding:14px;color:#222}
-h1{text-align:center;color:#6d28d9}
 .card{background:#fff;border-radius:18px;padding:16px;margin-bottom:16px;box-shadow:0 3px 10px rgba(0,0,0,.08)}
 .top{background:linear-gradient(135deg,#5b21b6,#8b5cf6);color:#fff}
 .flex{display:flex;gap:10px}
@@ -23,22 +24,73 @@ th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:to
 .active{background:#fff}
 .label{font-size:11px}
 .note{font-size:11px;color:#666}
+
+/* ── HEADER ── */
+#appHeader{text-align:center;margin-bottom:0;padding:10px 0 0}
+#appTitle{
+  font-family:'Outfit',Arial,sans-serif;
+  font-weight:800;
+  font-size:32px;
+  background:linear-gradient(135deg,#5b21b6 0%,#8b5cf6 50%,#c4b5fd 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  letter-spacing:-0.5px;
+  margin:0 0 4px;
+  display:inline-block;
+  filter:drop-shadow(0 2px 8px rgba(109,40,217,.18));
+}
+#appTitle span{font-size:26px;vertical-align:middle;margin-right:4px}
+.header-separator{
+  display:flex;align-items:center;gap:12px;
+  margin:10px 0 16px;
+}
+.sep-line{flex:1;height:1.5px;background:linear-gradient(90deg,transparent,#c4b5fd,transparent);border-radius:99px}
+#greetingBadge{
+  font-family:'Outfit',Arial,sans-serif;
+  font-size:13px;font-weight:600;
+  color:#6d28d9;
+  background:linear-gradient(135deg,rgba(196,181,253,.25),rgba(167,139,250,.15));
+  border:1px solid rgba(196,181,253,.5);
+  padding:5px 14px;
+  border-radius:99px;
+  white-space:nowrap;
+  letter-spacing:.01em;
+  box-shadow:0 2px 10px rgba(109,40,217,.08);
+}
+
+/* ── LOCK SCREEN ── */
 #lockScreen{position:fixed;inset:0;background:linear-gradient(135deg,#5b21b6,#8b5cf6);display:flex;align-items:center;justify-content:center;z-index:9999}
 #lockBox{background:#fff;border-radius:24px;padding:32px 24px;width:90%;max-width:340px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.2)}
 #lockBox h2{color:#6d28d9;margin:0 0 6px 0}
 #lockBox p{color:#888;font-size:13px;margin:0 0 20px 0}
-#lockInput{margin-bottom:12px;letter-spacing:2px}
 #lockError{color:#e53e3e;font-size:12px;margin-top:8px;min-height:16px}
-#logoutBtn{position:fixed;top:14px;right:14px;width:auto;padding:8px 14px;font-size:12px;background:rgba(109,40,217,.15);color:#6d28d9;border:1px solid #c4b5fd;border-radius:10px;z-index:1000}
 
 /* ── PASSWORD EYE TOGGLE ── */
 .pw-wrap{position:relative;margin-bottom:12px}
-.pw-wrap input{width:100%;padding:12px;padding-right:44px;border-radius:12px;border:1px solid #ddd;box-sizing:border-box;letter-spacing:2px}
-.pw-eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:#a78bfa;width:auto;display:flex;align-items:center}
-.pw-eye svg{width:20px;height:20px;stroke:#8b5cf6;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s}
+.pw-wrap input{width:100%;padding:12px 44px 12px 12px;border-radius:12px;border:1px solid #ddd;box-sizing:border-box;letter-spacing:2px}
+.pw-eye{
+  position:absolute;right:0;top:0;bottom:0;
+  width:44px;
+  background:none;border:none;cursor:pointer;
+  padding:0;margin:0;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:0 12px 12px 0;
+}
+.pw-eye svg{width:18px;height:18px;stroke:#a78bfa;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s;display:block}
 .pw-eye:hover svg{stroke:#5b21b6}
 
-/* ── LOADING SKELETON ── */
+/* ── LOGOUT BUTTON (fixed, never scrolls) ── */
+#logoutBtn{
+  position:fixed;top:14px;right:14px;
+  width:auto;padding:8px 14px;font-size:12px;
+  background:rgba(109,40,217,.12);color:#6d28d9;
+  border:1px solid #c4b5fd;border-radius:10px;
+  z-index:9998;
+  backdrop-filter:blur(4px);
+}
+
+/* ── LOADING OVERLAY ── */
 #loadingOverlay{
   position:fixed;inset:0;
   background:rgba(244,245,251,0.85);
@@ -96,6 +148,62 @@ th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:to
   white-space:nowrap;
 }
 @keyframes badge-in{from{transform:translateX(-50%) translateY(10px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+
+/* ── ACTION MODAL (edit/delete) ── */
+#actionModal{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.45);
+  display:flex;align-items:flex-end;justify-content:center;
+  z-index:8000;
+  backdrop-filter:blur(2px);
+  animation:modal-bg-in .2s ease;
+}
+@keyframes modal-bg-in{from{opacity:0}to{opacity:1}}
+#actionModal.hidden{display:none}
+.action-sheet{
+  background:#fff;
+  border-radius:24px 24px 0 0;
+  padding:20px 20px 32px;
+  width:100%;max-width:480px;
+  box-shadow:0 -8px 40px rgba(0,0,0,.15);
+  animation:sheet-up .25s cubic-bezier(.34,1.26,.64,1);
+}
+@keyframes sheet-up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.action-sheet-title{
+  font-size:13px;color:#999;text-align:center;
+  margin:0 0 18px;font-weight:500;
+  border-bottom:1px solid #f0f0f0;padding-bottom:14px;
+}
+.action-sheet-title strong{color:#333;display:block;font-size:14px;margin-bottom:2px}
+.action-btns{display:flex;gap:12px}
+.action-btn{
+  flex:1;padding:14px 10px;border-radius:14px;
+  border:none;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  font-size:13px;font-weight:600;
+  transition:transform .15s,box-shadow .15s;
+}
+.action-btn:active{transform:scale(.97)}
+.action-btn svg{width:22px;height:22px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.action-btn.edit-btn{background:#f3f0ff;color:#6d28d9}
+.action-btn.edit-btn svg{stroke:#6d28d9}
+.action-btn.delete-btn{background:#fff1f1;color:#dc2626}
+.action-btn.delete-btn svg{stroke:#dc2626}
+.action-cancel{
+  margin-top:12px;width:100%;padding:13px;
+  border:none;border-radius:14px;
+  background:#f4f5fb;color:#666;
+  font-size:14px;font-weight:600;cursor:pointer;
+}
+
+/* ── PRINT / PDF ── */
+@media print{
+  #loadingOverlay,#lockScreen,#logoutBtn,#cacheBadge,#actionModal,#appHeader,
+  .card.no-print{display:none!important}
+  .card{box-shadow:none;margin-bottom:8px}
+  #entrySection{display:block!important}
+  body{background:#fff;padding:0}
+}
 </style>
 </head>
 <body>
@@ -120,6 +228,27 @@ th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:to
 <!-- CACHE TOAST -->
 <div id="cacheBadge">✦ Showing cached data — syncing…</div>
 
+<!-- ACTION MODAL (edit/delete) -->
+<div id="actionModal" class="hidden">
+  <div class="action-sheet">
+    <div class="action-sheet-title">
+      <strong id="actionModalDesc">Expense</strong>
+      Long press action
+    </div>
+    <div class="action-btns">
+      <button class="action-btn edit-btn" onclick="actionEdit()">
+        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit
+      </button>
+      <button class="action-btn delete-btn" onclick="actionDelete()">
+        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        Delete
+      </button>
+    </div>
+    <button class="action-cancel" onclick="closeActionModal()">Cancel</button>
+  </div>
+</div>
+
 <!-- LOCK SCREEN -->
 <div id="lockScreen">
 <div id="lockBox">
@@ -136,11 +265,18 @@ th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:to
 </div>
 </div>
 
-<!-- LOGOUT BUTTON (shown after login) -->
+<!-- LOGOUT (fixed top-right, never scrolls) -->
 <button id="logoutBtn" class="hidden" onclick="logout()">🔓 Logout</button>
 
-
-<h1>Spend Board</h1>
+<!-- HEADER -->
+<div id="appHeader">
+  <div id="appTitle"><span>💰</span>Spend Board</div>
+  <div class="header-separator">
+    <div class="sep-line"></div>
+    <div id="greetingBadge">👋 Welcome</div>
+    <div class="sep-line"></div>
+  </div>
+</div>
 
 <div class="card top">
 <div class="summary">
@@ -158,12 +294,12 @@ th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:to
 </div>
 </div>
 
-<div class="card">
+<!-- no-print: manage nature -->
+<div class="card no-print">
 <div class="summary">
 <h3>Manage Nature of Expense</h3>
 <button class="small" id="natureBtn" onclick="toggleNature()">+</button>
 </div>
-
 <div id="natureSection" class="hidden">
 <div class="flex">
 <input id="natureInput" placeholder="Add Nature">
@@ -173,48 +309,39 @@ th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:to
 </div>
 </div>
 
-<div class="card">
+<!-- no-print: add/edit expense -->
+<div class="card no-print">
 <h3>Add / Edit Expense</h3>
-
 <input type="hidden" id="editId">
-
 <input type="date" id="date"><br><br>
-
 <select id="natureDD"></select><br><br>
-
 <select id="category">
 <option>Fixed</option>
 <option>Variable</option>
 </select><br><br>
-
 <input id="description" placeholder="Description"><br><br>
-
 <input type="number" id="amount" placeholder="Amount"><br><br>
-
 <select id="paid">
 <option>Cash</option>
 <option>Card</option>
 <option>UPI</option>
 </select><br><br>
-
 <button id="saveBtn" onclick="saveExpense()">Add Expense</button>
 </div>
 
-<div class="card">
+<!-- no-print: filters -->
+<div class="card no-print">
 <h3>Expense Entry Filters</h3>
-
 <div class="flex">
 <select id="fCategory" onchange="renderEntries()">
 <option value="">All Categories</option>
 <option>Fixed</option>
 <option>Variable</option>
 </select>
-
 <select id="fNature" onchange="renderEntries()">
 <option value="">All Nature</option>
 </select>
 </div><br>
-
 <div class="flex">
 <select id="fPaid" onchange="renderEntries()">
 <option value="">All Paid Via</option>
@@ -222,26 +349,23 @@ th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:to
 <option>Card</option>
 <option>UPI</option>
 </select>
-
 <select id="fAmountType" onchange="renderEntries()">
 <option value="">Amount Filter</option>
 <option value="gt">Greater Than</option>
 <option value="lt">Less Than</option>
 </select>
 </div><br>
-
 <input id="fAmount" type="number" placeholder="Enter amount" oninput="renderEntries()">
 </div>
 
 <div class="card">
 <div class="summary">
 <h3>Expense Entries</h3>
-<button class="small" id="entryBtn" onclick="toggleEntries()">+</button>
+<button class="small no-print" id="entryBtn" onclick="toggleEntries()">+</button>
 </div>
-
 <div id="entrySection" class="hidden">
 <div id="entries"></div>
-<div class="note">Long press row for Edit/Delete.</div>
+<div class="note no-print">Long press row to Edit or Delete.</div>
 </div>
 </div>
 
@@ -262,605 +386,386 @@ th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:to
 <div id="natureSummary"></div>
 </div>
 
-<div class="card">
-<button onclick="window.print()">Export as PDF</button>
+<div class="card no-print">
+<button onclick="exportPDF()">Export as PDF</button>
 </div>
 
 <script>
 let expenses=[];
 const API_URL="https://script.google.com/macros/s/AKfycbxYy0h-Nn-qfg5-_wDwif-LjleQt01M4Nula3IxzUQ1jeBfF_mNKAIvFcD5Q4r1294Y/exec";
 let natures=[];
+let pendingActionId=null;
 
 const months=["All Months","January","February","March","April","May","June","July","August","September","October","November","December"];
 const shortM=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-async function save(){
-// Expenses are saved individually via saveExpense(); this is a no-op placeholder.
+async function save(){}
+
+// ── GREETING ─────────────────────────────────────────
+function setGreeting(){
+  const h = new Date().getHours();
+  let text;
+  if(h>=5 && h<12)       text='☀️ Good Morning';
+  else if(h>=12 && h<16) text='🌤️ Good Noon';
+  else if(h>=16 && h<21) text='🌇 Good Evening';
+  else                    text='🌙 Good Night';
+  document.getElementById('greetingBadge').textContent = text;
 }
 
+// ── PASSWORD EYE ─────────────────────────────────────
+function togglePwEye(){
+  const inp = document.getElementById('lockInput');
+  const icon = document.getElementById('eyeIcon');
+  if(inp.type==='password'){
+    inp.type='text';
+    icon.innerHTML='<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+  }else{
+    inp.type='password';
+    icon.innerHTML='<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  }
+}
 
+// ── LOAD / CACHE ──────────────────────────────────────
 async function loadExpenses(){
-const CACHE_KEY = 'sb_expenses_cache';
-
-// 1. Instantly show cached data if available
-const cached = localStorage.getItem(CACHE_KEY);
-if(cached){
+  const CACHE_KEY='sb_expenses_cache';
+  const cached=localStorage.getItem(CACHE_KEY);
+  if(cached){
+    try{
+      expenses=JSON.parse(cached);
+      if(!Array.isArray(expenses))expenses=[];
+      renderAll();
+      hideLoader();
+      showCacheBadge();
+    }catch(e){expenses=[];}
+  }
   try{
-    expenses = JSON.parse(cached);
-    if(!Array.isArray(expenses)) expenses=[];
-    renderAll();
-    hideLoader();
-    showCacheBadge();
-  }catch(e){ expenses=[]; }
-}
-
-// 2. Background fetch from cloud
-try{
-const res=await fetch(API_URL);
-const fresh=await res.json();
-if(Array.isArray(fresh)){
-  expenses=fresh;
-  localStorage.setItem(CACHE_KEY, JSON.stringify(fresh));
-  renderAll();
-  if(cached) hideCacheBadge();
-}
-}catch(e){
-console.log('Cloud Sync Error',e);
-}finally{
-hideLoader();
-}
+    const res=await fetch(API_URL);
+    const fresh=await res.json();
+    if(Array.isArray(fresh)){
+      expenses=fresh;
+      localStorage.setItem(CACHE_KEY,JSON.stringify(fresh));
+      renderAll();
+      if(cached)hideCacheBadge();
+    }
+  }catch(e){console.log('Cloud Sync Error',e);}
+  finally{hideLoader();}
 }
 
 function hideLoader(){
-const ov = document.getElementById('loadingOverlay');
-if(ov && ov.style.display !== 'none'){
-  ov.classList.add('fade-out');
-  setTimeout(()=>{ ov.style.display='none'; }, 400);
+  const ov=document.getElementById('loadingOverlay');
+  if(ov&&ov.style.display!=='none'){
+    ov.classList.add('fade-out');
+    setTimeout(()=>{ov.style.display='none';},400);
+  }
 }
-}
-
 function showCacheBadge(){
-const b = document.getElementById('cacheBadge');
-b.style.display = 'block';
+  const b=document.getElementById('cacheBadge');
+  b.style.display='block';
 }
-
 function hideCacheBadge(){
-const b = document.getElementById('cacheBadge');
-b.style.opacity = '0';
-b.style.transition = 'opacity .5s';
-setTimeout(()=>{ b.style.display='none'; b.style.opacity=''; b.style.transition=''; }, 500);
+  const b=document.getElementById('cacheBadge');
+  b.style.opacity='0';b.style.transition='opacity .5s';
+  setTimeout(()=>{b.style.display='none';b.style.opacity='';b.style.transition='';},500);
 }
 
-function togglePwEye(){
-const inp = document.getElementById('lockInput');
-const icon = document.getElementById('eyeIcon');
-if(inp.type === 'password'){
-  inp.type = 'text';
-  // Eye with slash (hidden state)
-  icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
-}else{
-  inp.type = 'password';
-  icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+// ── ACTION MODAL ──────────────────────────────────────
+function showActionModal(id){
+  pendingActionId=id;
+  const e=expenses.find(x=>x.id==id);
+  document.getElementById('actionModalDesc').textContent = e ? (e.description||e.nature||'Expense') : 'Expense';
+  document.getElementById('actionModal').classList.remove('hidden');
 }
+function closeActionModal(){
+  document.getElementById('actionModal').classList.add('hidden');
+  pendingActionId=null;
 }
-
-function indian(n){
-return Number(n||0).toLocaleString('en-IN');
+function actionEdit(){
+  closeActionModal();
+  if(pendingActionId!==null){editExpense(pendingActionId);}
 }
-
-function compact(n){
-n=Number(n||0);
-if(n>=100000){
-return (n/100000).toFixed(2).replace(/\.00$/,'')+'L';
-}
-if(n>=1000){
-return (n/1000).toFixed(2).replace(/\.00$/,'')+'k';
-}
-return n.toString();
-}
-
-function toggleNature(){
-natureSection.classList.toggle("hidden");
-natureBtn.innerText=natureSection.classList.contains("hidden")?"+":"-";
-}
-
-function toggleEntries(){
-entrySection.classList.toggle("hidden");
-entryBtn.innerText=entrySection.classList.contains("hidden")?"+":"-";
-}
-
-async function addNature(){
-let v=natureInput.value.trim();
-if(v && !natures.includes(v)){
-await saveNatureToCloud(v);
-}
-natureInput.value="";
-await fetchNatureMaster();
-renderNatureControls();
-}
-
-async function editNature(oldName){
-let nv=prompt("Edit Nature",oldName);
-if(!nv)return;
-nv=nv.trim();
-if(!nv)return;
-
-try{
-await fetch(API_URL,{
-method:'POST',
-body:JSON.stringify({
-sheet:'NatureMaster',
-action:'rename',
-oldName:oldName,
-newName:nv
-})
-});
-}catch(e){
-console.log('Edit nature cloud error',e);
-}
-
-await fetchNatureMaster();
-renderAll();
-}
-
-async function deleteNature(n){
-if(!confirm("Delete nature?"))return;
-
-try{
-await fetch(API_URL,{
-method:'POST',
-body:JSON.stringify({
-sheet:'NatureMaster',
-action:'delete',
-name:n
-})
-});
-}catch(e){
-console.log('Delete nature cloud error',e);
-}
-
-await fetchNatureMaster();
-renderNatureControls();
-}
-
-
-async function fetchNatureMaster(){
-try{
-const res = await fetch(API_URL + '?sheet=NatureMaster');
-const data = await res.json();
-
-if(Array.isArray(data) && data.length){
-natures = data.map(x => x.name).filter(Boolean);
-}
-}catch(e){
-console.log(e);
-}
-}
-
-async function saveNatureToCloud(name){
-try{
-await fetch(API_URL,{
-method:'POST',
-body:JSON.stringify({
-sheet:'NatureMaster',
-name:name
-})
-});
-}catch(e){
-console.log(e);
-}
-}
-
-
-function renderNatureControls(){
-natureList.innerHTML="";
-natureDD.innerHTML="";
-fNature.innerHTML='<option value="">All Nature</option>';
-
-natures.sort().forEach(n=>{
-
-natureList.innerHTML+=`
-<div class="summary" style="margin-top:10px;background:#f3f0ff;padding:10px;border-radius:12px">
-<div>${n}</div>
-
-<div class="flex">
-<button class="small" onclick="editNature('${n}')">✏️</button>
-<button class="small" onclick="deleteNature('${n}')">🗑</button>
-</div>
-</div>`;
-
-natureDD.innerHTML+=`<option>${n}</option>`;
-fNature.innerHTML+=`<option>${n}</option>`;
-
-});
-}
-
-function years(){
-return [...new Set(expenses.map(e=>e.date.substring(0,4)))].sort().reverse();
-}
-
-function renderFilters(){
-topYear.innerHTML="";
-viewYear.innerHTML="";
-
-years().forEach(y=>{
-topYear.innerHTML+=`<option>${y}</option>`;
-viewYear.innerHTML+=`<option>${y}</option>`;
-});
-
-if(years().length){
-topYear.value=years()[0];
-viewYear.value=years()[0];
-}
-
-viewMonth.innerHTML="";
-
-months.forEach((m,i)=>{
-if(i===0){
-viewMonth.innerHTML+=`<option value="all">${m}</option>`;
-}else{
-viewMonth.innerHTML+=`<option value="${i-1}">${m}</option>`;
-}
-});
-
-if(!viewMonth.value){
-viewMonth.value="all";
-}
-}
-
-function currentData(){
-let y=viewYear.value;
-let m=viewMonth.value;
-
-return expenses.filter(e=>{
-
-let d=new Date(e.date);
-
-if(m==="all"){
-return d.getFullYear()==y;
-}
-
-return d.getFullYear()==y && d.getMonth()==m;
-
-});
-}
-
-function filteredData(){
-let data=currentData();
-
-return data.filter(e=>{
-
-if(fCategory.value && e.category!==fCategory.value)return false;
-if(fNature.value && e.nature!==fNature.value)return false;
-if(fPaid.value && e.paid!==fPaid.value)return false;
-
-let v=Number(fAmount.value||0);
-
-if(fAmountType.value==="gt" && !(e.amount>v))return false;
-if(fAmountType.value==="lt" && !(e.amount<v))return false;
-
-return true;
-
-});
-}
-
-function renderTop(){
-let y=topYear.value;
-
-let data=expenses.filter(e=>e.date.substring(0,4)===y);
-
-let total=data.reduce((a,b)=>a+b.amount,0);
-
-totalSpend.innerText="₹"+indian(total);
-
-let monthly=Array(12).fill(0);
-
-data.forEach(e=>{
-monthly[new Date(e.date).getMonth()]+=e.amount;
-});
-
-let max=Math.max(...monthly,1);
-
-bars.innerHTML="";
-
-monthly.forEach((v,i)=>{
-
-let h=(v/max)*70;
-
-bars.innerHTML+=`
-<div class="barbox">
-<div class="label" style="margin-bottom:4px;font-size:10px;color:white">${v?compact(v):''}</div>
-<div class="bar ${viewMonth.value==i?'active':''}" style="height:${h}px"></div>
-<div class="label">${shortM[i]}</div>
-</div>`;
-
-});
-}
-
-async function saveExpense(){
-
-let obj={
-id:editId.value || Date.now(),
-date:date.value,
-nature:natureDD.value,
-category:category.value,
-description:description.value,
-amount:Number(amount.value||0),
-paid:paid.value
-};
-
-if(editId.value){
-
-expenses=expenses.map(e=>e.id==editId.value?obj:e);
-
-}else{
-
-expenses.push(obj);
-
-}
-
-await fetch(API_URL,{
-method:'POST',
-body:JSON.stringify(obj)
-});
-
-await loadExpenses();
-
-clearForm();
-
-if(entrySection.classList.contains("hidden")){
-toggleEntries();
-}
-}
-
-function clearForm(){
-editId.value="";
-date.value="";
-description.value="";
-amount.value="";
-category.value="Fixed";
-paid.value="Cash";
-saveBtn.innerText="Add Expense";
-}
-
-function editExpense(id){
-
-let e=expenses.find(x=>x.id==id);
-
-if(!e)return;
-
-editId.value=e.id;
-date.value=e.date;
-natureDD.value=e.nature;
-category.value=e.category;
-description.value=e.description;
-amount.value=e.amount;
-paid.value=e.paid;
-
-saveBtn.innerText="Save Changes";
-
-window.scrollTo({
-top:0,
-behavior:'smooth'
-});
-}
-
-function deleteExpense(id){
-
-if(!confirm("Delete transaction?"))return;
-
-expenses=expenses.filter(e=>e.id!=id);
-
-save();
-
-renderAll();
+function actionDelete(){
+  const id=pendingActionId;
+  closeActionModal();
+  if(id===null)return;
+  if(!confirm('Delete this transaction?'))return;
+  expenses=expenses.filter(e=>e.id!=id);
+  save();
+  renderAll();
 }
 
 let timer;
-
-function showActionMenu(id){
-let action=confirm("Press OK to Edit\nPress Cancel to Delete");
-if(action){
-editExpense(id);
-}else{
-deleteExpense(id);
-}
-}
-
 function pressStart(id){
+  timer=setTimeout(()=>showActionModal(id),700);
+}
+function pressEnd(){clearTimeout(timer);}
 
-timer=setTimeout(()=>{
-showActionMenu(id);
-},700);
+// ── EXPORT PDF ────────────────────────────────────────
+function exportPDF(){
+  // Ensure entries are expanded before printing
+  const sec=document.getElementById('entrySection');
+  const btn=document.getElementById('entryBtn');
+  const wasHidden=sec.classList.contains('hidden');
+  if(wasHidden){sec.classList.remove('hidden');btn.innerText='-';}
+  setTimeout(()=>{
+    window.print();
+    // Restore state after dialog
+    if(wasHidden){sec.classList.add('hidden');btn.innerText='+';}
+  },100);
 }
 
-function pressEnd(){
-clearTimeout(timer);
+// ── UTILITY ──────────────────────────────────────────
+function indian(n){return Number(n||0).toLocaleString('en-IN');}
+function compact(n){
+  n=Number(n||0);
+  if(n>=100000)return (n/100000).toFixed(2).replace(/\.00$/,'')+'L';
+  if(n>=1000)return (n/1000).toFixed(2).replace(/\.00$/,'')+'k';
+  return n.toString();
+}
+
+function toggleNature(){
+  natureSection.classList.toggle("hidden");
+  natureBtn.innerText=natureSection.classList.contains("hidden")?"+":"-";
+}
+function toggleEntries(){
+  entrySection.classList.toggle("hidden");
+  entryBtn.innerText=entrySection.classList.contains("hidden")?"+":"-";
+}
+
+async function addNature(){
+  let v=natureInput.value.trim();
+  if(v&&!natures.includes(v)){await saveNatureToCloud(v);}
+  natureInput.value="";
+  await fetchNatureMaster();
+  renderNatureControls();
+}
+
+async function editNature(oldName){
+  let nv=prompt("Edit Nature",oldName);
+  if(!nv)return;
+  nv=nv.trim();if(!nv)return;
+  try{
+    await fetch(API_URL,{method:'POST',body:JSON.stringify({sheet:'NatureMaster',action:'rename',oldName,newName:nv})});
+  }catch(e){console.log('Edit nature cloud error',e);}
+  await fetchNatureMaster();renderAll();
+}
+
+async function deleteNature(n){
+  if(!confirm("Delete nature?"))return;
+  try{
+    await fetch(API_URL,{method:'POST',body:JSON.stringify({sheet:'NatureMaster',action:'delete',name:n})});
+  }catch(e){console.log('Delete nature cloud error',e);}
+  await fetchNatureMaster();renderNatureControls();
+}
+
+async function fetchNatureMaster(){
+  try{
+    const res=await fetch(API_URL+'?sheet=NatureMaster');
+    const data=await res.json();
+    if(Array.isArray(data)&&data.length){natures=data.map(x=>x.name).filter(Boolean);}
+  }catch(e){console.log(e);}
+}
+
+async function saveNatureToCloud(name){
+  try{
+    await fetch(API_URL,{method:'POST',body:JSON.stringify({sheet:'NatureMaster',name})});
+  }catch(e){console.log(e);}
+}
+
+function renderNatureControls(){
+  natureList.innerHTML="";natureDD.innerHTML="";
+  fNature.innerHTML='<option value="">All Nature</option>';
+  natures.sort().forEach(n=>{
+    natureList.innerHTML+=`
+    <div class="summary" style="margin-top:10px;background:#f3f0ff;padding:10px;border-radius:12px">
+    <div>${n}</div>
+    <div class="flex">
+    <button class="small" onclick="editNature('${n}')">✏️</button>
+    <button class="small" onclick="deleteNature('${n}')">🗑</button>
+    </div></div>`;
+    natureDD.innerHTML+=`<option>${n}</option>`;
+    fNature.innerHTML+=`<option>${n}</option>`;
+  });
+}
+
+function years(){
+  return [...new Set(expenses.map(e=>e.date.substring(0,4)))].sort().reverse();
+}
+
+function renderFilters(){
+  topYear.innerHTML="";viewYear.innerHTML="";
+  years().forEach(y=>{
+    topYear.innerHTML+=`<option>${y}</option>`;
+    viewYear.innerHTML+=`<option>${y}</option>`;
+  });
+  if(years().length){topYear.value=years()[0];viewYear.value=years()[0];}
+  viewMonth.innerHTML="";
+  months.forEach((m,i)=>{
+    viewMonth.innerHTML+=i===0?`<option value="all">${m}</option>`:`<option value="${i-1}">${m}</option>`;
+  });
+  if(!viewMonth.value)viewMonth.value="all";
+}
+
+function currentData(){
+  let y=viewYear.value,m=viewMonth.value;
+  return expenses.filter(e=>{
+    let d=new Date(e.date);
+    if(m==="all")return d.getFullYear()==y;
+    return d.getFullYear()==y&&d.getMonth()==m;
+  });
+}
+
+function filteredData(){
+  return currentData().filter(e=>{
+    if(fCategory.value&&e.category!==fCategory.value)return false;
+    if(fNature.value&&e.nature!==fNature.value)return false;
+    if(fPaid.value&&e.paid!==fPaid.value)return false;
+    let v=Number(fAmount.value||0);
+    if(fAmountType.value==="gt"&&!(e.amount>v))return false;
+    if(fAmountType.value==="lt"&&!(e.amount<v))return false;
+    return true;
+  });
+}
+
+function renderTop(){
+  let y=topYear.value;
+  let data=expenses.filter(e=>e.date.substring(0,4)===y);
+  let total=data.reduce((a,b)=>a+b.amount,0);
+  totalSpend.innerText="₹"+indian(total);
+  let monthly=Array(12).fill(0);
+  data.forEach(e=>{monthly[new Date(e.date).getMonth()]+=e.amount;});
+  let max=Math.max(...monthly,1);
+  bars.innerHTML="";
+  monthly.forEach((v,i)=>{
+    let h=(v/max)*70;
+    bars.innerHTML+=`
+    <div class="barbox">
+    <div class="label" style="margin-bottom:4px;font-size:10px;color:white">${v?compact(v):''}</div>
+    <div class="bar ${viewMonth.value==i?'active':''}" style="height:${h}px"></div>
+    <div class="label">${shortM[i]}</div>
+    </div>`;
+  });
+}
+
+async function saveExpense(){
+  let obj={
+    id:editId.value||Date.now(),
+    date:date.value,nature:natureDD.value,
+    category:category.value,description:description.value,
+    amount:Number(amount.value||0),paid:paid.value
+  };
+  if(editId.value){expenses=expenses.map(e=>e.id==editId.value?obj:e);}
+  else{expenses.push(obj);}
+  await fetch(API_URL,{method:'POST',body:JSON.stringify(obj)});
+  await loadExpenses();
+  clearForm();
+  if(entrySection.classList.contains("hidden"))toggleEntries();
+}
+
+function clearForm(){
+  editId.value="";date.value="";description.value="";amount.value="";
+  category.value="Fixed";paid.value="Cash";
+  saveBtn.innerText="Add Expense";
+}
+
+function editExpense(id){
+  let e=expenses.find(x=>x.id==id);
+  if(!e)return;
+  editId.value=e.id;date.value=e.date;natureDD.value=e.nature;
+  category.value=e.category;description.value=e.description;
+  amount.value=e.amount;paid.value=e.paid;
+  saveBtn.innerText="Save Changes";
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function renderEntries(){
-
-let data=filteredData();
-
-entries.innerHTML=`
-<table>
-
-<thead>
-<tr>
-<th>Date</th>
-<th>Category</th>
-<th>Nature</th>
-<th>Description</th>
-<th>Amount</th>
-<th>Paid</th>
-</tr>
-</thead>
-
-<tbody>
-
-${data.map(e=>{
-
-let d=new Date(e.date);
-
-return `
-<tr ontouchstart="pressStart(${e.id})" ontouchend="pressEnd()" onmousedown="pressStart(${e.id})" onmouseup="pressEnd()">
-
-<td>${String(d.getDate()).padStart(2,'0')}-${shortM[d.getMonth()]}<br>${d.getFullYear()}</td>
-<td>${e.category}</td>
-<td>${e.nature}</td>
-<td>${e.description}</td>
-<td>₹${indian(e.amount)}</td>
-<td>${e.paid}</td>
-
-</tr>`;
-
-}).join("")}
-
-</tbody>
-</table>`;
+  let data=filteredData();
+  entries.innerHTML=`
+  <table>
+  <thead><tr>
+  <th>Date</th><th>Category</th><th>Nature</th>
+  <th>Description</th><th>Amount</th><th>Paid</th>
+  </tr></thead>
+  <tbody>
+  ${data.map(e=>{
+    let d=new Date(e.date);
+    return `<tr ontouchstart="pressStart(${e.id})" ontouchend="pressEnd()" onmousedown="pressStart(${e.id})" onmouseup="pressEnd()">
+    <td>${String(d.getDate()).padStart(2,'0')}-${shortM[d.getMonth()]}<br>${d.getFullYear()}</td>
+    <td>${e.category}</td><td>${e.nature}</td>
+    <td>${e.description}</td><td>₹${indian(e.amount)}</td><td>${e.paid}</td>
+    </tr>`;
+  }).join("")}
+  </tbody></table>`;
 }
 
 function renderCategorySummary(){
-
-let obj={};
-
-currentData().forEach(e=>{
-
-if(!obj[e.category]){
-obj[e.category]={count:0,total:0};
-}
-
-obj[e.category].count++;
-obj[e.category].total+=e.amount;
-
-});
-
-categorySummary.innerHTML=`
-<table>
-
-<thead>
-<tr>
-<th>Category</th>
-<th>#</th>
-<th>Total</th>
-<th>Avg</th>
-</tr>
-</thead>
-
-<tbody>
-
-${Object.keys(obj).map(k=>`
-<tr>
-<td>${k}</td>
-<td>${obj[k].count}</td>
-<td>₹${indian(obj[k].total)}</td>
-<td>₹${indian(Math.round(obj[k].total/obj[k].count))}</td>
-</tr>`).join("")}
-
-</tbody>
-</table>`;
+  let obj={};
+  currentData().forEach(e=>{
+    if(!obj[e.category])obj[e.category]={count:0,total:0};
+    obj[e.category].count++;obj[e.category].total+=e.amount;
+  });
+  categorySummary.innerHTML=`
+  <table>
+  <thead><tr><th>Category</th><th>#</th><th>Total</th><th>Avg</th></tr></thead>
+  <tbody>
+  ${Object.keys(obj).map(k=>`
+  <tr><td>${k}</td><td>${obj[k].count}</td>
+  <td>₹${indian(obj[k].total)}</td>
+  <td>₹${indian(Math.round(obj[k].total/obj[k].count))}</td></tr>`).join("")}
+  </tbody></table>`;
 }
 
 function renderNatureSummary(){
-
-let obj={};
-
-currentData().forEach(e=>{
-
-if(!obj[e.nature]){
-obj[e.nature]={count:0,total:0};
-}
-
-obj[e.nature].count++;
-obj[e.nature].total+=e.amount;
-
-});
-
-let arr=Object.entries(obj);
-
-if(sortNature.value==="high"){
-arr.sort((a,b)=>b[1].total-a[1].total);
-}
-
-if(sortNature.value==="low"){
-arr.sort((a,b)=>a[1].total-b[1].total);
-}
-
-if(sortNature.value==="alpha"){
-arr.sort((a,b)=>a[0].localeCompare(b[0]));
-}
-
-let grand=0;
-
-natureSummary.innerHTML=`
-<table>
-
-<thead>
-<tr>
-<th>Nature</th>
-<th>#</th>
-<th>Total</th>
-<th>Avg</th>
-</tr>
-</thead>
-
-<tbody>
-
-${arr.map(([k,v])=>{
-
-grand+=v.total;
-
-return `
-<tr>
-<td>${k}</td>
-<td>${v.count}</td>
-<td>₹${indian(v.total)}</td>
-<td>₹${indian(Math.round(v.total/v.count))}</td>
-</tr>`;
-
-}).join("")}
-
-</tbody>
-</table>
-
-<h3>Total Expense: ₹${indian(grand)}</h3>`;
+  let obj={};
+  currentData().forEach(e=>{
+    if(!obj[e.nature])obj[e.nature]={count:0,total:0};
+    obj[e.nature].count++;obj[e.nature].total+=e.amount;
+  });
+  let arr=Object.entries(obj);
+  if(sortNature.value==="high")arr.sort((a,b)=>b[1].total-a[1].total);
+  if(sortNature.value==="low")arr.sort((a,b)=>a[1].total-b[1].total);
+  if(sortNature.value==="alpha")arr.sort((a,b)=>a[0].localeCompare(b[0]));
+  let grand=0;
+  natureSummary.innerHTML=`
+  <table>
+  <thead><tr><th>Nature</th><th>#</th><th>Total</th><th>Avg</th></tr></thead>
+  <tbody>
+  ${arr.map(([k,v])=>{grand+=v.total;return `
+  <tr><td>${k}</td><td>${v.count}</td>
+  <td>₹${indian(v.total)}</td>
+  <td>₹${indian(Math.round(v.total/v.count))}</td></tr>`;}).join("")}
+  </tbody></table>
+  <h3>Total Expense: ₹${indian(grand)}</h3>`;
 }
 
 function renderAll(){
-renderFilters();
-renderTop();
-renderEntries();
-renderCategorySummary();
-renderNatureSummary();
+  renderFilters();renderTop();renderEntries();
+  renderCategorySummary();renderNatureSummary();
 }
 
-
-// ── PASSWORD PROTECTION ──────────────────────────────
-const FAMILY_PASSWORD = "spendboard2024"; // ← Change this to your password
+// ── PASSWORD PROTECTION ───────────────────────────────
+const FAMILY_PASSWORD="spendboard2024";
 
 function checkAuth(){
   if(localStorage.getItem("sb_auth")==="yes"){
     document.getElementById("lockScreen").style.display="none";
     document.getElementById("logoutBtn").classList.remove("hidden");
-  } else {
-    // Not logged in — hide loader immediately, show lock screen
-    const ov = document.getElementById('loadingOverlay');
-    if(ov) ov.style.display='none';
+  }else{
+    const ov=document.getElementById('loadingOverlay');
+    if(ov)ov.style.display='none';
   }
 }
 
 function tryUnlock(){
-  const val = document.getElementById("lockInput").value;
-  if(val === FAMILY_PASSWORD){
+  const val=document.getElementById("lockInput").value;
+  if(val===FAMILY_PASSWORD){
     localStorage.setItem("sb_auth","yes");
     document.getElementById("lockScreen").style.display="none";
     document.getElementById("logoutBtn").classList.remove("hidden");
     document.getElementById("lockError").innerText="";
-    // Show loader and kick off data load
-    const ov = document.getElementById('loadingOverlay');
-    if(ov){ ov.style.display='flex'; ov.classList.remove('fade-out'); }
+    const ov=document.getElementById('loadingOverlay');
+    if(ov){ov.style.display='flex';ov.classList.remove('fade-out');}
     loadExpenses();
-  } else {
+  }else{
     document.getElementById("lockError").innerText="❌ Incorrect password. Try again.";
     document.getElementById("lockInput").value="";
     document.getElementById("lockInput").focus();
@@ -876,16 +781,14 @@ function logout(){
   document.getElementById("lockError").innerText="";
   document.getElementById("lockScreen").style.display="flex";
 }
-// ────────────────────────────────────────────────────
 
+// ── INIT ─────────────────────────────────────────────
+setGreeting();
 checkAuth();
 renderNatureControls();
 renderFilters();
 fetchNatureMaster().then(()=>renderNatureControls());
-// Only auto-load if already authenticated
-if(localStorage.getItem("sb_auth")==="yes"){
-  loadExpenses();
-}
+if(localStorage.getItem("sb_auth")==="yes"){loadExpenses();}
 </script>
 
 </body>
