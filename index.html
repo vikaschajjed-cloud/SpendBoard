@@ -527,12 +527,18 @@ tbody tr:hover{background:var(--surface2)}
 @media print{
   #loadingOverlay,#lockScreen,#topBar,#drawer,#drawerOverlay,#cacheBadge,#actionModal{display:none!important}
   .page{display:block!important;padding:0}
-  body{background:#fff}
-  .hero-card,.card{page-break-inside:avoid}
-  .bc-bar-fixed,.bc-bar-variable{print-color-adjust:exact;-webkit-print-color-adjust:exact}
-  .mini-bar{print-color-adjust:exact;-webkit-print-color-adjust:exact}
-  svg,canvas{print-color-adjust:exact;-webkit-print-color-adjust:exact}
-  *{print-color-adjust:exact;-webkit-print-color-adjust:exact;color-adjust:exact}
+  body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
+  .hero-card{
+    background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#1a56db 100%)!important;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+  .hero-amount,.hero-label,.hero-sub,.mini-label{color:#fff!important}
+  .mini-bar{background:rgba(255,255,255,.4)!important}
+  .mini-bar.active-bar{background:#fff!important}
+  .card,.chart-card{page-break-inside:avoid;box-shadow:none}
+  #addSection,#filterSection,#entrySection,#natureSection{display:block!important}
+  .collapse-chevron{display:none}
 }
 </style>
 </head>
@@ -970,6 +976,7 @@ let natures=[];
 let pendingActionId=null;
 let pressTimer=null;
 let selectedMonths=[]; // For multi-month filter
+let filtersInitialised=false;
 
 // ── STARS ON LOCK SCREEN ──────────────────────────────
 function makeLockStars(){
@@ -1263,13 +1270,16 @@ function renderNatureControls(){
 function renderFilters(){
   const ty=document.getElementById('topYear');
   const vy=document.getElementById('viewYear');
+  const prevYear=vy.value;
   ty.innerHTML='';vy.innerHTML='';
   years().forEach(y=>{ty.innerHTML+=`<option>${y}</option>`;vy.innerHTML+=`<option>${y}</option>`;});
-  if(years().length){ty.value=years()[0];vy.value=years()[0];}
-  
-  // Initialize month pills (all selected by default)
-  if(selectedMonths.length===0){
+  // Restore previously selected year if still available, else pick latest
+  if(prevYear&&years().includes(prevYear)){ty.value=prevYear;vy.value=prevYear;}
+  else if(years().length){ty.value=years()[0];vy.value=years()[0];}
+  // Only init selectedMonths on first load (all months), never reset afterwards
+  if(!filtersInitialised){
     selectedMonths=[0,1,2,3,4,5,6,7,8,9,10,11];
+    filtersInitialised=true;
   }
   renderMonthPills();
 }
@@ -1446,6 +1456,7 @@ async function saveExpense(){
     }
   }else{
     // Single entry (regular or edit)
+    const existingExp=eid?expenses.find(x=>x.id==eid):null;
     const obj={
       id:eid||Date.now(),
       date:dateInput,
@@ -1455,9 +1466,9 @@ async function saveExpense(){
       amount:amount,
       paid:paid,
       recurringType:cat==='Fixed'?recurringType:'None',
-      recurringMonths:(cat==='Fixed'?(e&&e.recurringMonths?e.recurringMonths:''):'')
+      recurringMonths:(cat==='Fixed'?(existingExp&&existingExp.recurringMonths?existingExp.recurringMonths:''):'')
     };
-    if(eid)expenses=expenses.map(e=>e.id==eid?obj:e);
+    if(eid)expenses=expenses.map(ex=>ex.id==eid?obj:ex);
     else expenses.push(obj);
     await fetch(API_URL,{method:'POST',body:JSON.stringify(obj)});
   }
@@ -1491,7 +1502,13 @@ function editExpense(id){
   const e=expenses.find(x=>x.id==id);if(!e)return;
 
   document.getElementById('editId').value=e.id;
-  document.getElementById('date').value=e.date;
+  // Normalise date to YYYY-MM-DD for the date input regardless of sheet format
+  let normDate=e.date||'';
+  if(normDate&&!normDate.match(/^\d{4}-\d{2}-\d{2}$/)){
+    const d=new Date(normDate);
+    if(!isNaN(d.getTime()))normDate=d.toISOString().substring(0,10);
+  }
+  document.getElementById('date').value=normDate;
   document.getElementById('natureDD').value=e.nature;
   document.getElementById('category').value=e.category;
   document.getElementById('description').value=e.description;
@@ -1606,63 +1623,82 @@ function renderBarChart(){
 
   if(mode==='weekly'){
     wm.style.display='';
-    wm.innerHTML=months.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+    if(!wm.innerHTML)wm.innerHTML=months.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
   }else{
     wm.style.display='none';
   }
 
   const area=document.getElementById('barChartArea');
-
   let labels=[],fixedVals=[],variableVals=[];
 
   if(mode==='monthly'){
-    labels=shortM;
+    labels=shortM.slice();
     fixedVals=Array(12).fill(0);
     variableVals=Array(12).fill(0);
-
-    expenses.filter(e=>e.date&&e.date.substring(0,4)===yr)
-    .forEach(e=>{
+    expenses.filter(e=>e.date&&e.date.substring(0,4)===yr).forEach(e=>{
       const m=new Date(e.date).getMonth();
       if(e.category==='Fixed')fixedVals[m]+=Number(e.amount||0);
       else variableVals[m]+=Number(e.amount||0);
     });
-
   }else{
-    labels=['W1','W2','W3','W4','W5'];
-    fixedVals=[0,0,0,0,0];
-    variableVals=[0,0,0,0,0];
-
-    const sm=parseInt(wm.value||0);
-
+    // Weekly mode — always show all calendar weeks for the selected month
+    const sm=parseInt(wm.value||new Date().getMonth());
+    // Build week buckets by Sunday-ending weeks
+    const firstDay=new Date(parseInt(yr),sm,1);
+    const lastDay=new Date(parseInt(yr),sm+1,0);
+    const weekBuckets=[];
+    let cur=new Date(firstDay);
+    while(cur<=lastDay){
+      const wStart=new Date(cur);
+      const daysToSun=cur.getDay()===0?0:7-cur.getDay();
+      const wEnd=new Date(cur);wEnd.setDate(cur.getDate()+daysToSun);
+      if(wEnd>lastDay)wEnd.setTime(lastDay.getTime());
+      weekBuckets.push({start:new Date(wStart),end:new Date(wEnd),fixed:0,variable:0});
+      cur=new Date(wEnd);cur.setDate(cur.getDate()+1);
+    }
+    // Distribute expenses into week buckets
     expenses.forEach(e=>{
       if(!e.date)return;
       const d=new Date(e.date);
-
-      if(d.getFullYear()!=yr || d.getMonth()!=sm)return;
-
-      const w=Math.min(4,Math.floor((d.getDate()-1)/7));
-
-      if(e.category==='Fixed')fixedVals[w]+=Number(e.amount||0);
-      else variableVals[w]+=Number(e.amount||0);
+      if(d.getFullYear()!=parseInt(yr)||d.getMonth()!==sm)return;
+      for(const wb of weekBuckets){
+        if(d>=wb.start&&d<=wb.end){
+          if(e.category==='Fixed')wb.fixed+=Number(e.amount||0);
+          else wb.variable+=Number(e.amount||0);
+          break;
+        }
+      }
+    });
+    weekBuckets.forEach((wb,i)=>{
+      labels.push('W'+(i+1)+'\n'+wb.start.getDate()+'-'+wb.end.getDate()+' '+shortM[sm]);
+      fixedVals.push(wb.fixed);
+      variableVals.push(wb.variable);
     });
   }
 
   const totals=labels.map((_,i)=>fixedVals[i]+variableVals[i]);
   const max=Math.max(...totals,1);
+  const CHART_H=110;
 
   area.innerHTML=`
-  <div class="bar-chart-area">
+  <div class="bar-chart-area" style="height:${CHART_H+20}px;align-items:flex-end;gap:4px;display:flex;padding-bottom:4px">
   ${labels.map((l,i)=>{
-    const fh=Math.round((fixedVals[i]/max)*100);
-    const vh=Math.round((variableVals[i]/max)*100);
-    return `
-    <div class="bc-col">
-      <div class="bc-value">₹${compact(totals[i])}</div>
-      <div class="bc-bar" style="height:100px">
-        <div class="bc-bar-fixed" style="height:${fh}px"></div>
-        <div class="bc-bar-variable" style="height:${vh}px;bottom:${fh}px"></div>
+    const tot=totals[i];
+    const fh=Math.max(Math.round((fixedVals[i]/max)*CHART_H),fixedVals[i]>0?2:0);
+    const vh=Math.max(Math.round((variableVals[i]/max)*CHART_H),variableVals[i]>0?2:0);
+    const totalH=fh+vh;
+    const lShort=l.split('\n')[0];
+    const lSub=l.split('\n')[1]||'';
+    return `<div class="bc-col" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:0;cursor:pointer">
+      <div class="bc-value" style="font-size:9px;color:var(--text2);font-family:'DM Mono',monospace;text-align:center;margin-bottom:2px;min-height:11px">${tot>0?compact(tot):''}</div>
+      <div style="width:100%;display:flex;flex-direction:column;justify-content:flex-end;height:${CHART_H}px">
+        <div style="width:100%;display:flex;flex-direction:column;height:${totalH}px;min-height:${tot>0?3:1}px">
+          <div style="width:100%;height:${vh}px;background:var(--variable-color);${vh>0?'':'display:none'}"></div>
+          <div style="width:100%;height:${fh}px;background:var(--fixed-color);border-radius:${vh===0?'5px 5px':0} 0 0;${fh>0?'':'display:none'}"></div>
+          ${tot===0?'<div style="width:100%;height:2px;background:var(--border)"></div>':''}
+        </div>
       </div>
-      <div class="bc-label">${l}</div>
+      <div class="bc-label" style="font-size:9px;color:var(--text3);text-align:center;margin-top:3px;line-height:1.3">${lShort}<br><span style="font-size:8px;color:var(--text3)">${lSub}</span></div>
     </div>`;
   }).join('')}
   </div>`;
@@ -1748,28 +1784,38 @@ function renderFixedDash(){
   const obj={};
 
   data.forEach(e=>{
-    if(!obj[e.nature])obj[e.nature]={count:0,total:0};
-    obj[e.nature].count++;
-    obj[e.nature].total+=Number(e.amount||0);
+    // Group by description first; fall back to nature if description empty
+    const key=(e.description&&e.description.trim())?e.description.trim():e.nature;
+    if(!obj[key])obj[key]={count:0,total:0,nature:e.nature,paid:e.paid};
+    obj[key].count++;
+    obj[key].total+=Number(e.amount||0);
   });
 
   const arr=Object.entries(obj).sort((a,b)=>b[1].total-a[1].total);
+  const grandTotal=arr.reduce((s,[,v])=>s+v.total,0);
 
   if(!arr.length){
     area.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3)">No fixed expenses</div>';
     return;
   }
 
-  area.innerHTML=`<div class="fixed-list">
-    ${arr.map(([k,v])=>`
-      <div class="fixed-item">
+  area.innerHTML=`
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--accent-soft);border-radius:10px;margin-bottom:12px">
+    <span style="font-size:13px;font-weight:700;color:var(--accent)">Total Fixed</span>
+    <span style="font-family:'DM Mono',monospace;font-weight:800;color:var(--accent);font-size:15px">₹${indian(grandTotal)}</span>
+  </div>
+  <div class="fixed-list">
+    ${arr.map(([k,v])=>{
+      const pct=grandTotal?Math.round(v.total/grandTotal*100):0;
+      const monthsNote=v.count>1?` · ${v.count} months`:'';
+      return `<div class="fixed-item">
         <div class="fixed-item-left">
           <div class="fixed-item-name">${k}</div>
-          <div class="fixed-item-meta">${v.count} entries</div>
+          <div class="fixed-item-meta">${v.nature}${monthsNote} · ${pct}% of total</div>
         </div>
         <div class="fixed-item-amount">₹${indian(v.total)}</div>
-      </div>
-    `).join('')}
+      </div>`;
+    }).join('')}
   </div>`;
 }
 
