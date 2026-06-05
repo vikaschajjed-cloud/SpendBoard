@@ -1132,7 +1132,7 @@ function closeActionModal(){
   document.getElementById('actionModal').classList.add('hidden');
   pendingActionId=null;
 }
-function actionEdit(){closeActionModal();if(pendingActionId!==null)editExpense(pendingActionId);}
+function actionEdit(){const id=pendingActionId;closeActionModal();if(id!==null)editExpense(id);}
 async function actionDelete(){
   const id=pendingActionId;closeActionModal();
   if(id===null)return;
