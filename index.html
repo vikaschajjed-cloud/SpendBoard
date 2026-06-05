@@ -25,6 +25,8 @@
   --shadow:0 4px 24px rgba(15,23,42,.08);
   --shadow-lg:0 8px 40px rgba(15,23,42,.12);
   --drawer-w:260px;
+  --fixed-color:#8b5cf6;
+  --variable-color:#10b981;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
@@ -304,6 +306,39 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
 }
 .filter-row select:focus{border-color:var(--accent)}
 
+/* Multi-select month pills */
+.month-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.month-pill{
+  padding:6px 12px;border:1.5px solid var(--border);
+  border-radius:99px;font-family:'Sora',sans-serif;font-size:11px;
+  font-weight:600;color:var(--text2);background:var(--surface2);
+  cursor:pointer;transition:all .2s;user-select:none;
+}
+.month-pill.selected{
+  background:var(--accent);color:#fff;border-color:var(--accent);
+}
+.month-pill:hover{border-color:var(--accent);color:var(--accent)}
+.month-pill.selected:hover{opacity:.9}
+
+/* Recurring expense controls */
+.recurring-controls{
+  background:var(--accent-soft);
+  border:1px solid rgba(26,86,219,.2);
+  border-radius:10px;padding:12px;margin-bottom:12px;
+}
+.recurring-label{
+  font-size:11px;font-weight:700;color:var(--accent);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;
+}
+.month-checkbox-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;
+}
+.month-checkbox{
+  display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);
+}
+.month-checkbox input{cursor:pointer}
+.month-checkbox label{cursor:pointer;user-select:none}
+
 /* tables */
 table{width:100%;border-collapse:collapse;font-size:13px}
 thead tr{border-bottom:2px solid var(--border)}
@@ -340,6 +375,7 @@ tbody tr:hover{background:var(--surface2)}
 .summary-label{font-size:13px;font-weight:600;color:var(--text)}
 .summary-meta{font-size:11px;color:var(--text3);margin-top:1px}
 .summary-amount{font-family:'DM Mono',monospace;font-weight:700;color:var(--text);font-size:14px}
+.summary-avg{font-size:11px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace}
 
 /* collapse toggles */
 .collapse-header{
@@ -434,16 +470,29 @@ tbody tr:hover{background:var(--surface2)}
 .bc-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;cursor:pointer}
 .bc-bar{
   width:100%;border-radius:6px 6px 0 0;
-  background:linear-gradient(180deg,#1a56db,#0ea5e9);
   transition:opacity .2s;
-  min-height:4px;
+  min-height:4px;position:relative;
 }
 .bc-bar:hover{opacity:.8}
-.bc-bar.highlight{background:linear-gradient(180deg,#f59e0b,#fbbf24)}
+.bc-bar-fixed{
+  position:absolute;bottom:0;left:0;right:0;
+  background:var(--fixed-color);
+  border-radius:6px 6px 0 0;
+}
+.bc-bar-variable{
+  position:absolute;left:0;right:0;
+  background:var(--variable-color);
+  border-radius:6px 6px 0 0;
+}
 .bc-label{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;text-align:center}
 .bc-value{font-size:9px;color:var(--text2);font-family:'DM Mono',monospace;text-align:center}
 .bar-x-axis{display:flex;gap:5px;padding-top:4px;border-top:1px solid var(--border)}
 .bar-x-item{flex:1;text-align:center;font-size:9px;color:var(--text3);font-family:'DM Mono',monospace}
+
+/* Chart legend */
+.chart-legend{display:flex;gap:12px;margin-top:10px;justify-content:center;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+.legend-box{width:12px;height:12px;border-radius:3px}
 
 /* pie chart */
 .pie-wrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
@@ -479,6 +528,11 @@ tbody tr:hover{background:var(--surface2)}
   #loadingOverlay,#lockScreen,#topBar,#drawer,#drawerOverlay,#cacheBadge,#actionModal{display:none!important}
   .page{display:block!important;padding:0}
   body{background:#fff}
+  .hero-card,.card{page-break-inside:avoid}
+  .bc-bar-fixed,.bc-bar-variable{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .mini-bar{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  svg,canvas{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  *{print-color-adjust:exact;-webkit-print-color-adjust:exact;color-adjust:exact}
 }
 </style>
 </head>
@@ -604,20 +658,6 @@ tbody tr:hover{background:var(--surface2)}
     <div class="mini-bars" id="bars"></div>
   </div>
 
-  <!-- Month/Year Filter -->
-  <div class="card">
-    <div class="card-title">
-      <div class="card-title-text">
-        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        View Period
-      </div>
-    </div>
-    <div class="filter-row">
-      <select class="field-input" id="viewYear" onchange="renderAll()" style="flex:1"></select>
-      <select class="field-input" id="viewMonth" onchange="renderAll()" style="flex:1"></select>
-    </div>
-  </div>
-
   <!-- Manage Nature -->
   <div class="card">
     <div class="collapse-header" onclick="toggleCollapse('natureSection','natureChevron')">
@@ -664,7 +704,7 @@ tbody tr:hover{background:var(--surface2)}
       <div class="field-row">
         <div class="field-group">
           <div class="field-label">Category</div>
-          <select class="field-input" id="category">
+          <select class="field-input" id="category" onchange="toggleRecurringControls()">
             <option>Fixed</option>
             <option>Variable</option>
           </select>
@@ -678,6 +718,36 @@ tbody tr:hover{background:var(--surface2)}
           </select>
         </div>
       </div>
+      
+      <!-- Recurring Expense Controls (shown only for Fixed) -->
+      <div id="recurringControls" class="recurring-controls hidden">
+        <div class="recurring-label">🔁 Recurring Settings</div>
+        <div class="field-group" style="margin-bottom:8px">
+          <select class="field-input" id="recurringType" onchange="toggleMonthSelection()">
+            <option value="None">One-time (No Recurrence)</option>
+            <option value="AllYear">Throughout the Year (12 months)</option>
+            <option value="Specific">Specific Months</option>
+          </select>
+        </div>
+        <div id="monthSelectionArea" class="hidden">
+          <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600">Select Months:</div>
+          <div class="month-checkbox-grid">
+            <div class="month-checkbox"><input type="checkbox" id="m0" value="0"><label for="m0">Jan</label></div>
+            <div class="month-checkbox"><input type="checkbox" id="m1" value="1"><label for="m1">Feb</label></div>
+            <div class="month-checkbox"><input type="checkbox" id="m2" value="2"><label for="m2">Mar</label></div>
+            <div class="month-checkbox"><input type="checkbox" id="m3" value="3"><label for="m3">Apr</label></div>
+            <div class="month-checkbox"><input type="checkbox" id="m4" value="4"><label for="m4">May</label></div>
+            <div class="month-checkbox"><input type="checkbox" id="m5" value="5"><label for="m5">Jun</label></div>
+            <div class="month-checkbox"><input type="checkbox" id="m6" value="6"><label for="m6">Jul</label></div>
+            <div class="month-checkbox"><input type="checkbox" id="m7" value="7"><label for="m7">Aug</label></div>
+            <div class="month-checkbox"><input type="checkbox" id="m8" value="8"><label for="m8">Sep</label></div>
+            <div class="month-checkbox"><input type="checkbox" id="m9" value="9"><label for="m9">Oct</label></div>
+            <div class="month-checkbox"><input type="checkbox" id="m10" value="10"><label for="m10">Nov</label></div>
+            <div class="month-checkbox"><input type="checkbox" id="m11" value="11"><label for="m11">Dec</label></div>
+          </div>
+        </div>
+      </div>
+
       <div class="field-group">
         <div class="field-label">Description</div>
         <input class="field-input" id="description" placeholder="What was this expense for?">
@@ -690,7 +760,7 @@ tbody tr:hover{background:var(--surface2)}
     </div>
   </div>
 
-  <!-- Filters -->
+  <!-- Filters (NOW INCLUDES VIEW PERIOD) -->
   <div class="card">
     <div class="collapse-header" onclick="toggleCollapse('filterSection','filterChevron')">
       <div class="card-title-text" style="font-size:14px;font-weight:700">
@@ -702,6 +772,23 @@ tbody tr:hover{background:var(--surface2)}
       </div>
     </div>
     <div id="filterSection" class="hidden" style="margin-top:14px">
+      <!-- View Period Filter (Moved Here) -->
+      <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+        <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px;display:flex;align-items:center;gap:6px">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          VIEW PERIOD
+        </div>
+        <div class="field-group" style="margin-bottom:8px">
+          <div class="field-label">Year</div>
+          <select class="field-input" id="viewYear" onchange="renderAll()"></select>
+        </div>
+        <div class="field-group" style="margin-bottom:0">
+          <div class="field-label">Months (Multi-Select)</div>
+          <div class="month-pills" id="monthPills"></div>
+        </div>
+      </div>
+
+      <!-- Other Filters -->
       <div class="filter-row">
         <select id="fCategory" onchange="renderEntries()">
           <option value="">All Categories</option>
@@ -801,6 +888,16 @@ tbody tr:hover{background:var(--surface2)}
       </div>
     </div>
     <div id="barChartArea"></div>
+    <div class="chart-legend">
+      <div class="legend-item">
+        <div class="legend-box" style="background:var(--fixed-color)"></div>
+        <span>Fixed</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-box" style="background:var(--variable-color)"></div>
+        <span>Variable</span>
+      </div>
+    </div>
   </div>
 
   <!-- Top Category Pie Chart -->
@@ -864,7 +961,7 @@ tbody tr:hover{background:var(--surface2)}
 // ── CONSTANTS ─────────────────────────────────────────
 const API_URL="https://script.google.com/macros/s/AKfycbxYy0h-Nn-qfg5-_wDwif-LjleQt01M4Nula3IxzUQ1jeBfF_mNKAIvFcD5Q4r1294Y/exec";
 const FAMILY_PASSWORD="spendboard2024";
-const months=["All Months","January","February","March","April","May","June","July","August","September","October","November","December"];
+const months=["January","February","March","April","May","June","July","August","September","October","November","December"];
 const shortM=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const PIE_COLORS=["#1a56db","#0ea5e9","#10b981","#f59e0b","#ef4444","#8b5cf6","#ec4899","#06b6d4","#84cc16","#f97316"];
 
@@ -872,6 +969,7 @@ let expenses=[];
 let natures=[];
 let pendingActionId=null;
 let pressTimer=null;
+let selectedMonths=[]; // For multi-month filter
 
 // ── STARS ON LOCK SCREEN ──────────────────────────────
 function makeLockStars(){
@@ -900,12 +998,7 @@ function showPage(name){
   document.querySelectorAll('.drawer-item').forEach(i=>i.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   document.getElementById('nav-'+name).classList.add('active');
-  if(name==='analytics'){
-    setTimeout(()=>{
-      populateAnalyticsYearSelects();
-      renderAnalytics();
-    },50);
-  }
+  if(name==='analytics')renderAnalytics();
 }
 
 // ── GREETING ──────────────────────────────────────────
@@ -1040,10 +1133,19 @@ function closeActionModal(){
   pendingActionId=null;
 }
 function actionEdit(){closeActionModal();if(pendingActionId!==null)editExpense(pendingActionId);}
-function actionDelete(){
+async function actionDelete(){
   const id=pendingActionId;closeActionModal();
   if(id===null)return;
   if(!confirm('Delete this expense?'))return;
+  
+  // Send DELETE request to backend
+  try{
+    await fetch(API_URL,{
+      method:'POST',
+      body:JSON.stringify({action:'delete',id:id})
+    });
+  }catch(e){console.log('Delete error',e);}
+  
   expenses=expenses.filter(e=>e.id!=id);
   renderAll();
 }
@@ -1071,7 +1173,50 @@ function compact(n){
 }
 function years(){return [...new Set(expenses.map(e=>e.date&&e.date.substring(0,4)).filter(Boolean))].sort().reverse();}
 
-async function save(){}
+// ── RECURRING EXPENSE CONTROLS ────────────────────────
+function toggleRecurringControls(){
+  const cat=document.getElementById('category').value;
+  const rc=document.getElementById('recurringControls');
+  if(cat==='Fixed'){
+    rc.classList.remove('hidden');
+  }else{
+    rc.classList.add('hidden');
+  }
+}
+function toggleMonthSelection(){
+  const rt=document.getElementById('recurringType').value;
+  const ms=document.getElementById('monthSelectionArea');
+  if(rt==='Specific'){
+    ms.classList.remove('hidden');
+  }else{
+    ms.classList.add('hidden');
+  }
+}
+
+// ── MONTH FILTER PILLS ────────────────────────────────
+function renderMonthPills(){
+  const pills=document.getElementById('monthPills');
+  pills.innerHTML='';
+  months.forEach((m,i)=>{
+    const pill=document.createElement('div');
+    pill.className='month-pill';
+    pill.textContent=m.substring(0,3);
+    pill.dataset.month=i;
+    if(selectedMonths.includes(i))pill.classList.add('selected');
+    pill.onclick=()=>toggleMonth(i);
+    pills.appendChild(pill);
+  });
+}
+function toggleMonth(m){
+  if(selectedMonths.includes(m)){
+    selectedMonths=selectedMonths.filter(x=>x!==m);
+  }else{
+    selectedMonths.push(m);
+  }
+  selectedMonths.sort((a,b)=>a-b);
+  renderMonthPills();
+  renderAll();
+}
 
 // ── NATURE ────────────────────────────────────────────
 async function addNature(){
@@ -1121,20 +1266,24 @@ function renderFilters(){
   ty.innerHTML='';vy.innerHTML='';
   years().forEach(y=>{ty.innerHTML+=`<option>${y}</option>`;vy.innerHTML+=`<option>${y}</option>`;});
   if(years().length){ty.value=years()[0];vy.value=years()[0];}
-  const vm=document.getElementById('viewMonth');
-  vm.innerHTML='';
-  months.forEach((m,i)=>{vm.innerHTML+=i===0?`<option value="all">${m}</option>`:`<option value="${i-1}">${m}</option>`;});
-  if(!vm.value)vm.value='all';
+  
+  // Initialize month pills (all selected by default)
+  if(selectedMonths.length===0){
+    selectedMonths=[0,1,2,3,4,5,6,7,8,9,10,11];
+  }
+  renderMonthPills();
 }
+
 function currentData(){
   const y=document.getElementById('viewYear').value;
-  const m=document.getElementById('viewMonth').value;
+  // Multi-month filter
+  if(selectedMonths.length===0)return []; // No months selected
   return expenses.filter(e=>{
     const d=new Date(e.date);
-    if(m==='all')return d.getFullYear()==y;
-    return d.getFullYear()==y&&d.getMonth()==m;
+    return d.getFullYear()==y&&selectedMonths.includes(d.getMonth());
   });
 }
+
 function filteredData(){
   const fc=document.getElementById('fCategory').value;
   const fn=document.getElementById('fNature').value;
@@ -1154,7 +1303,6 @@ function filteredData(){
 // ── RENDER TOP ────────────────────────────────────────
 function renderTop(){
   const y=document.getElementById('topYear').value;
-  const vm=document.getElementById('viewMonth').value;
   const data=expenses.filter(e=>e.date&&e.date.substring(0,4)===y);
   const total=data.reduce((a,b)=>a+Number(b.amount||0),0);
   document.getElementById('totalSpend').textContent='₹'+indian(total);
@@ -1165,7 +1313,7 @@ function renderTop(){
   bars.innerHTML='';
   monthly.forEach((v,i)=>{
     const h=Math.round((v/max)*36);
-    const isActive=vm==i;
+    const isActive=selectedMonths.includes(i);
     bars.innerHTML+=`<div class="mini-bar-wrap"><div class="mini-bar${isActive?' active-bar':''}" style="height:${Math.max(h,3)}px"></div><div class="mini-label">${shortM[i][0]}</div></div>`;
   });
   const cnt=data.length;
@@ -1228,31 +1376,99 @@ function renderNatureSummary(){
   let grand=0;
   const ns=document.getElementById('natureSummary');
   if(!arr.length){ns.innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:12px">No data</div>';return;}
-  ns.innerHTML=`<div class="summary-grid">${arr.map(([k,v])=>{grand+=v.total;return `<div class="summary-row"><div><div class="summary-label">${k}</div><div class="summary-meta">${v.count} transaction${v.count!==1?'s':''}</div></div><div class="summary-amount">₹${indian(v.total)}</div></div>`}).join('')}</div>
+  ns.innerHTML=`<div class="summary-grid">${arr.map(([k,v])=>{
+    grand+=v.total;
+    const avg=Math.round(v.total/v.count);
+    return `<div class="summary-row">
+      <div>
+        <div class="summary-label">${k}</div>
+        <div class="summary-meta">${v.count} transaction${v.count!==1?'s':''}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="summary-amount">₹${indian(v.total)}</div>
+        <div class="summary-avg">avg ₹${indian(avg)}</div>
+      </div>
+    </div>`
+  }).join('')}</div>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding:14px;background:var(--accent);border-radius:12px"><span style="font-weight:700;color:#fff;font-size:14px">Total</span><span style="font-family:'DM Mono',monospace;font-weight:800;color:#fff;font-size:16px">₹${indian(grand)}</span></div>`;
 }
 
 // ── SAVE EXPENSE ──────────────────────────────────────
 async function saveExpense(){
-  const obj={
-    id:document.getElementById('editId').value||Date.now(),
-    date:document.getElementById('date').value,
-    nature:document.getElementById('natureDD').value,
-    category:document.getElementById('category').value,
-    description:document.getElementById('description').value,
-    amount:Number(document.getElementById('amount').value||0),
-    paid:document.getElementById('paid').value
-  };
+  const cat=document.getElementById('category').value;
+  const recurringType=document.getElementById('recurringType').value;
+  const dateInput=document.getElementById('date').value;
+  const nature=document.getElementById('natureDD').value;
+  const description=document.getElementById('description').value;
+  const amount=Number(document.getElementById('amount').value||0);
+  const paid=document.getElementById('paid').value;
   const eid=document.getElementById('editId').value;
-  if(eid)expenses=expenses.map(e=>e.id==eid?obj:e);
-  else expenses.push(obj);
-  await fetch(API_URL,{method:'POST',body:JSON.stringify(obj)});
+
+  // Check if recurring
+  if(cat==='Fixed'&&recurringType!=='None'&&!eid){
+    // Create multiple entries
+    let monthsToCreate=[];
+    if(recurringType==='AllYear'){
+      monthsToCreate=[0,1,2,3,4,5,6,7,8,9,10,11];
+    }else if(recurringType==='Specific'){
+      // Get selected months
+      for(let i=0;i<12;i++){
+        const cb=document.getElementById('m'+i);
+        if(cb&&cb.checked)monthsToCreate.push(i);
+      }
+    }
+    
+    if(monthsToCreate.length===0){
+      alert('Please select at least one month for recurring expense.');
+      return;
+    }
+
+    // Get year from date input
+    const year=new Date(dateInput).getFullYear();
+    
+    // Create entries for each month
+    for(const month of monthsToCreate){
+      const firstDay=new Date(year,month,1);
+      const dateStr=firstDay.toISOString().substring(0,10);
+      const obj={
+        id:Date.now()+Math.random(),
+        date:dateStr,
+        nature:nature,
+        category:cat,
+        description:description,
+        amount:amount,
+        paid:paid,
+        recurringType:recurringType,
+        recurringMonths:monthsToCreate.join(',')
+      };
+      expenses.push(obj);
+      await fetch(API_URL,{method:'POST',body:JSON.stringify(obj)});
+    }
+  }else{
+    // Single entry (regular or edit)
+    const obj={
+      id:eid||Date.now(),
+      date:dateInput,
+      nature:nature,
+      category:cat,
+      description:description,
+      amount:amount,
+      paid:paid,
+      recurringType:cat==='Fixed'?recurringType:'None',
+      recurringMonths:''
+    };
+    if(eid)expenses=expenses.map(e=>e.id==eid?obj:e);
+    else expenses.push(obj);
+    await fetch(API_URL,{method:'POST',body:JSON.stringify(obj)});
+  }
+
   await loadExpenses();
   clearForm();
   // Open entries after save
   const es=document.getElementById('entrySection');
   if(es.classList.contains('hidden')){es.classList.remove('hidden');document.getElementById('entryChevron').classList.add('open');}
 }
+
 function clearForm(){
   document.getElementById('editId').value='';
   document.getElementById('date').value='';
@@ -1260,8 +1476,17 @@ function clearForm(){
   document.getElementById('amount').value='';
   document.getElementById('category').value='Fixed';
   document.getElementById('paid').value='Cash';
+  document.getElementById('recurringType').value='None';
   document.getElementById('saveBtn').textContent='Add Expense';
+  // Uncheck all month checkboxes
+  for(let i=0;i<12;i++){
+    const cb=document.getElementById('m'+i);
+    if(cb)cb.checked=false;
+  }
+  toggleRecurringControls();
+  toggleMonthSelection();
 }
+
 function editExpense(id){
   const e=expenses.find(x=>x.id==id);if(!e)return;
   document.getElementById('editId').value=e.id;
@@ -1272,6 +1497,7 @@ function editExpense(id){
   document.getElementById('amount').value=e.amount;
   document.getElementById('paid').value=e.paid;
   document.getElementById('saveBtn').textContent='Save Changes';
+  toggleRecurringControls();
   // Open add section
   const as=document.getElementById('addSection');
   if(as.classList.contains('hidden')){as.classList.remove('hidden');document.getElementById('addChevron').classList.add('open');}
