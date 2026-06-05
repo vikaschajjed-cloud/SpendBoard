@@ -1455,7 +1455,7 @@ async function saveExpense(){
       amount:amount,
       paid:paid,
       recurringType:cat==='Fixed'?recurringType:'None',
-      recurringMonths:''
+      recurringMonths:(cat==='Fixed'?(e&&e.recurringMonths?e.recurringMonths:''):'')
     };
     if(eid)expenses=expenses.map(e=>e.id==eid?obj:e);
     else expenses.push(obj);
@@ -1489,6 +1489,7 @@ function clearForm(){
 
 function editExpense(id){
   const e=expenses.find(x=>x.id==id);if(!e)return;
+
   document.getElementById('editId').value=e.id;
   document.getElementById('date').value=e.date;
   document.getElementById('natureDD').value=e.nature;
@@ -1496,8 +1497,30 @@ function editExpense(id){
   document.getElementById('description').value=e.description;
   document.getElementById('amount').value=e.amount;
   document.getElementById('paid').value=e.paid;
+
+  if(document.getElementById('recurringType')){
+    document.getElementById('recurringType').value=e.recurringType||'None';
+  }
+
+  for(let i=0;i<12;i++){
+    const cb=document.getElementById('m'+i);
+    if(cb)cb.checked=false;
+  }
+
+  if(e.recurringMonths){
+    e.recurringMonths.toString().split(',').forEach(m=>{
+      const cb=document.getElementById('m'+m.trim());
+      if(cb)cb.checked=true;
+    });
+  }
+
   document.getElementById('saveBtn').textContent='Save Changes';
+
   toggleRecurringControls();
+
+  if(typeof toggleMonthSelection==='function'){
+    toggleMonthSelection();
+  }
   // Open add section
   const as=document.getElementById('addSection');
   if(as.classList.contains('hidden')){as.classList.remove('hidden');document.getElementById('addChevron').classList.add('open');}
