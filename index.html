@@ -1436,47 +1436,26 @@ async function saveExpense(){
   const year=parsedDate.getFullYear();
 
   if(cat==='Fixed'&&monthsToCreate.length>0){
-    // ── RECURRING: create/update one entry per selected month ──
-    // If editing (eid exists), update the current row for its own month,
-    // then CREATE new rows for any additional months that don't already exist.
-    const existingMonthIds={};
+    // ── RECURRING: create one entry per selected month ──
+    // If editing, DELETE the original entry first, then create fresh entries for all months.
     if(eid){
-      // Record which month the edited entry belongs to so we update it, not duplicate
-      const editedEntry=expenses.find(x=>x.id==eid);
-      if(editedEntry){
-        const editedMonth=new Date(editedEntry.date+'T00:00:00').getMonth();
-        existingMonthIds[editedMonth]=eid;
-      }
+      expenses=expenses.filter(ex=>ex.id!=eid);
+      await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'delete',id:eid})});
     }
 
     const recurMonthsStr=monthsToCreate.join(',');
 
     for(const month of monthsToCreate){
-      // Build date as YYYY-MM-DD directly (no UTC conversion)
       const mm=String(month+1).padStart(2,'0');
       const dateStr=`${year}-${mm}-01`;
-
-      if(existingMonthIds[month]){
-        // Update the existing entry for this month
-        const updObj={
-          id:existingMonthIds[month],
-          date:dateStr,
-          nature,category:cat,description,amount,paid,
-          recurringType,recurringMonths:recurMonthsStr
-        };
-        expenses=expenses.map(ex=>ex.id==existingMonthIds[month]?updObj:ex);
-        await fetch(API_URL,{method:'POST',body:JSON.stringify(updObj)});
-      }else{
-        // Create new entry for this month
-        const newId=Date.now()+month+Math.random();
-        const newObj={
-          id:newId,date:dateStr,
-          nature,category:cat,description,amount,paid,
-          recurringType,recurringMonths:recurMonthsStr
-        };
-        expenses.push(newObj);
-        await fetch(API_URL,{method:'POST',body:JSON.stringify(newObj)});
-      }
+      const newId=Date.now()+month+Math.random();
+      const newObj={
+        id:newId,date:dateStr,
+        nature,category:cat,description,amount,paid,
+        recurringType,recurringMonths:recurMonthsStr
+      };
+      expenses.push(newObj);
+      await fetch(API_URL,{method:'POST',body:JSON.stringify(newObj)});
     }
   }else{
     // ── SINGLE ENTRY (new non-recurring, or edit without recurring) ──
