@@ -1521,102 +1521,106 @@ function renderAnalytics(){
   renderFixedDash();
 }
 
+
 function populateAnalyticsYearSelects(){
   const yr=years();
   const cy=document.getElementById('chartYear');
   const py=document.getElementById('pieYear');
   const fy=document.getElementById('fixedYear');
 
-  if(!cy || !py || !fy)return;
-
-  cy.innerHTML='';
-  py.innerHTML='';
-  fy.innerHTML='';
+  if(cy){cy.innerHTML='';}
+  if(py){py.innerHTML='';}
+  if(fy){fy.innerHTML='';}
 
   yr.forEach(y=>{
-    cy.innerHTML+=`<option>${y}</option>`;
-    py.innerHTML+=`<option>${y}</option>`;
-    fy.innerHTML+=`<option>${y}</option>`;
+    if(cy)cy.innerHTML+=`<option>${y}</option>`;
+    if(py)py.innerHTML+=`<option>${y}</option>`;
+    if(fy)fy.innerHTML+=`<option>${y}</option>`;
   });
 
-  const wm=document.getElementById('chartWeekMonth');
-  if(wm){
-    wm.innerHTML='';
-    months.slice(1).forEach((m,i)=>{
-      wm.innerHTML+=`<option value="${i}">${m}</option>`;
-    });
+  if(yr.length){
+    if(cy)cy.value=yr[0];
+    if(py)py.value=yr[0];
+    if(fy)fy.value=yr[0];
   }
 }
 
+
 function renderAnalyticsStats(){
-  const yr=document.getElementById('chartYear').value||years()[0];
-  const data=expenses.filter(e=>e.date&&e.date.substring(0,4)===yr);
+  const data=currentData();
   const total=data.reduce((a,b)=>a+Number(b.amount||0),0);
   const fixed=data.filter(e=>e.category==='Fixed').reduce((a,b)=>a+Number(b.amount||0),0);
-  const variable=data.filter(e=>e.category==='Variable').reduce((a,b)=>a+Number(b.amount||0),0);
+  const variable=total-fixed;
   const avg=data.length?Math.round(total/data.length):0;
-  document.getElementById('analyticsStats').innerHTML=`
-  <div class="stat-pill"><div class="stat-pill-label">Total ${yr}</div><div class="stat-pill-value">₹${compact(total)}</div><div class="stat-pill-sub">${data.length} transactions</div></div>
-  <div class="stat-pill"><div class="stat-pill-label">Fixed</div><div class="stat-pill-value">₹${compact(fixed)}</div><div class="stat-pill-sub">Recurring</div></div>
-  <div class="stat-pill" style="display:none"></div>
-  <div class="stat-pill"><div class="stat-pill-label">Variable</div><div class="stat-pill-value">₹${compact(variable)}</div><div class="stat-pill-sub">Discretionary</div></div>`;
-  // re-render as 2-col
-  document.getElementById('analyticsStats').innerHTML=`
-  <div class="stat-pill"><div class="stat-pill-label">Total ${yr}</div><div class="stat-pill-value">₹${compact(total)}</div><div class="stat-pill-sub">${data.length} entries</div></div>
-  <div class="stat-pill"><div class="stat-pill-label">Avg per Entry</div><div class="stat-pill-value">₹${compact(avg)}</div><div class="stat-pill-sub">All categories</div></div>
-  <div class="stat-pill"><div class="stat-pill-label">Fixed Total</div><div class="stat-pill-value">₹${compact(fixed)}</div><div class="stat-pill-sub">${Math.round(total?fixed/total*100:0)}% of total</div></div>
-  <div class="stat-pill"><div class="stat-pill-label">Variable Total</div><div class="stat-pill-value">₹${compact(variable)}</div><div class="stat-pill-sub">${Math.round(total?variable/total*100:0)}% of total</div></div>`;
-}
 
-// ── BAR CHART ─────────────────────────────────────────
+  document.getElementById('analyticsStats').innerHTML=`
+  <div class="stat-pill">
+    <div class="stat-pill-label">Total Spend</div>
+    <div class="stat-pill-value">₹${indian(total)}</div>
+    <div class="stat-pill-sub">${data.length} transactions</div>
+  </div>
+  <div class="stat-pill">
+    <div class="stat-pill-label">Average</div>
+    <div class="stat-pill-value">₹${indian(avg)}</div>
+    <div class="stat-pill-sub">per transaction</div>
+  </div>
+  <div class="stat-pill">
+    <div class="stat-pill-label">Fixed</div>
+    <div class="stat-pill-value">₹${indian(fixed)}</div>
+    <div class="stat-pill-sub">${total?Math.round(fixed/total*100):0}% of spend</div>
+  </div>
+  <div class="stat-pill">
+    <div class="stat-pill-label">Variable</div>
+    <div class="stat-pill-value">₹${indian(variable)}</div>
+    <div class="stat-pill-sub">${total?Math.round(variable/total*100):0}% of spend</div>
+  </div>`;
+}
 
 function renderBarChart(){
   const yr=document.getElementById('chartYear').value||years()[0];
   const mode=document.getElementById('chartMode').value;
-  const wmSel=document.getElementById('chartWeekMonth');
-  const wmField=document.getElementById('chartWeekMonth');
+  const wm=document.getElementById('chartWeekMonth');
 
-  if(mode==='weekly'){wmField.style.display='';}
-  else{wmField.style.display='none';}
-
-  renderAnalyticsStats();
+  if(mode==='weekly'){
+    wm.style.display='';
+    wm.innerHTML=months.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+  }else{
+    wm.style.display='none';
+  }
 
   const area=document.getElementById('barChartArea');
 
   let labels=[],fixedVals=[],variableVals=[];
 
   if(mode==='monthly'){
+    labels=shortM;
     fixedVals=Array(12).fill(0);
     variableVals=Array(12).fill(0);
 
     expenses.filter(e=>e.date&&e.date.substring(0,4)===yr)
     .forEach(e=>{
       const m=new Date(e.date).getMonth();
-      if(e.category==='Fixed') fixedVals[m]+=Number(e.amount||0);
+      if(e.category==='Fixed')fixedVals[m]+=Number(e.amount||0);
       else variableVals[m]+=Number(e.amount||0);
     });
 
-    labels=shortM;
-
   }else{
-
-    const selMonth=parseInt(wmSel.value||0);
-
+    labels=['W1','W2','W3','W4','W5'];
     fixedVals=[0,0,0,0,0];
     variableVals=[0,0,0,0,0];
-    labels=['W1','W2','W3','W4','W5'];
+
+    const sm=parseInt(wm.value||0);
 
     expenses.forEach(e=>{
       if(!e.date)return;
-
       const d=new Date(e.date);
 
-      if(d.getFullYear()!=yr || d.getMonth()!=selMonth)return;
+      if(d.getFullYear()!=yr || d.getMonth()!=sm)return;
 
-      const week=Math.min(4, Math.floor((d.getDate()-1)/7));
+      const w=Math.min(4,Math.floor((d.getDate()-1)/7));
 
-      if(e.category==='Fixed') fixedVals[week]+=Number(e.amount||0);
-      else variableVals[week]+=Number(e.amount||0);
+      if(e.category==='Fixed')fixedVals[w]+=Number(e.amount||0);
+      else variableVals[w]+=Number(e.amount||0);
     });
   }
 
@@ -1624,162 +1628,137 @@ function renderBarChart(){
   const max=Math.max(...totals,1);
 
   area.innerHTML=`
-  <div class="bar-chart-area" style="height:140px">
-    ${labels.map((l,i)=>{
-      const fixedH=Math.max(2,Math.round((fixedVals[i]/max)*100));
-      const variableH=Math.max(variableVals[i]>0?2:0,Math.round((variableVals[i]/max)*100));
-
-      return `
-      <div class="bc-col" title="${l}: Fixed ₹${indian(fixedVals[i])} | Variable ₹${indian(variableVals[i])}">
-        <div class="bc-value">${totals[i]>0?'₹'+compact(totals[i]):'₹0'}</div>
-
-        <div style="width:100%;display:flex;flex-direction:column;justify-content:flex-end;height:110px">
-          <div style="
-            height:${variableH}px;
-            background:linear-gradient(180deg,#10b981,#34d399);
-            border-radius:6px 6px 0 0;
-            width:100%;
-          "></div>
-
-          <div style="
-            height:${fixedH}px;
-            background:linear-gradient(180deg,#1a56db,#0ea5e9);
-            width:100%;
-            border-radius:${variableVals[i]===0?'6px 6px 0 0':'0'};
-          "></div>
-        </div>
-      </div>`;
-    }).join('')}
-  </div>
-
-  <div class="bar-x-axis">
-    ${labels.map(l=>`<div class="bar-x-item">${l}</div>`).join('')}
-  </div>
-
-  <div style="display:flex;gap:14px;margin-top:12px;font-size:11px;color:var(--text2)">
-    <div style="display:flex;align-items:center;gap:6px">
-      <div style="width:10px;height:10px;border-radius:50%;background:#1a56db"></div>
-      Fixed
-    </div>
-    <div style="display:flex;align-items:center;gap:6px">
-      <div style="width:10px;height:10px;border-radius:50%;background:#10b981"></div>
-      Variable
-    </div>
-  </div>`;
-}
-
-
-// ── PIE CHART ─────────────────────────────────────────
-function renderPieChart(){
-  const filter=document.getElementById('pieFilter').value;
-  const yr=document.getElementById('pieYear').value||years()[0];
-  const now=new Date();
-
-  let data=expenses;
-  if(filter==='current'){
-    data=expenses.filter(e=>{if(!e.date)return false;const d=new Date(e.date);return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();});
-  }else if(filter==='all'){
-    data=expenses.filter(e=>e.date&&e.date.substring(0,4)===yr);
-  }else{
-    const m=parseInt(filter)-1;
-    data=expenses.filter(e=>{if(!e.date)return false;const d=new Date(e.date);return d.getFullYear()==yr&&d.getMonth()===m;});
-  }
-
-  const obj={};
-  data.forEach(e=>{
-    if(!obj[e.nature])obj[e.nature]=0;
-    obj[e.nature]+=Number(e.amount||0);
-  });
-  const arr=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  const total=arr.reduce((a,b)=>a+b[1],0);
-
-  const area=document.getElementById('pieChartArea');
-  if(!arr.length){area.innerHTML='<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px">No data for selected period.</div>';return;}
-
-  // Build SVG donut
-  const R=60,r=36,cx=70,cy=70;
-  let startAngle=-Math.PI/2;
-  let slices='';
-  arr.forEach(([name,val],i)=>{
-    const angle=(val/total)*2*Math.PI;
-    const x1=cx+R*Math.cos(startAngle),y1=cy+R*Math.sin(startAngle);
-    startAngle+=angle;
-    const x2=cx+R*Math.cos(startAngle),y2=cy+R*Math.sin(startAngle);
-    const xi1=cx+r*Math.cos(startAngle-angle),yi1=cy+r*Math.sin(startAngle-angle);
-    const xi2=cx+r*Math.cos(startAngle),yi2=cy+r*Math.sin(startAngle);
-    const large=angle>Math.PI?1:0;
-    slices+=`<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${R},${R} 0 ${large},1 ${x2.toFixed(1)},${y2.toFixed(1)} L${xi2.toFixed(1)},${yi2.toFixed(1)} A${r},${r} 0 ${large},0 ${xi1.toFixed(1)},${yi1.toFixed(1)} Z" fill="${PIE_COLORS[i%PIE_COLORS.length]}" opacity=".9"/>`;
-  });
-
-  const legend=arr.map(([name,val],i)=>`
-  <div class="pie-legend-item">
-    <div class="pie-dot" style="background:${PIE_COLORS[i%PIE_COLORS.length]}"></div>
-    <div class="pie-legend-name">${name}</div>
-    <div class="pie-legend-val">₹${compact(val)}</div>
-  </div>`).join('');
-
-  area.innerHTML=`<div class="pie-wrap">
-  <div class="pie-svg-wrap">
-    <svg width="140" height="140" viewBox="0 0 140 140">
-      ${slices}
-      <circle cx="${cx}" cy="${cy}" r="28" fill="white"/>
-      <text x="${cx}" y="${cy-4}" text-anchor="middle" font-family="DM Mono,monospace" font-size="9" font-weight="700" fill="#0f172a">${compact(total)}</text>
-      <text x="${cx}" y="${cy+10}" text-anchor="middle" font-family="Sora,sans-serif" font-size="7" fill="#94a3b8">Total</text>
-    </svg>
-  </div>
-  <div class="pie-legend">${legend}</div>
-  </div>`;
-}
-
-// ── FIXED EXPENSES DASH ───────────────────────────────
-function renderFixedDash(){
-  const filter=document.getElementById('fixedFilter').value;
-  const yr=document.getElementById('fixedYear').value||years()[0];
-  const now=new Date();
-
-  let data=expenses.filter(e=>e.category==='Fixed');
-  if(filter==='current'){
-    data=data.filter(e=>{if(!e.date)return false;const d=new Date(e.date);return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();});
-  }else if(filter==='all'){
-    data=data.filter(e=>e.date&&e.date.substring(0,4)===yr);
-  }else{
-    const m=parseInt(filter)-1;
-    data=data.filter(e=>{if(!e.date)return false;const d=new Date(e.date);return d.getFullYear()==yr&&d.getMonth()===m;});
-  }
-
-  const area=document.getElementById('fixedDashArea');
-  if(!data.length){area.innerHTML='<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px">No fixed expenses for selected period.</div>';return;}
-
-  const total=data.reduce((a,b)=>a+Number(b.amount||0),0);
-  const sorted=[...data].sort((a,b)=>Number(b.amount||0)-Number(a.amount||0));
-
-  area.innerHTML=`
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--accent-soft);border-radius:10px;margin-bottom:12px">
-    <span style="font-size:13px;font-weight:700;color:var(--accent)">Total Fixed</span>
-    <span style="font-family:'DM Mono',monospace;font-weight:800;color:var(--accent);font-size:16px">₹${indian(total)}</span>
-  </div>
-  <div class="fixed-list">
-  ${sorted.map(e=>{
-    const d=new Date(e.date);
-    const pct=Math.round(total?e.amount/total*100:0);
-    return `<div class="fixed-item">
-      <div class="fixed-item-left">
-        <div class="fixed-item-name">${e.description||e.nature}</div>
-        <div class="fixed-item-meta">${String(d.getDate()).padStart(2,'0')} ${shortM[d.getMonth()]} ${d.getFullYear()} · ${e.nature} · ${e.paid} · ${pct}% of total</div>
+  <div class="bar-chart-area">
+  ${labels.map((l,i)=>{
+    const fh=Math.round((fixedVals[i]/max)*100);
+    const vh=Math.round((variableVals[i]/max)*100);
+    return `
+    <div class="bc-col">
+      <div class="bc-value">₹${compact(totals[i])}</div>
+      <div class="bc-bar" style="height:100px">
+        <div class="bc-bar-fixed" style="height:${fh}px"></div>
+        <div class="bc-bar-variable" style="height:${vh}px;bottom:${fh}px"></div>
       </div>
-      <div class="fixed-item-amount">₹${indian(e.amount)}</div>
+      <div class="bc-label">${l}</div>
     </div>`;
   }).join('')}
   </div>`;
 }
 
+function renderPieChart(){
+  const area=document.getElementById('pieChartArea');
+  const yr=document.getElementById('pieYear').value||years()[0];
+  const filter=document.getElementById('pieFilter').value;
+
+  let data=expenses.filter(e=>e.date&&e.date.substring(0,4)===yr);
+
+  if(filter==='current'){
+    const now=new Date().getMonth();
+    data=data.filter(e=>new Date(e.date).getMonth()===now);
+  }else if(filter!=='all'){
+    data=data.filter(e=>new Date(e.date).getMonth()===(parseInt(filter)-1));
+  }
+
+  const obj={};
+  data.forEach(e=>{
+    obj[e.nature]=(obj[e.nature]||0)+Number(e.amount||0);
+  });
+
+  const arr=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,6);
+
+  if(!arr.length){
+    area.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3)">No data</div>';
+    return;
+  }
+
+  const total=arr.reduce((a,b)=>a+b[1],0);
+
+  let current=0;
+
+  const circles=arr.map(([k,v],i)=>{
+    const pct=v/total;
+    const dash=pct*100;
+    const out=`${dash} ${100-dash}`;
+    const rot=current*360;
+    current+=pct;
+    return `<circle r="15.915" cx="21" cy="21"
+      stroke="${PIE_COLORS[i%PIE_COLORS.length]}"
+      stroke-dasharray="${out}"
+      stroke-dashoffset="25"
+      transform="rotate(${rot} 21 21)"
+      fill="none"
+      stroke-width="5"/>`;
+  }).join('');
+
+  area.innerHTML=`
+  <div class="pie-wrap">
+    <div class="pie-svg-wrap">
+      <svg viewBox="0 0 42 42" width="180" height="180">
+        ${circles}
+      </svg>
+    </div>
+    <div class="pie-legend">
+      ${arr.map(([k,v],i)=>`
+      <div class="pie-legend-item">
+        <div class="pie-dot" style="background:${PIE_COLORS[i%PIE_COLORS.length]}"></div>
+        <div class="pie-legend-name">${k}</div>
+        <div class="pie-legend-val">₹${compact(v)}</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderFixedDash(){
+  const area=document.getElementById('fixedDashArea');
+  const yr=document.getElementById('fixedYear').value||years()[0];
+  const filter=document.getElementById('fixedFilter').value;
+
+  let data=expenses.filter(e=>e.category==='Fixed'&&e.date&&e.date.substring(0,4)===yr);
+
+  if(filter==='current'){
+    const now=new Date().getMonth();
+    data=data.filter(e=>new Date(e.date).getMonth()===now);
+  }else if(filter!=='all'){
+    data=data.filter(e=>new Date(e.date).getMonth()===(parseInt(filter)-1));
+  }
+
+  const obj={};
+
+  data.forEach(e=>{
+    if(!obj[e.nature])obj[e.nature]={count:0,total:0};
+    obj[e.nature].count++;
+    obj[e.nature].total+=Number(e.amount||0);
+  });
+
+  const arr=Object.entries(obj).sort((a,b)=>b[1].total-a[1].total);
+
+  if(!arr.length){
+    area.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3)">No fixed expenses</div>';
+    return;
+  }
+
+  area.innerHTML=`<div class="fixed-list">
+    ${arr.map(([k,v])=>`
+      <div class="fixed-item">
+        <div class="fixed-item-left">
+          <div class="fixed-item-name">${k}</div>
+          <div class="fixed-item-meta">${v.count} entries</div>
+        </div>
+        <div class="fixed-item-amount">₹${indian(v.total)}</div>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+
 // ── INIT ──────────────────────────────────────────────
 checkAuth();
-renderNatureControls();
-renderFilters();
-fetchNatureMaster().then(()=>renderNatureControls());
-setGreeting();
-if(localStorage.getItem('sb_auth')==='yes')loadExpenses();
+fetchNatureMaster().then(()=>{
+  renderNatureControls();
+  if(localStorage.getItem('sb_auth')==='yes'){
+    loadExpenses();
+  }
+});
 </script>
 </body>
 </html>
