@@ -524,6 +524,198 @@ tbody tr:hover{background:var(--surface2)}
 .stat-pill-value{font-size:18px;font-weight:800;color:var(--text);font-family:'DM Mono',monospace}
 .stat-pill-sub{font-size:11px;color:var(--text3);margin-top:2px}
 
+/* ── HERO TOGGLE SWITCH (Month / YTD) ── */
+.hero-toggle{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:99px;
+  padding:3px;
+  margin-bottom:6px;
+  width:fit-content;
+}
+.hero-toggle-btn{
+  padding:4px 12px;border-radius:99px;font-family:'Sora',sans-serif;
+  font-size:10px;font-weight:700;cursor:pointer;border:none;
+  transition:all .2s;letter-spacing:.03em;text-transform:uppercase;
+  background:transparent;color:rgba(255,255,255,.55);
+}
+.hero-toggle-btn.active{
+  background:rgba(255,255,255,.22);color:#fff;
+  box-shadow:0 1px 6px rgba(0,0,0,.18);
+}
+
+/* ── ANALYTICS STAT TOGGLE ── */
+.stat-toggle-row{
+  display:flex;justify-content:center;margin-bottom:12px;
+}
+.stat-toggle{
+  display:flex;background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:99px;padding:3px;gap:2px;
+}
+.stat-toggle-btn{
+  padding:5px 16px;border-radius:99px;font-family:'Sora',sans-serif;
+  font-size:11px;font-weight:700;cursor:pointer;border:none;
+  background:transparent;color:var(--text3);transition:all .2s;
+}
+.stat-toggle-btn.active{
+  background:var(--accent);color:#fff;
+  box-shadow:0 2px 8px rgba(26,86,219,.3);
+}
+
+/* ── ZAP ANIMATION ── */
+@keyframes zapSlide{
+  0%{left:-100%;opacity:0}
+  20%{opacity:1}
+  80%{opacity:1}
+  100%{left:110%;opacity:0}
+}
+@keyframes zapFadeIn{from{opacity:0;transform:translateY(-8px) scale(.96)}to{opacity:1;transform:none}}
+#zapOverlay{
+  position:fixed;inset:0;z-index:9000;pointer-events:none;
+  display:none;
+}
+#zapOverlay.zapping{display:block;}
+.zap-streak{
+  position:absolute;top:0;bottom:0;width:180px;
+  background:linear-gradient(90deg,transparent,rgba(251,191,36,.55),rgba(255,255,255,.9),rgba(251,191,36,.55),transparent);
+  animation:zapSlide 0.55s ease-in-out forwards;
+  left:-100%;
+}
+.zap-streak:nth-child(2){animation-delay:.08s;top:30%;bottom:30%;opacity:.7}
+.zap-streak:nth-child(3){animation-delay:.16s;width:80px;top:50%;bottom:40%;opacity:.5}
+#zapToast{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:linear-gradient(135deg,#0f172a,#1e3a5f);
+  border:1.5px solid rgba(251,191,36,.6);
+  border-radius:20px;padding:22px 32px;
+  text-align:center;z-index:9100;
+  box-shadow:0 8px 40px rgba(0,0,0,.45),0 0 60px rgba(251,191,36,.15);
+  display:none;
+  animation:zapFadeIn .3s ease forwards;
+  max-width:90vw;
+}
+#zapToast.show{display:block;}
+.zap-toast-icon{font-size:36px;line-height:1;margin-bottom:8px}
+.zap-toast-title{font-size:15px;font-weight:800;color:#fff;margin-bottom:4px}
+.zap-toast-sub{font-size:12px;color:rgba(255,255,255,.6)}
+
+/* ── BOOK BUTTON (redesigned) ── */
+.book-btn-wrap{position:relative;overflow:hidden;border-radius:16px;margin-top:4px}
+.book-btn{
+  width:100%;padding:16px 20px;
+  background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#1a56db 100%);
+  border:none;border-radius:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  font-family:'Sora',sans-serif;font-size:14px;font-weight:700;
+  color:#fff;letter-spacing:.02em;
+  box-shadow:0 4px 20px rgba(26,86,219,.35);
+  transition:transform .15s,box-shadow .15s;
+  position:relative;overflow:hidden;
+}
+.book-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(251,191,36,.0),rgba(251,191,36,.12),rgba(251,191,36,.0));
+  animation:btnShimmer 2.5s ease-in-out infinite;
+}
+@keyframes btnShimmer{
+  0%,100%{opacity:0;transform:translateX(-100%)}
+  50%{opacity:1;transform:translateX(100%)}
+}
+.book-btn:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(26,86,219,.45)}
+.book-btn:active{transform:translateY(0)}
+.book-btn-zap{
+  font-size:20px;
+  animation:zapPulse 1.2s ease-in-out infinite;
+  display:inline-block;
+}
+@keyframes zapPulse{
+  0%,100%{text-shadow:0 0 4px rgba(251,191,36,.4);transform:scale(1)}
+  50%{text-shadow:0 0 16px rgba(251,191,36,1);transform:scale(1.2)}
+}
+.book-btn-label{position:relative;z-index:1}
+
+/* book results */
+.book-result-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 14px;border-radius:10px;margin-bottom:6px;
+  font-size:12px;font-weight:600;
+}
+.book-result-ok{background:#d1fae5;color:#065f46}
+.book-result-skip{background:#fef3c7;color:#92400e}
+
+/* ── BEAUTIFUL BAR CHART ── */
+.bc-col-v2{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;gap:0;cursor:pointer;
+  transition:opacity .2s;
+}
+.bc-col-v2:hover{opacity:.85}
+.bc-val-label{
+  font-size:9px;color:var(--text2);font-family:'DM Mono',monospace;
+  text-align:center;margin-bottom:3px;min-height:12px;font-weight:600;
+}
+.bc-bar-container{
+  width:100%;display:flex;flex-direction:column;
+  justify-content:flex-end;border-radius:8px 8px 0 0;
+  overflow:hidden;position:relative;
+}
+.bc-seg-variable{
+  width:100%;
+  background:linear-gradient(180deg,#34d399,#10b981);
+  transition:height .4s cubic-bezier(.34,1.3,.64,1);
+}
+.bc-seg-fixed{
+  width:100%;
+  background:linear-gradient(180deg,#a78bfa,#8b5cf6);
+  transition:height .4s cubic-bezier(.34,1.3,.64,1);
+}
+.bc-zero-line{
+  width:100%;height:2px;
+  background:var(--border);border-radius:2px;
+}
+.bc-x-label{
+  font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;
+  text-align:center;margin-top:4px;line-height:1.3;
+}
+
+/* ── BEAUTIFUL PIE CHART ── */
+.pie-v2-wrap{display:flex;flex-direction:column;gap:16px}
+.pie-v2-svg-row{display:flex;justify-content:center}
+.pie-v2-svg{filter:drop-shadow(0 4px 16px rgba(0,0,0,.12))}
+.pie-v2-legend{display:flex;flex-direction:column;gap:6px}
+.pie-v2-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 12px;border-radius:10px;
+  background:var(--surface2);border:1px solid var(--border);
+  transition:background .15s;
+}
+.pie-v2-item:hover{background:var(--accent-soft)}
+.pie-v2-color{width:12px;height:12px;border-radius:4px;flex-shrink:0}
+.pie-v2-name{font-size:12px;font-weight:600;color:var(--text);flex:1}
+.pie-v2-pct{font-size:11px;color:var(--text3);font-weight:600;margin-right:4px}
+.pie-v2-amt{font-size:12px;font-family:'DM Mono',monospace;font-weight:700;color:var(--text)}
+/* progress bar inside pie legend */
+.pie-v2-bar-wrap{height:3px;background:var(--border);border-radius:99px;margin-top:4px}
+.pie-v2-bar{height:3px;border-radius:99px;transition:width .5s ease}
+
+/* ── RECURRING PAGE ITEMS ── */
+.rm-item{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  padding:14px 16px;background:var(--surface2);
+  border-radius:12px;border:1px solid var(--border);
+  margin-bottom:10px;
+  transition:background .15s;
+}
+.rm-item:hover{background:#f0f4ff}
+.rm-item-left{flex:1}
+.rm-item-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.rm-item-meta{font-size:12px;color:var(--text3)}
+.rm-item-amount{font-family:'DM Mono',monospace;font-weight:800;color:var(--text);font-size:16px;margin-bottom:6px}
+.rm-item-actions{display:flex;gap:6px}
+.rm-badge-active{background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700}
+.rm-badge-paused{background:#f1f5f9;color:var(--text3);padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700}
+
 /* print */
 @media print{
   #loadingOverlay,#lockScreen,#topBar,#drawer,#drawerOverlay,#cacheBadge,#actionModal{display:none!important}
@@ -556,6 +748,18 @@ tbody tr:hover{background:var(--surface2)}
 
 <!-- CACHE TOAST -->
 <div id="cacheBadge">↻ Showing cached data — syncing…</div>
+
+<!-- ZAP OVERLAY -->
+<div id="zapOverlay">
+  <div class="zap-streak"></div>
+  <div class="zap-streak"></div>
+  <div class="zap-streak"></div>
+</div>
+<div id="zapToast">
+  <div class="zap-toast-icon">⚡</div>
+  <div class="zap-toast-title" id="zapToastTitle">Recurring Expenses Booked!</div>
+  <div class="zap-toast-sub" id="zapToastSub"></div>
+</div>
 
 <!-- ACTION MODAL -->
 <div id="actionModal" class="hidden">
@@ -660,9 +864,14 @@ tbody tr:hover{background:var(--surface2)}
 
   <!-- Hero Card -->
   <div class="hero-card">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div class="hero-label">Total Spend</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div class="hero-label" id="heroLabel">Total Spend</div>
       <select class="hero-year-select" id="topYear" onchange="renderAll()"></select>
+    </div>
+    <!-- Month / YTD Toggle -->
+    <div class="hero-toggle">
+      <button class="hero-toggle-btn active" id="heroToggleYTD" onclick="setHeroMode('ytd')">YTD</button>
+      <button class="hero-toggle-btn" id="heroToggleMonth" onclick="setHeroMode('month')">This Month</button>
     </div>
     <div class="hero-amount" id="totalSpend">₹0</div>
     <div class="hero-sub" id="heroSub">Loading data…</div>
@@ -855,6 +1064,14 @@ tbody tr:hover{background:var(--surface2)}
 <!-- ══════════════════ ANALYTICS PAGE ══════════════════ -->
 <div id="page-analytics" class="page">
 
+  <!-- Analytics period toggle -->
+  <div class="stat-toggle-row">
+    <div class="stat-toggle">
+      <button class="stat-toggle-btn active" id="statToggleYTD" onclick="setStatMode('ytd')">Year to Date</button>
+      <button class="stat-toggle-btn" id="statToggleMonth" onclick="setStatMode('month')">This Month</button>
+    </div>
+  </div>
+
   <div class="analytics-stat-row" id="analyticsStats"></div>
 
   <!-- Monthly Expense Bar Chart -->
@@ -954,6 +1171,8 @@ let pendingActionId=null;
 let pressTimer=null;
 let selectedMonths=[]; // For multi-month filter
 let filtersInitialised=false;
+let heroMode='ytd'; // 'ytd' | 'month'
+let statMode='ytd'; // 'ytd' | 'month'
 
 // ── STARS ON LOCK SCREEN ──────────────────────────────
 function makeLockStars(){
@@ -1269,20 +1488,53 @@ function filteredData(){
   });
 }
 
+// ── HERO TOGGLE ───────────────────────────────────────
+function setHeroMode(mode){
+  heroMode=mode;
+  document.getElementById('heroToggleYTD').classList.toggle('active',mode==='ytd');
+  document.getElementById('heroToggleMonth').classList.toggle('active',mode==='month');
+  renderTop();
+}
+
+// ── STAT TOGGLE ───────────────────────────────────────
+function setStatMode(mode){
+  statMode=mode;
+  document.getElementById('statToggleYTD').classList.toggle('active',mode==='ytd');
+  document.getElementById('statToggleMonth').classList.toggle('active',mode==='month');
+  renderAnalyticsStats();
+}
+
 // ── RENDER TOP ────────────────────────────────────────
 function renderTop(){
   const y=document.getElementById('topYear').value;
-  const data=expenses.filter(e=>e.date&&e.date.substring(0,4)===y);
+  const now=new Date();
+  const curMonth=now.getMonth();
+  const curYear=now.getFullYear();
+
+  let data;
+  if(heroMode==='month'){
+    data=expenses.filter(e=>{
+      if(!e.date)return false;
+      const d=new Date(e.date);
+      return d.getFullYear()==y && d.getMonth()===curMonth;
+    });
+    document.getElementById('heroLabel').textContent='This Month — '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][curMonth];
+  }else{
+    data=expenses.filter(e=>e.date&&e.date.substring(0,4)===y);
+    document.getElementById('heroLabel').textContent='Total Spend '+y;
+  }
+
   const total=data.reduce((a,b)=>a+Number(b.amount||0),0);
   document.getElementById('totalSpend').textContent='₹'+indian(total);
   const monthly=Array(12).fill(0);
-  data.forEach(e=>{monthly[new Date(e.date).getMonth()]+=Number(e.amount||0);});
+  const allYearData=expenses.filter(e=>e.date&&e.date.substring(0,4)===y);
+  allYearData.forEach(e=>{monthly[new Date(e.date).getMonth()]+=Number(e.amount||0);});
   const max=Math.max(...monthly,1);
   const bars=document.getElementById('bars');
   bars.innerHTML='';
   monthly.forEach((v,i)=>{
     const h=Math.round((v/max)*36);
-    const isActive=selectedMonths.includes(i);
+    const isActive=heroMode==='month'?i===curMonth:selectedMonths.includes(i);
     bars.innerHTML+=`<div class="mini-bar-wrap"><div class="mini-bar${isActive?' active-bar':''}" style="height:${Math.max(h,3)}px"></div><div class="mini-label">${shortM[i][0]}</div></div>`;
   });
   const cnt=data.length;
@@ -1494,15 +1746,27 @@ function populateAnalyticsYearSelects(){
 
 
 function renderAnalyticsStats(){
-  const data=currentData();
+  const yr=document.getElementById('chartYear').value||years()[0];
+  const now=new Date();
+  let data;
+  if(statMode==='month'){
+    data=expenses.filter(e=>{
+      if(!e.date)return false;
+      const d=new Date(e.date);
+      return d.getFullYear()==yr && d.getMonth()===now.getMonth();
+    });
+  }else{
+    data=expenses.filter(e=>e.date&&e.date.substring(0,4)===yr);
+  }
   const total=data.reduce((a,b)=>a+Number(b.amount||0),0);
   const fixed=data.filter(e=>e.category==='Fixed').reduce((a,b)=>a+Number(b.amount||0),0);
   const variable=total-fixed;
   const avg=data.length?Math.round(total/data.length):0;
+  const periodLabel=statMode==='month'?shortM[now.getMonth()]+' '+yr:yr;
 
   document.getElementById('analyticsStats').innerHTML=`
   <div class="stat-pill">
-    <div class="stat-pill-label">Total Spend</div>
+    <div class="stat-pill-label">Total · ${periodLabel}</div>
     <div class="stat-pill-value">₹${indian(total)}</div>
     <div class="stat-pill-sub">${data.length} transactions</div>
   </div>
@@ -1548,9 +1812,7 @@ function renderBarChart(){
       else variableVals[m]+=Number(e.amount||0);
     });
   }else{
-    // Weekly mode — always show all calendar weeks for the selected month
     const sm=parseInt(wm.value||new Date().getMonth());
-    // Build week buckets by Sunday-ending weeks
     const firstDay=new Date(parseInt(yr),sm,1);
     const lastDay=new Date(parseInt(yr),sm+1,0);
     const weekBuckets=[];
@@ -1563,7 +1825,6 @@ function renderBarChart(){
       weekBuckets.push({start:new Date(wStart),end:new Date(wEnd),fixed:0,variable:0});
       cur=new Date(wEnd);cur.setDate(cur.getDate()+1);
     }
-    // Distribute expenses into week buckets
     expenses.forEach(e=>{
       if(!e.date)return;
       const d=new Date(e.date);
@@ -1577,7 +1838,7 @@ function renderBarChart(){
       }
     });
     weekBuckets.forEach((wb,i)=>{
-      labels.push('W'+(i+1)+'\n'+wb.start.getDate()+'-'+wb.end.getDate()+' '+shortM[sm]);
+      labels.push('W'+(i+1)+'\n'+wb.start.getDate()+'-'+wb.end.getDate());
       fixedVals.push(wb.fixed);
       variableVals.push(wb.variable);
     });
@@ -1585,29 +1846,41 @@ function renderBarChart(){
 
   const totals=labels.map((_,i)=>fixedVals[i]+variableVals[i]);
   const max=Math.max(...totals,1);
-  const CHART_H=110;
+  const CHART_H=130;
+
+  // Background grid lines
+  const gridLines=[0.25,0.5,0.75,1].map(pct=>{
+    const y=CHART_H*(1-pct);
+    return `<line x1="0" y1="${y}" x2="100%" y2="${y}" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 3"/>`;
+  }).join('');
 
   area.innerHTML=`
-  <div class="bar-chart-area" style="height:${CHART_H+20}px;align-items:flex-end;gap:4px;display:flex;padding-bottom:4px">
-  ${labels.map((l,i)=>{
-    const tot=totals[i];
-    const fh=Math.max(Math.round((fixedVals[i]/max)*CHART_H),fixedVals[i]>0?2:0);
-    const vh=Math.max(Math.round((variableVals[i]/max)*CHART_H),variableVals[i]>0?2:0);
-    const totalH=fh+vh;
-    const lShort=l.split('\n')[0];
-    const lSub=l.split('\n')[1]||'';
-    return `<div class="bc-col" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:0;cursor:pointer">
-      <div class="bc-value" style="font-size:9px;color:var(--text2);font-family:'DM Mono',monospace;text-align:center;margin-bottom:2px;min-height:11px">${tot>0?compact(tot):''}</div>
-      <div style="width:100%;display:flex;flex-direction:column;justify-content:flex-end;height:${CHART_H}px">
-        <div style="width:100%;display:flex;flex-direction:column;height:${totalH}px;min-height:${tot>0?3:1}px">
-          <div style="width:100%;height:${vh}px;background:var(--variable-color);${vh>0?'':'display:none'}"></div>
-          <div style="width:100%;height:${fh}px;background:var(--fixed-color);border-radius:${vh===0?'5px 5px':0} 0 0;${fh>0?'':'display:none'}"></div>
-          ${tot===0?'<div style="width:100%;height:2px;background:var(--border)"></div>':''}
+  <div style="position:relative;width:100%">
+    <svg style="position:absolute;top:0;left:0;width:100%;height:${CHART_H}px;pointer-events:none" preserveAspectRatio="none">
+      ${gridLines}
+    </svg>
+    <div style="display:flex;align-items:flex-end;gap:6px;height:${CHART_H}px;padding-bottom:0;position:relative">
+    ${labels.map((l,i)=>{
+      const tot=totals[i];
+      const fh=tot>0?Math.max(Math.round((fixedVals[i]/max)*CHART_H),fixedVals[i]>0?3:0):0;
+      const vh=tot>0?Math.max(Math.round((variableVals[i]/max)*CHART_H),variableVals[i]>0?3:0):0;
+      const totalPx=fh+vh;
+      const lShort=l.split('\n')[0];
+      const lSub=l.split('\n')[1]||'';
+      const isCurrentMonth=mode==='monthly'&&i===new Date().getMonth()&&yr==new Date().getFullYear();
+      const highlightStyle=isCurrentMonth?'box-shadow:0 0 0 2px var(--accent);':'';
+      return `<div class="bc-col-v2" title="${lShort}: ₹${indian(tot)} (Fixed ₹${indian(fixedVals[i])}, Var ₹${indian(variableVals[i])})">
+        <div class="bc-val-label">${tot>0?compact(tot):''}</div>
+        <div style="width:100%;height:${CHART_H-14}px;display:flex;flex-direction:column;justify-content:flex-end;">
+          ${tot>0?`<div style="width:100%;height:${totalPx}px;border-radius:8px 8px 0 0;overflow:hidden;${highlightStyle}">
+            <div class="bc-seg-variable" style="height:${vh}px;${vh===0?'display:none':''}"></div>
+            <div class="bc-seg-fixed" style="height:${fh}px;${fh===0?'display:none':''}"></div>
+          </div>`:`<div style="width:100%;height:3px;background:var(--border);border-radius:2px;opacity:.5"></div>`}
         </div>
-      </div>
-      <div class="bc-label" style="font-size:9px;color:var(--text3);text-align:center;margin-top:3px;line-height:1.3">${lShort}<br><span style="font-size:8px;color:var(--text3)">${lSub}</span></div>
-    </div>`;
-  }).join('')}
+        <div class="bc-x-label">${lShort}${lSub?`<br><span style="font-size:8px">${lSub}</span>`:''}</div>
+      </div>`;
+    }).join('')}
+    </div>
   </div>`;
 }
 
@@ -1638,39 +1911,62 @@ function renderPieChart(){
   }
 
   const total=arr.reduce((a,b)=>a+b[1],0);
+  const W=160,H=160,cx=W/2,cy=H/2,R=62,innerR=38;
+  const GAP=0.03; // gap between slices in radians
 
-  let current=0;
-
-  const circles=arr.map(([k,v],i)=>{
+  // Build SVG pie slices
+  let startAngle=-Math.PI/2;
+  let slices='';
+  arr.forEach(([k,v],i)=>{
     const pct=v/total;
-    const dash=pct*100;
-    const out=`${dash} ${100-dash}`;
-    const rot=current*360;
-    current+=pct;
-    return `<circle r="15.915" cx="21" cy="21"
-      stroke="${PIE_COLORS[i%PIE_COLORS.length]}"
-      stroke-dasharray="${out}"
-      stroke-dashoffset="25"
-      transform="rotate(${rot} 21 21)"
-      fill="none"
-      stroke-width="5"/>`;
+    const angle=pct*2*Math.PI-GAP;
+    if(angle<=0)return;
+    const x1=cx+R*Math.cos(startAngle+GAP/2);
+    const y1=cy+R*Math.sin(startAngle+GAP/2);
+    const endA=startAngle+angle+GAP/2;
+    const x2=cx+R*Math.cos(endA);
+    const y2=cy+R*Math.sin(endA);
+    const ix1=cx+innerR*Math.cos(startAngle+GAP/2);
+    const iy1=cy+innerR*Math.sin(startAngle+GAP/2);
+    const ix2=cx+innerR*Math.cos(endA);
+    const iy2=cy+innerR*Math.sin(endA);
+    const large=angle>Math.PI?1:0;
+    const color=PIE_COLORS[i%PIE_COLORS.length];
+    slices+=`<path d="M${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R} 0 ${large},1 ${x2.toFixed(2)},${y2.toFixed(2)} L${ix2.toFixed(2)},${iy2.toFixed(2)} A${innerR},${innerR} 0 ${large},0 ${ix1.toFixed(2)},${iy1.toFixed(2)} Z"
+      fill="${color}" opacity=".92" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,.15))"/>`;
+    startAngle+=angle+GAP;
+  });
+
+  const legendHtml=arr.map(([k,v],i)=>{
+    const pct=Math.round(v/total*100);
+    const color=PIE_COLORS[i%PIE_COLORS.length];
+    return `<div class="pie-v2-item">
+      <div class="pie-v2-color" style="background:${color}"></div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+          <div class="pie-v2-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${k}</div>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            <span class="pie-v2-pct">${pct}%</span>
+            <span class="pie-v2-amt">₹${compact(v)}</span>
+          </div>
+        </div>
+        <div class="pie-v2-bar-wrap">
+          <div class="pie-v2-bar" style="width:${pct}%;background:${color}"></div>
+        </div>
+      </div>
+    </div>`;
   }).join('');
 
-  area.innerHTML=`
-  <div class="pie-wrap">
-    <div class="pie-svg-wrap">
-      <svg viewBox="0 0 42 42" width="180" height="180">
-        ${circles}
+  area.innerHTML=`<div class="pie-v2-wrap">
+    <div class="pie-v2-svg-row">
+      <svg class="pie-v2-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+        <circle cx="${cx}" cy="${cy}" r="${innerR+1}" fill="var(--surface2)"/>
+        ${slices}
+        <text x="${cx}" y="${cy-7}" text-anchor="middle" font-family="DM Mono,monospace" font-size="11" font-weight="800" fill="var(--text)">₹${compact(total)}</text>
+        <text x="${cx}" y="${cy+8}" text-anchor="middle" font-family="Sora,sans-serif" font-size="8" fill="var(--text3)">Total</text>
       </svg>
     </div>
-    <div class="pie-legend">
-      ${arr.map(([k,v],i)=>`
-      <div class="pie-legend-item">
-        <div class="pie-dot" style="background:${PIE_COLORS[i%PIE_COLORS.length]}"></div>
-        <div class="pie-legend-name">${k}</div>
-        <div class="pie-legend-val">₹${compact(v)}</div>
-      </div>`).join('')}
-    </div>
+    <div class="pie-v2-legend">${legendHtml}</div>
   </div>`;
 }
 
@@ -1922,7 +2218,6 @@ async function bookRecurring(){
   const fullMonthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const resultsEl = document.getElementById('bookResults');
 
-  // Filter active rules that apply to this month
   const activeRules = recurringRules.filter(r => {
     if(String(r.active) !== 'true' && r.active !== true) return false;
     if(r.months === 'all') return true;
@@ -1939,7 +2234,6 @@ async function bookRecurring(){
   const savePromises = [];
 
   for(const rule of activeRules){
-    // Check if already booked for this month+year
     const alreadyBooked = bookingLog.some(b =>
       String(b.recurringId) === String(rule.id) &&
       parseInt(b.month) === month &&
@@ -1951,7 +2245,6 @@ async function bookRecurring(){
       continue;
     }
 
-    // Create expense entry
     const mm = String(month+1).padStart(2,'0');
     const dateStr = year + '-' + mm + '-01';
     const expObj = {
@@ -1968,7 +2261,6 @@ async function bookRecurring(){
     expenses.push(expObj);
     savePromises.push(fetch(API_URL, {method:'POST', body: JSON.stringify(expObj)}));
 
-    // Log the booking
     const logEntry = {
       sheet: BL_SHEET,
       recurringId: rule.id,
@@ -1979,16 +2271,31 @@ async function bookRecurring(){
     bookingLog.push(logEntry);
     savePromises.push(fetch(API_URL, {method:'POST', body: JSON.stringify(logEntry)}));
 
-    results.push({name: rule.name, amount: rule.amount, status: 'ok', msg: 'Booked \u20b9' + indian(rule.amount) + ' for ' + fullMonthNames[month] + ' ' + year});
+    results.push({name: rule.name, amount: rule.amount, status: 'ok', msg: 'Booked ₹' + indian(rule.amount) + ' for ' + fullMonthNames[month] + ' ' + year});
   }
 
   await Promise.all(savePromises);
   await loadExpenses();
 
-  // Show results
+  // ── ZAP ANIMATION ──
+  const booked=results.filter(r=>r.status==='ok');
+  if(booked.length>0){
+    const zapOv=document.getElementById('zapOverlay');
+    const zapToast=document.getElementById('zapToast');
+    const total=booked.reduce((s,r)=>s+Number(r.amount||0),0);
+    document.getElementById('zapToastTitle').textContent='⚡ Recurring Expenses Booked!';
+    document.getElementById('zapToastSub').textContent=`${booked.length} expense${booked.length>1?'s':''} · ₹${indian(total)} booked for ${fullMonthNames[month]} ${year}`;
+    zapOv.classList.add('zapping');
+    zapToast.classList.add('show');
+    setTimeout(()=>{
+      zapOv.classList.remove('zapping');
+      zapToast.classList.remove('show');
+    },2800);
+  }
+
   resultsEl.innerHTML = '<div style="margin-top:12px">' + results.map(r => {
     const cls = r.status === 'ok' ? 'book-result-ok' : 'book-result-skip';
-    const icon = r.status === 'ok' ? '&#10003;' : '&#9888;';
+    const icon = r.status === 'ok' ? '✓' : '⚠';
     return `<div class="book-result-item ${cls}"><span>${icon} ${r.name}</span><span>${r.msg}</span></div>`;
   }).join('') + '</div>';
 }
@@ -2025,7 +2332,8 @@ async function bookRecurring(){
       </div>
     </div>
     <button class="book-btn" onclick="bookRecurring()">
-      &#9889; Book Recurring Expenses for Selected Month
+      <span class="book-btn-zap">⚡</span>
+      <span class="book-btn-label">Book Recurring Expenses for Selected Month</span>
     </button>
     <div id="bookResults"></div>
   </div>
