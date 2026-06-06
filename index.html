@@ -524,43 +524,67 @@ tbody tr:hover{background:var(--surface2)}
 .stat-pill-value{font-size:18px;font-weight:800;color:var(--text);font-family:'DM Mono',monospace}
 .stat-pill-sub{font-size:11px;color:var(--text3);margin-top:2px}
 
-/* ── HERO TOGGLE SWITCH (Month / YTD) ── */
-.hero-toggle{
-  display:flex;align-items:center;gap:8px;
-  background:rgba(255,255,255,.1);
-  border:1px solid rgba(255,255,255,.18);
+/* ── HERO SWITCH (Month / YTD) ── */
+.hero-switch-wrap{
+  display:flex;align-items:center;gap:8px;margin-bottom:8px;
+}
+.hero-switch-label{
+  font-size:10px;font-weight:600;color:rgba(255,255,255,.5);
+  text-transform:uppercase;letter-spacing:.08em;
+  transition:color .25s;
+}
+.hero-switch-label.on{color:#fff;}
+/* the toggle track */
+.ios-switch{
+  position:relative;display:inline-block;
+  width:36px;height:20px;flex-shrink:0;cursor:pointer;
+}
+.ios-switch input{opacity:0;width:0;height:0;position:absolute}
+.ios-switch-track{
+  position:absolute;inset:0;
+  background:rgba(255,255,255,.18);
   border-radius:99px;
-  padding:3px;
-  margin-bottom:6px;
-  width:fit-content;
+  border:1px solid rgba(255,255,255,.2);
+  transition:background .25s;
 }
-.hero-toggle-btn{
-  padding:4px 12px;border-radius:99px;font-family:'Sora',sans-serif;
-  font-size:10px;font-weight:700;cursor:pointer;border:none;
-  transition:all .2s;letter-spacing:.03em;text-transform:uppercase;
-  background:transparent;color:rgba(255,255,255,.55);
+.ios-switch input:checked ~ .ios-switch-track{
+  background:rgba(255,255,255,.85);
 }
-.hero-toggle-btn.active{
-  background:rgba(255,255,255,.22);color:#fff;
-  box-shadow:0 1px 6px rgba(0,0,0,.18);
+.ios-switch-thumb{
+  position:absolute;top:2px;left:2px;
+  width:16px;height:16px;border-radius:50%;
+  background:#fff;
+  box-shadow:0 1px 4px rgba(0,0,0,.25);
+  transition:transform .25s cubic-bezier(.34,1.4,.64,1);
+}
+.ios-switch input:checked ~ .ios-switch-thumb{
+  transform:translateX(16px);
+  background:#1a56db;
 }
 
-/* ── ANALYTICS STAT TOGGLE ── */
+/* ── ANALYTICS STAT SWITCH ── */
 .stat-toggle-row{
-  display:flex;justify-content:center;margin-bottom:12px;
+  display:flex;justify-content:flex-end;margin-bottom:12px;
+  align-items:center;gap:8px;
 }
-.stat-toggle{
-  display:flex;background:var(--surface2);border:1.5px solid var(--border);
-  border-radius:99px;padding:3px;gap:2px;
+.stat-switch-label{
+  font-size:11px;font-weight:600;color:var(--text3);
+  transition:color .25s;
 }
-.stat-toggle-btn{
-  padding:5px 16px;border-radius:99px;font-family:'Sora',sans-serif;
-  font-size:11px;font-weight:700;cursor:pointer;border:none;
-  background:transparent;color:var(--text3);transition:all .2s;
+.stat-switch-label.on{color:var(--accent);}
+.ios-switch-dark .ios-switch-track{
+  background:var(--border);
+  border-color:var(--border);
 }
-.stat-toggle-btn.active{
-  background:var(--accent);color:#fff;
-  box-shadow:0 2px 8px rgba(26,86,219,.3);
+.ios-switch-dark input:checked ~ .ios-switch-track{
+  background:var(--accent-soft);
+  border-color:var(--accent);
+}
+.ios-switch-dark .ios-switch-thumb{
+  background:var(--text3);
+}
+.ios-switch-dark input:checked ~ .ios-switch-thumb{
+  background:var(--accent);
 }
 
 /* ── ZAP ANIMATION ── */
@@ -644,40 +668,75 @@ tbody tr:hover{background:var(--surface2)}
 .book-result-ok{background:#d1fae5;color:#065f46}
 .book-result-skip{background:#fef3c7;color:#92400e}
 
-/* ── BEAUTIFUL BAR CHART ── */
+/* ── BEAUTIFUL BAR CHART v2 ── */
+.bar-chart-outer{position:relative;width:100%;user-select:none}
+.bar-grid-lines{position:absolute;top:0;left:0;right:0;pointer-events:none}
+.bar-grid-line{
+  position:absolute;left:0;right:0;height:1px;
+  background:var(--border);opacity:.7;
+}
+.bar-grid-label{
+  position:absolute;right:0;font-size:8px;
+  color:var(--text3);font-family:'DM Mono',monospace;
+  transform:translateY(-50%);
+}
+.bars-row{
+  display:flex;align-items:flex-end;gap:4px;
+  position:relative;
+}
 .bc-col-v2{
   flex:1;display:flex;flex-direction:column;
-  align-items:center;gap:0;cursor:pointer;
-  transition:opacity .2s;
+  align-items:center;cursor:pointer;
+  transition:filter .15s;
 }
-.bc-col-v2:hover{opacity:.85}
+.bc-col-v2:hover .bc-stacked{filter:brightness(1.1)}
 .bc-val-label{
-  font-size:9px;color:var(--text2);font-family:'DM Mono',monospace;
-  text-align:center;margin-bottom:3px;min-height:12px;font-weight:600;
+  font-size:8px;color:var(--text2);font-family:'DM Mono',monospace;
+  text-align:center;margin-bottom:2px;min-height:11px;font-weight:700;
+  opacity:.8;
 }
-.bc-bar-container{
-  width:100%;display:flex;flex-direction:column;
-  justify-content:flex-end;border-radius:8px 8px 0 0;
-  overflow:hidden;position:relative;
+.bc-stacked{
+  width:100%;border-radius:6px 6px 0 0;overflow:hidden;
+  transition:height .4s cubic-bezier(.34,1.3,.64,1);
+  position:relative;
 }
 .bc-seg-variable{
   width:100%;
-  background:linear-gradient(180deg,#34d399,#10b981);
-  transition:height .4s cubic-bezier(.34,1.3,.64,1);
+  background:linear-gradient(180deg,#6ee7b7 0%,#10b981 100%);
 }
 .bc-seg-fixed{
   width:100%;
-  background:linear-gradient(180deg,#a78bfa,#8b5cf6);
-  transition:height .4s cubic-bezier(.34,1.3,.64,1);
+  background:linear-gradient(180deg,#c4b5fd 0%,#8b5cf6 100%);
 }
-.bc-zero-line{
-  width:100%;height:2px;
-  background:var(--border);border-radius:2px;
+.bc-zero-stub{
+  width:100%;height:3px;border-radius:2px;
+  background:var(--border);opacity:.6;
 }
 .bc-x-label{
   font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;
-  text-align:center;margin-top:4px;line-height:1.3;
+  text-align:center;margin-top:5px;line-height:1.4;
+  letter-spacing:.01em;
 }
+.bc-x-axis-line{
+  height:1px;background:var(--border);width:100%;margin-top:2px;border-radius:1px;
+}
+/* tooltip */
+.bc-tooltip{
+  position:absolute;background:#0f172a;color:#fff;
+  font-size:11px;font-family:'Sora',sans-serif;font-weight:600;
+  padding:6px 10px;border-radius:8px;pointer-events:none;
+  white-space:nowrap;z-index:10;
+  box-shadow:0 4px 12px rgba(0,0,0,.3);
+  transform:translateX(-50%);
+  bottom:calc(100% + 6px);left:50%;
+  display:none;
+}
+.bc-tooltip::after{
+  content:'';position:absolute;top:100%;left:50%;
+  transform:translateX(-50%);
+  border:4px solid transparent;border-top-color:#0f172a;
+}
+.bc-col-v2:hover .bc-tooltip{display:block}
 
 /* ── BEAUTIFUL PIE CHART ── */
 .pie-v2-wrap{display:flex;flex-direction:column;gap:16px}
@@ -868,10 +927,15 @@ tbody tr:hover{background:var(--surface2)}
       <div class="hero-label" id="heroLabel">Total Spend</div>
       <select class="hero-year-select" id="topYear" onchange="renderAll()"></select>
     </div>
-    <!-- Month / YTD Toggle -->
-    <div class="hero-toggle">
-      <button class="hero-toggle-btn active" id="heroToggleYTD" onclick="setHeroMode('ytd')">YTD</button>
-      <button class="hero-toggle-btn" id="heroToggleMonth" onclick="setHeroMode('month')">This Month</button>
+    <!-- Month / YTD Switch -->
+    <div class="hero-switch-wrap">
+      <span class="hero-switch-label on" id="heroLabelYTD">YTD</span>
+      <label class="ios-switch">
+        <input type="checkbox" id="heroSwitch" onchange="setHeroMode(this.checked?'month':'ytd')">
+        <div class="ios-switch-track"></div>
+        <div class="ios-switch-thumb"></div>
+      </label>
+      <span class="hero-switch-label" id="heroLabelMonth">This Month</span>
     </div>
     <div class="hero-amount" id="totalSpend">₹0</div>
     <div class="hero-sub" id="heroSub">Loading data…</div>
@@ -1064,12 +1128,15 @@ tbody tr:hover{background:var(--surface2)}
 <!-- ══════════════════ ANALYTICS PAGE ══════════════════ -->
 <div id="page-analytics" class="page">
 
-  <!-- Analytics period toggle -->
+  <!-- Analytics period switch -->
   <div class="stat-toggle-row">
-    <div class="stat-toggle">
-      <button class="stat-toggle-btn active" id="statToggleYTD" onclick="setStatMode('ytd')">Year to Date</button>
-      <button class="stat-toggle-btn" id="statToggleMonth" onclick="setStatMode('month')">This Month</button>
-    </div>
+    <span class="stat-switch-label on" id="statLabelYTD">Year to Date</span>
+    <label class="ios-switch ios-switch-dark">
+      <input type="checkbox" id="statSwitch" onchange="setStatMode(this.checked?'month':'ytd')">
+      <div class="ios-switch-track"></div>
+      <div class="ios-switch-thumb"></div>
+    </label>
+    <span class="stat-switch-label" id="statLabelMonth">This Month</span>
   </div>
 
   <div class="analytics-stat-row" id="analyticsStats"></div>
@@ -1488,19 +1555,23 @@ function filteredData(){
   });
 }
 
-// ── HERO TOGGLE ───────────────────────────────────────
+// ── HERO SWITCH ───────────────────────────────────────
 function setHeroMode(mode){
   heroMode=mode;
-  document.getElementById('heroToggleYTD').classList.toggle('active',mode==='ytd');
-  document.getElementById('heroToggleMonth').classList.toggle('active',mode==='month');
+  const sw=document.getElementById('heroSwitch');
+  if(sw)sw.checked=(mode==='month');
+  document.getElementById('heroLabelYTD').classList.toggle('on',mode==='ytd');
+  document.getElementById('heroLabelMonth').classList.toggle('on',mode==='month');
   renderTop();
 }
 
-// ── STAT TOGGLE ───────────────────────────────────────
+// ── STAT SWITCH ───────────────────────────────────────
 function setStatMode(mode){
   statMode=mode;
-  document.getElementById('statToggleYTD').classList.toggle('active',mode==='ytd');
-  document.getElementById('statToggleMonth').classList.toggle('active',mode==='month');
+  const sw=document.getElementById('statSwitch');
+  if(sw)sw.checked=(mode==='month');
+  document.getElementById('statLabelYTD').classList.toggle('on',mode==='ytd');
+  document.getElementById('statLabelMonth').classList.toggle('on',mode==='month');
   renderAnalyticsStats();
 }
 
@@ -1804,8 +1875,7 @@ function renderBarChart(){
 
   if(mode==='monthly'){
     labels=shortM.slice();
-    fixedVals=Array(12).fill(0);
-    variableVals=Array(12).fill(0);
+    fixedVals=Array(12).fill(0);variableVals=Array(12).fill(0);
     expenses.filter(e=>e.date&&e.date.substring(0,4)===yr).forEach(e=>{
       const m=new Date(e.date).getMonth();
       if(e.category==='Fixed')fixedVals[m]+=Number(e.amount||0);
@@ -1832,55 +1902,62 @@ function renderBarChart(){
       for(const wb of weekBuckets){
         if(d>=wb.start&&d<=wb.end){
           if(e.category==='Fixed')wb.fixed+=Number(e.amount||0);
-          else wb.variable+=Number(e.amount||0);
-          break;
+          else wb.variable+=Number(e.amount||0);break;
         }
       }
     });
     weekBuckets.forEach((wb,i)=>{
       labels.push('W'+(i+1)+'\n'+wb.start.getDate()+'-'+wb.end.getDate());
-      fixedVals.push(wb.fixed);
-      variableVals.push(wb.variable);
+      fixedVals.push(wb.fixed);variableVals.push(wb.variable);
     });
   }
 
   const totals=labels.map((_,i)=>fixedVals[i]+variableVals[i]);
-  const max=Math.max(...totals,1);
-  const CHART_H=130;
+  const maxVal=Math.max(...totals,1);
+  const CHART_H=140;
+  const GRID_STEPS=4;
 
-  // Background grid lines
-  const gridLines=[0.25,0.5,0.75,1].map(pct=>{
-    const y=CHART_H*(1-pct);
-    return `<line x1="0" y1="${y}" x2="100%" y2="${y}" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 3"/>`;
+  // Build grid lines + right-side labels
+  let gridHtml='';
+  for(let s=1;s<=GRID_STEPS;s++){
+    const pct=s/GRID_STEPS;
+    const top=CHART_H*(1-pct);
+    const lbl=compact(Math.round(maxVal*pct));
+    gridHtml+=`<div class="bar-grid-line" style="top:${top}px"></div>
+    <div class="bar-grid-label" style="top:${top}px">${lbl}</div>`;
+  }
+
+  // Build bars
+  const barsHtml=labels.map((l,i)=>{
+    const tot=totals[i];
+    const fh=tot>0?Math.max(Math.round((fixedVals[i]/maxVal)*CHART_H),fixedVals[i]>0?3:0):0;
+    const vh=tot>0?Math.max(Math.round((variableVals[i]/maxVal)*CHART_H),variableVals[i]>0?3:0):0;
+    const stackH=fh+vh;
+    const lShort=l.split('\n')[0];
+    const lSub=l.split('\n')[1]||'';
+    const isCurrent=mode==='monthly'&&i===new Date().getMonth()&&yr==new Date().getFullYear();
+    const currentRing=isCurrent?'outline:2px solid var(--accent);outline-offset:1px;':'';
+    const tipText=`<b>${lShort}</b><br>Total ₹${indian(tot)}<br><span style="color:#6ee7b7">Var ₹${indian(variableVals[i])}</span> <span style="color:#c4b5fd">Fix ₹${indian(fixedVals[i])}</span>`;
+    return `<div class="bc-col-v2">
+      <div class="bc-val-label">${tot>0?compact(tot):''}</div>
+      <div style="width:100%;height:${CHART_H}px;display:flex;flex-direction:column;justify-content:flex-end;position:relative">
+        <div class="bc-tooltip">${tipText}</div>
+        ${tot>0
+          ?`<div class="bc-stacked" style="height:${stackH}px;${currentRing}">
+              ${vh>0?`<div class="bc-seg-variable" style="height:${vh}px"></div>`:''}
+              ${fh>0?`<div class="bc-seg-fixed" style="height:${fh}px"></div>`:''}
+            </div>`
+          :`<div class="bc-zero-stub"></div>`
+        }
+      </div>
+      <div class="bc-x-axis-line"></div>
+      <div class="bc-x-label">${lShort}${lSub?`<br><span style="font-size:7px;opacity:.7">${lSub}</span>`:''}</div>
+    </div>`;
   }).join('');
 
-  area.innerHTML=`
-  <div style="position:relative;width:100%">
-    <svg style="position:absolute;top:0;left:0;width:100%;height:${CHART_H}px;pointer-events:none" preserveAspectRatio="none">
-      ${gridLines}
-    </svg>
-    <div style="display:flex;align-items:flex-end;gap:6px;height:${CHART_H}px;padding-bottom:0;position:relative">
-    ${labels.map((l,i)=>{
-      const tot=totals[i];
-      const fh=tot>0?Math.max(Math.round((fixedVals[i]/max)*CHART_H),fixedVals[i]>0?3:0):0;
-      const vh=tot>0?Math.max(Math.round((variableVals[i]/max)*CHART_H),variableVals[i]>0?3:0):0;
-      const totalPx=fh+vh;
-      const lShort=l.split('\n')[0];
-      const lSub=l.split('\n')[1]||'';
-      const isCurrentMonth=mode==='monthly'&&i===new Date().getMonth()&&yr==new Date().getFullYear();
-      const highlightStyle=isCurrentMonth?'box-shadow:0 0 0 2px var(--accent);':'';
-      return `<div class="bc-col-v2" title="${lShort}: ₹${indian(tot)} (Fixed ₹${indian(fixedVals[i])}, Var ₹${indian(variableVals[i])})">
-        <div class="bc-val-label">${tot>0?compact(tot):''}</div>
-        <div style="width:100%;height:${CHART_H-14}px;display:flex;flex-direction:column;justify-content:flex-end;">
-          ${tot>0?`<div style="width:100%;height:${totalPx}px;border-radius:8px 8px 0 0;overflow:hidden;${highlightStyle}">
-            <div class="bc-seg-variable" style="height:${vh}px;${vh===0?'display:none':''}"></div>
-            <div class="bc-seg-fixed" style="height:${fh}px;${fh===0?'display:none':''}"></div>
-          </div>`:`<div style="width:100%;height:3px;background:var(--border);border-radius:2px;opacity:.5"></div>`}
-        </div>
-        <div class="bc-x-label">${lShort}${lSub?`<br><span style="font-size:8px">${lSub}</span>`:''}</div>
-      </div>`;
-    }).join('')}
-    </div>
+  area.innerHTML=`<div class="bar-chart-outer">
+    <div class="bar-grid-lines" style="height:${CHART_H}px">${gridHtml}</div>
+    <div class="bars-row" style="height:${CHART_H+32}px;padding-right:28px">${barsHtml}</div>
   </div>`;
 }
 
@@ -1890,68 +1967,78 @@ function renderPieChart(){
   const filter=document.getElementById('pieFilter').value;
 
   let data=expenses.filter(e=>e.date&&e.date.substring(0,4)===yr);
-
-  if(filter==='current'){
-    const now=new Date().getMonth();
-    data=data.filter(e=>new Date(e.date).getMonth()===now);
-  }else if(filter!=='all'){
-    data=data.filter(e=>new Date(e.date).getMonth()===(parseInt(filter)-1));
-  }
+  if(filter==='current'){const now=new Date().getMonth();data=data.filter(e=>new Date(e.date).getMonth()===now);}
+  else if(filter!=='all'){data=data.filter(e=>new Date(e.date).getMonth()===(parseInt(filter)-1));}
 
   const obj={};
-  data.forEach(e=>{
-    obj[e.nature]=(obj[e.nature]||0)+Number(e.amount||0);
-  });
+  data.forEach(e=>{obj[e.nature]=(obj[e.nature]||0)+Number(e.amount||0);});
+  const arr=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,7);
 
-  const arr=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,6);
-
-  if(!arr.length){
-    area.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3)">No data</div>';
-    return;
-  }
+  if(!arr.length){area.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3)">No data</div>';return;}
 
   const total=arr.reduce((a,b)=>a+b[1],0);
-  const W=160,H=160,cx=W/2,cy=H/2,R=62,innerR=38;
-  const GAP=0.03; // gap between slices in radians
+  const COLORS=["#6366f1","#10b981","#f59e0b","#ef4444","#0ea5e9","#ec4899","#8b5cf6"];
 
-  // Build SVG pie slices
+  // SVG donut — larger, more elegant
+  const W=200,H=200,cx=100,cy=100,R=80,innerR=52;
+  const GAP=0.025;
   let startAngle=-Math.PI/2;
   let slices='';
+
   arr.forEach(([k,v],i)=>{
     const pct=v/total;
-    const angle=pct*2*Math.PI-GAP;
-    if(angle<=0)return;
-    const x1=cx+R*Math.cos(startAngle+GAP/2);
-    const y1=cy+R*Math.sin(startAngle+GAP/2);
-    const endA=startAngle+angle+GAP/2;
-    const x2=cx+R*Math.cos(endA);
-    const y2=cy+R*Math.sin(endA);
-    const ix1=cx+innerR*Math.cos(startAngle+GAP/2);
-    const iy1=cy+innerR*Math.sin(startAngle+GAP/2);
-    const ix2=cx+innerR*Math.cos(endA);
-    const iy2=cy+innerR*Math.sin(endA);
-    const large=angle>Math.PI?1:0;
-    const color=PIE_COLORS[i%PIE_COLORS.length];
-    slices+=`<path d="M${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R} 0 ${large},1 ${x2.toFixed(2)},${y2.toFixed(2)} L${ix2.toFixed(2)},${iy2.toFixed(2)} A${innerR},${innerR} 0 ${large},0 ${ix1.toFixed(2)},${iy1.toFixed(2)} Z"
-      fill="${color}" opacity=".92" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,.15))"/>`;
-    startAngle+=angle+GAP;
+    const sweep=pct*2*Math.PI-GAP;
+    if(sweep<=0)return;
+    const sa=startAngle+GAP/2,ea=sa+sweep;
+    const x1=cx+R*Math.cos(sa),y1=cy+R*Math.sin(sa);
+    const x2=cx+R*Math.cos(ea),y2=cy+R*Math.sin(ea);
+    const ix1=cx+innerR*Math.cos(sa),iy1=cy+innerR*Math.sin(sa);
+    const ix2=cx+innerR*Math.cos(ea),iy2=cy+innerR*Math.sin(ea);
+    const large=sweep>Math.PI?1:0;
+    const c=COLORS[i%COLORS.length];
+    // Outer glow ring per slice
+    const RO=R+4;
+    const ox1=cx+RO*Math.cos(sa),oy1=cy+RO*Math.sin(sa);
+    const ox2=cx+RO*Math.cos(ea),oy2=cy+RO*Math.sin(ea);
+    const iiR=innerR-4;
+    const oix1=cx+iiR*Math.cos(sa),oiy1=cy+iiR*Math.sin(sa);
+    const oix2=cx+iiR*Math.cos(ea),oiy2=cy+iiR*Math.sin(ea);
+    slices+=`<path d="M${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R} 0 ${large},1 ${x2.toFixed(2)},${y2.toFixed(2)} L${ix2.toFixed(2)},${iy2.toFixed(2)} A${innerR},${innerR} 0 ${large},0 ${ix1.toFixed(2)},${iy1.toFixed(2)} Z" fill="${c}" class="pie-slice" style="transition:transform .2s"/>`;
+    startAngle=ea+GAP/2;
   });
 
+  // White centre with total
+  const centreText=`
+    <circle cx="${cx}" cy="${cy}" r="${innerR-2}" fill="var(--surface)" filter="url(#pieInnerShadow)"/>
+    <text x="${cx}" y="${cy-8}" text-anchor="middle" font-family="DM Mono,monospace" font-size="13" font-weight="800" fill="var(--text)">₹${compact(total)}</text>
+    <text x="${cx}" y="${cy+6}" text-anchor="middle" font-family="Sora,sans-serif" font-size="8" fill="var(--text3)">Total Spend</text>
+    <text x="${cx}" y="${cy+18}" text-anchor="middle" font-family="Sora,sans-serif" font-size="7" fill="var(--text3)">${arr.length} categories</text>`;
+
+  const svgDefs=`<defs>
+    <filter id="pieDropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(0,0,0,.12)"/>
+    </filter>
+    <filter id="pieInnerShadow">
+      <feDropShadow dx="0" dy="1" stdDeviation="3" flood-color="rgba(0,0,0,.08)"/>
+    </filter>
+  </defs>`;
+
+  // Legend rows with progress bar
   const legendHtml=arr.map(([k,v],i)=>{
     const pct=Math.round(v/total*100);
-    const color=PIE_COLORS[i%PIE_COLORS.length];
-    return `<div class="pie-v2-item">
-      <div class="pie-v2-color" style="background:${color}"></div>
+    const c=COLORS[i%COLORS.length];
+    return `<div class="pie-v2-item" style="cursor:default">
+      <div style="width:10px;height:10px;border-radius:3px;background:${c};flex-shrink:0;margin-top:1px"></div>
       <div style="flex:1;min-width:0">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
-          <div class="pie-v2-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${k}</div>
-          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-            <span class="pie-v2-pct">${pct}%</span>
-            <span class="pie-v2-amt">₹${compact(v)}</span>
-          </div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px">
+          <span style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${k}</span>
+          <span style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700;color:var(--text);flex-shrink:0">₹${compact(v)}</span>
         </div>
-        <div class="pie-v2-bar-wrap">
-          <div class="pie-v2-bar" style="width:${pct}%;background:${color}"></div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+          <div style="flex:1;height:4px;background:var(--border);border-radius:99px;overflow:hidden">
+            <div style="height:4px;width:${pct}%;background:${c};border-radius:99px;transition:width .6s ease"></div>
+          </div>
+          <span style="font-size:10px;color:var(--text3);font-weight:600;min-width:28px;text-align:right">${pct}%</span>
         </div>
       </div>
     </div>`;
@@ -1959,11 +2046,10 @@ function renderPieChart(){
 
   area.innerHTML=`<div class="pie-v2-wrap">
     <div class="pie-v2-svg-row">
-      <svg class="pie-v2-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
-        <circle cx="${cx}" cy="${cy}" r="${innerR+1}" fill="var(--surface2)"/>
-        ${slices}
-        <text x="${cx}" y="${cy-7}" text-anchor="middle" font-family="DM Mono,monospace" font-size="11" font-weight="800" fill="var(--text)">₹${compact(total)}</text>
-        <text x="${cx}" y="${cy+8}" text-anchor="middle" font-family="Sora,sans-serif" font-size="8" fill="var(--text3)">Total</text>
+      <svg class="pie-v2-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="overflow:visible">
+        ${svgDefs}
+        <g filter="url(#pieDropShadow)">${slices}</g>
+        ${centreText}
       </svg>
     </div>
     <div class="pie-v2-legend">${legendHtml}</div>
