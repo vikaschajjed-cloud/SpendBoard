@@ -308,6 +308,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
 
 /* Multi-select month pills */
 .month-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.rm-month-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .month-pill{
   padding:6px 12px;border:1.5px solid var(--border);
   border-radius:99px;font-family:'Sora',sans-serif;font-size:11px;
@@ -1806,11 +1807,12 @@ function buildRmMonthGrid(){
   const grid = document.getElementById('rmMonthGrid');
   if(!grid) return;
   const labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  let html = `<div class="month-grid-pill all-pill${rmSelectedMonths.length===12?' selected':''}" onclick="toggleRmAll()">All Year</div>`;
+  let h = `<div class="month-pill${rmSelectedMonths.length===12?' selected':''}" onclick="toggleRmAll()" style="font-weight:700">All Year</div>`;
   labels.forEach((m, i) => {
-    html += `<div class="month-grid-pill${rmSelectedMonths.includes(i)?' selected':''}" onclick="toggleRmMonth(${i})">${m}</div>`;
+    h += `<div class="month-pill${rmSelectedMonths.includes(i)?' selected':''}" onclick="toggleRmMonth(${i})">${m}</div>`;
   });
-  grid.innerHTML = html;
+  grid.className = 'rm-month-pills';
+  grid.innerHTML = h;
 }
 function toggleRmAll(){
   if(rmSelectedMonths.length === 12) rmSelectedMonths = [];
@@ -2074,7 +2076,7 @@ async function bookRecurring(){
     </div>
     <div class="field-group">
       <div class="field-label">Applicable Months</div>
-      <div class="month-grid" id="rmMonthGrid"></div>
+      <div class="rm-month-pills" id="rmMonthGrid"></div>
     </div>
     <div class="field-group" style="margin-top:8px">
       <div class="field-label">Status</div>
