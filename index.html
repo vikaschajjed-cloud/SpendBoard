@@ -775,6 +775,66 @@ tbody tr:hover{background:var(--surface2)}
 .rm-badge-active{background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700}
 .rm-badge-paused{background:#f1f5f9;color:var(--text3);padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700}
 
+
+/* ── INCOME PAGE ── */
+.income-hero{
+  background:linear-gradient(135deg,#065f46 0%,#10b981 100%);
+  border-radius:22px;padding:24px 22px 20px;
+  margin-bottom:16px;position:relative;overflow:hidden;
+  box-shadow:0 8px 32px rgba(16,185,129,.25);
+}
+.income-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08);}
+.income-hero-label{font-size:11px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.income-hero-amount{font-size:44px;font-weight:800;color:#fff;letter-spacing:-2px;line-height:1;margin:8px 0 6px;position:relative;z-index:1}
+.income-hero-sub{font-size:12px;color:rgba(255,255,255,.55)}
+
+/* ── BUDGET PAGE ── */
+.budget-bar-wrap{margin-top:6px;height:6px;background:var(--border);border-radius:99px;overflow:hidden}
+.budget-bar{height:6px;border-radius:99px;transition:width .6s ease}
+.budget-bar.green{background:var(--green)}
+.budget-bar.amber{background:var(--orange)}
+.budget-bar.red{background:var(--red)}
+.budget-item{padding:14px 16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);margin-bottom:10px}
+.budget-item-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.budget-item-name{font-size:13px;font-weight:700;color:var(--text)}
+.budget-item-amounts{font-size:12px;font-family:'DM Mono',monospace;color:var(--text2)}
+.budget-item-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:6px}
+.budget-alert{background:#fff3cd;border:1px solid #f59e0b;border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:12px;color:#92400e;display:flex;gap:8px;align-items:flex-start}
+.budget-alert-green{background:#d1fae5;border-color:var(--green);color:#065f46}
+.budget-alert-red{background:#fee2e2;border-color:var(--red);color:#7f1d1d}
+
+/* ── CASH FLOW PAGE ── */
+.cf-waterfall{display:flex;flex-direction:column;gap:0}
+.cf-row{display:flex;align-items:center;padding:12px 16px;position:relative}
+.cf-row-main{background:var(--surface2);border-radius:12px;border:1px solid var(--border);margin-bottom:8px}
+.cf-row-sub{padding:8px 16px 8px 32px;border-left:2px solid var(--border);margin-left:20px;margin-bottom:4px}
+.cf-row-total{background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:12px;margin-top:8px}
+.cf-label{flex:1;font-size:13px;font-weight:600;color:var(--text)}
+.cf-label-sub{flex:1;font-size:12px;color:var(--text2)}
+.cf-amount{font-family:'DM Mono',monospace;font-weight:700;font-size:15px}
+.cf-amount-green{color:var(--green)}
+.cf-amount-red{color:var(--red)}
+.cf-amount-white{color:#fff}
+.cf-arrow{font-size:10px;color:var(--text3);margin:0 6px}
+.cf-month-select{display:flex;gap:8px;margin-bottom:16px;align-items:center;flex-wrap:wrap}
+
+/* notification banner */
+#budgetAlertBanner{
+  position:fixed;top:60px;left:0;right:0;z-index:500;
+  padding:0 16px;pointer-events:none;
+}
+.budget-banner-pill{
+  background:#fff;border:1px solid var(--border);
+  border-radius:12px;padding:10px 14px;
+  margin-bottom:6px;
+  box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:600;
+  pointer-events:all;
+  animation:slideDown .3s cubic-bezier(.34,1.26,.64,1);
+}
+@keyframes slideDown{from{transform:translateY(-12px);opacity:0}to{transform:translateY(0);opacity:1}}
+
 /* print */
 @media print{
   #loadingOverlay,#lockScreen,#topBar,#drawer,#drawerOverlay,#cacheBadge,#actionModal{display:none!important}
@@ -896,6 +956,9 @@ tbody tr:hover{background:var(--surface2)}
       <svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
       Recurring Expenses
     </button>
+    <button class="drawer-item" id="nav-income" onclick="showPage('income')"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Income</button>
+    <button class="drawer-item" id="nav-cashflow" onclick="showPage('cashflow')"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Cash Flow</button>
+    <button class="drawer-item" id="nav-budget" onclick="showPage('budget')"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Budgets</button>
   </div>
   <div class="drawer-footer">
     <button class="drawer-logout" onclick="logout()">
@@ -1267,9 +1330,19 @@ function showPage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.drawer-item').forEach(i=>i.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  document.getElementById('nav-'+name).classList.add('active');
+  const navEl=document.getElementById('nav-'+name);
+  if(navEl)navEl.classList.add('active');
   if(name==='analytics')renderAnalytics();
   if(name==='recurring')loadRecurringData();
+  if(name==='income'){loadIncomeData();}
+  if(name==='cashflow'){
+    populateNewPageYears();
+    renderCashFlow();
+  }
+  if(name==='budget'){
+    loadBudgets();
+    renderBudgetPage();
+  }
 }
 
 // ── GREETING ──────────────────────────────────────────
@@ -1403,7 +1476,10 @@ function closeActionModal(){
   document.getElementById('actionModal').classList.add('hidden');
   pendingActionId=null;
 }
-function actionEdit(){const id=pendingActionId;closeActionModal();if(id!==null)editExpense(id);}
+function actionEdit(){
+  closeActionModal();
+  if(pendingActionId!==null)editExpense(pendingActionId);
+}
 async function actionDelete(){
   const id=pendingActionId;closeActionModal();
   if(id===null)return;
@@ -2387,6 +2463,543 @@ async function bookRecurring(){
 }
 
 // ── showPage updated to load recurring data ───────────────────────────────────
+
+
+// ══════════════════════════════════════════════════════
+// ── INCOME ENGINE ─────────────────────────────────────
+// ══════════════════════════════════════════════════════
+let incomeEntries = [];
+let incomeMembers = [];
+let incomeHeads = [];
+let pendingIncActionId = null;
+let incPressTimer = null;
+
+const INC_CACHE = 'sb_income_cache';
+const INC_MEM_CACHE = 'sb_income_members';
+const INC_HEAD_CACHE = 'sb_income_heads';
+
+async function loadIncomeData() {
+  // Load from cache first
+  try { incomeEntries = JSON.parse(localStorage.getItem(INC_CACHE)||'[]'); } catch(e){ incomeEntries=[]; }
+  try { incomeMembers = JSON.parse(localStorage.getItem(INC_MEM_CACHE)||'[]'); } catch(e){ incomeMembers=[]; }
+  try { incomeHeads = JSON.parse(localStorage.getItem(INC_HEAD_CACHE)||'[]'); } catch(e){ incomeHeads=[]; }
+
+  // Fetch fresh from cloud
+  try {
+    const [eRes, mRes, hRes] = await Promise.all([
+      fetch(API_URL + '?sheet=Income'),
+      fetch(API_URL + '?sheet=IncomeMember'),
+      fetch(API_URL + '?sheet=IncomeHead')
+    ]);
+    const [eData, mData, hData] = await Promise.all([eRes.json(), mRes.json(), hRes.json()]);
+    if(Array.isArray(eData)) { incomeEntries = eData; localStorage.setItem(INC_CACHE, JSON.stringify(eData)); }
+    if(Array.isArray(mData)) { incomeMembers = mData.map(x=>x.name||x).filter(Boolean); localStorage.setItem(INC_MEM_CACHE, JSON.stringify(mData)); }
+    if(Array.isArray(hData)) { incomeHeads = hData.map(x=>x.name||x).filter(Boolean); localStorage.setItem(INC_HEAD_CACHE, JSON.stringify(hData)); }
+  } catch(e) { console.log('Income fetch error', e); }
+
+  renderIncomeControls();
+  renderIncomePage();
+}
+
+function renderIncomeControls() {
+  // Members list
+  const ml = document.getElementById('incMemberList');
+  const mdd = document.getElementById('incMemberDD');
+  if(ml) {
+    ml.innerHTML = '';
+    incomeMembers.forEach(m => {
+      ml.innerHTML += `<div class="nature-chip"><span class="nature-chip-name">${m}</span><div class="nature-chip-actions"><button class="btn-danger-sm" onclick="deleteIncomeMember('${m}')">🗑</button></div></div>`;
+    });
+  }
+  if(mdd) { mdd.innerHTML = incomeMembers.map(m=>`<option>${m}</option>`).join(''); }
+
+  // Heads list
+  const hl = document.getElementById('incHeadList');
+  const hdd = document.getElementById('incHeadDD');
+  if(hl) {
+    hl.innerHTML = '';
+    incomeHeads.forEach(h => {
+      hl.innerHTML += `<div class="nature-chip"><span class="nature-chip-name">${h}</span><div class="nature-chip-actions"><button class="btn-danger-sm" onclick="deleteIncomeHead('${h}')">🗑</button></div></div>`;
+    });
+  }
+  if(hdd) { hdd.innerHTML = incomeHeads.map(h=>`<option>${h}</option>`).join(''); }
+}
+
+async function addIncomeMember() {
+  const v = document.getElementById('incMemberInput').value.trim();
+  if(!v || incomeMembers.includes(v)) return;
+  incomeMembers.push(v);
+  localStorage.setItem(INC_MEM_CACHE, JSON.stringify(incomeMembers.map(m=>({name:m}))));
+  try { await fetch(API_URL, {method:'POST', body: JSON.stringify({sheet:'IncomeMember', name:v})}); } catch(e){}
+  document.getElementById('incMemberInput').value = '';
+  renderIncomeControls();
+}
+async function deleteIncomeMember(name) {
+  if(!confirm('Delete member "'+name+'"?')) return;
+  incomeMembers = incomeMembers.filter(m=>m!==name);
+  try { await fetch(API_URL, {method:'POST', body: JSON.stringify({sheet:'IncomeMember', action:'delete', name})}); } catch(e){}
+  renderIncomeControls();
+}
+async function addIncomeHead() {
+  const v = document.getElementById('incHeadInput').value.trim();
+  if(!v || incomeHeads.includes(v)) return;
+  incomeHeads.push(v);
+  localStorage.setItem(INC_HEAD_CACHE, JSON.stringify(incomeHeads.map(h=>({name:h}))));
+  try { await fetch(API_URL, {method:'POST', body: JSON.stringify({sheet:'IncomeHead', name:v})}); } catch(e){}
+  document.getElementById('incHeadInput').value = '';
+  renderIncomeControls();
+}
+async function deleteIncomeHead(name) {
+  if(!confirm('Delete head "'+name+'"?')) return;
+  incomeHeads = incomeHeads.filter(h=>h!==name);
+  try { await fetch(API_URL, {method:'POST', body: JSON.stringify({sheet:'IncomeHead', action:'delete', name})}); } catch(e){}
+  renderIncomeControls();
+}
+
+function renderIncomePage() {
+  // Populate year selector
+  const allYears = [...new Set([
+    ...incomeEntries.map(e=>e.date&&e.date.substring(0,4)).filter(Boolean),
+    ...expenses.map(e=>e.date&&e.date.substring(0,4)).filter(Boolean)
+  ])].sort().reverse();
+
+  const ity = document.getElementById('incTopYear');
+  if(ity) {
+    const prev = ity.value;
+    ity.innerHTML = allYears.map(y=>`<option>${y}</option>`).join('');
+    if(prev && allYears.includes(prev)) ity.value = prev;
+    else if(allYears.length) ity.value = allYears[0];
+  }
+
+  const yr = document.getElementById('incTopYear')?.value || new Date().getFullYear();
+  const data = incomeEntries.filter(e=>e.date&&e.date.substring(0,4)==yr);
+  const total = data.reduce((s,e)=>s+Number(e.amount||0), 0);
+  const cnt = data.length;
+
+  const el = document.getElementById('incTotalAmount');
+  if(el) el.textContent = '₹' + indian(total);
+  const sub = document.getElementById('incTotalSub');
+  if(sub) sub.textContent = `${cnt} entries · Avg ₹${indian(cnt?Math.round(total/cnt):0)} each`;
+
+  renderIncomeEntries(yr);
+  renderIncomeSummary(yr);
+}
+
+function renderIncomeEntries(yr) {
+  const container = document.getElementById('incEntries');
+  if(!container) return;
+  const data = incomeEntries.filter(e=>e.date&&e.date.substring(0,4)==yr)
+    .sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(!data.length) {
+    container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px">No income entries for this year.</div>';
+    return;
+  }
+  container.innerHTML = `<table>
+  <thead><tr><th>Date</th><th>Member</th><th>Head</th><th>Amount</th><th>Via</th><th>Notes</th></tr></thead>
+  <tbody>${data.map(e=>{
+    const d = new Date(e.date);
+    return `<tr ontouchstart="incPressStart('${e.id}')" ontouchend="incPressEnd()" onmousedown="incPressStart('${e.id}')" onmouseup="incPressEnd()">
+    <td style="white-space:nowrap">${String(d.getDate()).padStart(2,'0')} ${shortM[d.getMonth()]}<br><span style="color:var(--text3);font-size:10px">${d.getFullYear()}</span></td>
+    <td>${e.member||''}</td><td>${e.head||''}</td>
+    <td class="amount-cell" style="color:var(--green)">₹${indian(e.amount)}</td>
+    <td><span class="badge badge-cash">${e.paid||''}</span></td>
+    <td style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--text3)">${e.notes||'—'}</td>
+    </tr>`;
+  }).join('')}</tbody></table>`;
+}
+
+function renderIncomeSummary(yr) {
+  const group = document.getElementById('incSummaryGroup')?.value || 'member';
+  const data = incomeEntries.filter(e=>e.date&&e.date.substring(0,4)==yr);
+  const obj = {};
+  data.forEach(e=>{
+    const key = group==='member' ? (e.member||'Unknown') : (e.head||'Unknown');
+    if(!obj[key]) obj[key]={count:0,total:0};
+    obj[key].count++; obj[key].total+=Number(e.amount||0);
+  });
+  const arr = Object.entries(obj).sort((a,b)=>b[1].total-a[1].total);
+  const grand = arr.reduce((s,[,v])=>s+v.total,0);
+  const el = document.getElementById('incSummaryArea');
+  if(!el) return;
+  if(!arr.length) { el.innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:12px">No data</div>'; return; }
+  el.innerHTML = `<div class="summary-grid">${arr.map(([k,v])=>`
+    <div class="summary-row">
+      <div><div class="summary-label">${k}</div><div class="summary-meta">${v.count} entry</div></div>
+      <div style="text-align:right">
+        <div class="summary-amount" style="color:var(--green)">₹${indian(v.total)}</div>
+        <div class="summary-avg">avg ₹${indian(Math.round(v.total/v.count))}</div>
+      </div>
+    </div>`).join('')}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding:14px;background:linear-gradient(135deg,#065f46,#10b981);border-radius:12px">
+    <span style="font-weight:700;color:#fff">Total Income</span>
+    <span style="font-family:'DM Mono',monospace;font-weight:800;color:#fff;font-size:16px">₹${indian(grand)}</span>
+  </div>`;
+}
+
+async function saveIncomeEntry() {
+  const eid = document.getElementById('incEditId').value;
+  const date = document.getElementById('incDate').value;
+  const member = document.getElementById('incMemberDD').value;
+  const head = document.getElementById('incHeadDD').value;
+  const paid = document.getElementById('incPaid').value;
+  const amount = Number(document.getElementById('incAmount').value||0);
+  const notes = document.getElementById('incNotes').value;
+  if(!date){alert('Please select a date.');return;}
+  if(!amount){alert('Please enter an amount.');return;}
+  const obj = {id:eid||Date.now(), date, member, head, amount, paid, notes, sheet:'Income'};
+  if(eid) incomeEntries = incomeEntries.map(e=>e.id==eid?obj:e);
+  else incomeEntries.push(obj);
+  localStorage.setItem(INC_CACHE, JSON.stringify(incomeEntries));
+  try { await fetch(API_URL, {method:'POST', body: JSON.stringify(obj)}); } catch(e){}
+  clearIncomeForm();
+  renderIncomePage();
+  const es = document.getElementById('incEntrySection');
+  if(es&&es.classList.contains('hidden')){es.classList.remove('hidden');document.getElementById('incEntryChevron').classList.add('open');}
+}
+
+function clearIncomeForm() {
+  document.getElementById('incEditId').value='';
+  document.getElementById('incDate').value='';
+  document.getElementById('incAmount').value='';
+  document.getElementById('incNotes').value='';
+  document.getElementById('incSaveBtn').textContent='Add Income';
+}
+
+function incPressStart(id) { incPressTimer=setTimeout(()=>showIncActionModal(id),700); }
+function incPressEnd() { clearTimeout(incPressTimer); }
+function showIncActionModal(id) {
+  pendingIncActionId=id;
+  const e=incomeEntries.find(x=>x.id==id);
+  document.getElementById('actionModalDesc').textContent=e?(e.head||'Income Entry'):'Income Entry';
+  document.getElementById('actionModal').classList.remove('hidden');
+  // Temporarily rewire buttons
+  document.querySelector('.action-btn.edit-btn').onclick=()=>{closeActionModal();editIncomeEntry(pendingIncActionId);};
+  document.querySelector('.action-btn.delete-btn').onclick=()=>deleteIncomeEntry();
+}
+function editIncomeEntry(id) {
+  const e=incomeEntries.find(x=>x.id==id);if(!e)return;
+  document.getElementById('incEditId').value=e.id;
+  document.getElementById('incDate').value=e.date||'';
+  if(document.getElementById('incMemberDD'))document.getElementById('incMemberDD').value=e.member||'';
+  if(document.getElementById('incHeadDD'))document.getElementById('incHeadDD').value=e.head||'';
+  document.getElementById('incAmount').value=e.amount||'';
+  document.getElementById('incPaid').value=e.paid||'Bank Transfer';
+  document.getElementById('incNotes').value=e.notes||'';
+  document.getElementById('incSaveBtn').textContent='Save Changes';
+  const as=document.getElementById('incAddSection');
+  if(as&&as.classList.contains('hidden')){as.classList.remove('hidden');document.getElementById('incAddChevron').classList.add('open');}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+async function deleteIncomeEntry() {
+  const id=pendingIncActionId; closeActionModal();
+  if(id===null)return;
+  if(!confirm('Delete this income entry?'))return;
+  try { await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'delete',id,sheet:'Income'})}); } catch(e){}
+  incomeEntries=incomeEntries.filter(e=>e.id!=id);
+  localStorage.setItem(INC_CACHE,JSON.stringify(incomeEntries));
+  renderIncomePage();
+  // Re-wire action buttons back to expense
+  document.querySelector('.action-btn.edit-btn').onclick=()=>actionEdit();
+  document.querySelector('.action-btn.delete-btn').onclick=()=>actionDelete();
+}
+
+// ══════════════════════════════════════════════════════
+// ── CASH FLOW ENGINE ──────────────────────────────────
+// ══════════════════════════════════════════════════════
+function renderCashFlow() {
+  const yr = document.getElementById('cfYear')?.value || new Date().getFullYear().toString();
+  const mVal = document.getElementById('cfMonth')?.value || 'all';
+
+  let incData = incomeEntries.filter(e=>e.date&&e.date.substring(0,4)===yr);
+  let expData = expenses.filter(e=>e.date&&e.date.substring(0,4)===yr);
+
+  if(mVal !== 'all') {
+    const m = parseInt(mVal);
+    incData = incData.filter(e=>new Date(e.date).getMonth()===m);
+    expData = expData.filter(e=>new Date(e.date).getMonth()===m);
+  }
+
+  const totalIncome = incData.reduce((s,e)=>s+Number(e.amount||0),0);
+  const totalExpense = expData.reduce((s,e)=>s+Number(e.amount||0),0);
+  const fixedExp = expData.filter(e=>e.category==='Fixed').reduce((s,e)=>s+Number(e.amount||0),0);
+  const varExp = totalExpense - fixedExp;
+  const balance = totalIncome - totalExpense;
+
+  const wf = document.getElementById('cfWaterfall');
+  if(!wf) return;
+
+  const fmt = (n,positive=true) => {
+    const cl = n>=0 ? 'cf-amount-green' : 'cf-amount-red';
+    return `<span class="${cl}">₹${indian(Math.abs(n))}</span>`;
+  };
+
+  wf.innerHTML = `
+  <div class="cf-row cf-row-main">
+    <div style="font-size:20px;margin-right:12px">💰</div>
+    <div class="cf-label">Total Income</div>
+    <div class="cf-amount cf-amount-green">₹${indian(totalIncome)}</div>
+  </div>
+  <div style="text-align:center;font-size:18px;color:var(--text3);margin:2px 0">↓</div>
+  <div class="cf-row cf-row-main">
+    <div style="font-size:20px;margin-right:12px">💸</div>
+    <div class="cf-label">Total Expenses</div>
+    <div class="cf-amount cf-amount-red">− ₹${indian(totalExpense)}</div>
+  </div>
+  <div style="padding:0 16px;margin-bottom:8px">
+    <div class="cf-row cf-row-sub">
+      <div class="cf-label-sub">Fixed</div>
+      <div class="cf-amount" style="font-size:13px;color:var(--text2)">₹${indian(fixedExp)}</div>
+    </div>
+    <div class="cf-row cf-row-sub">
+      <div class="cf-label-sub">Variable</div>
+      <div class="cf-amount" style="font-size:13px;color:var(--text2)">₹${indian(varExp)}</div>
+    </div>
+  </div>
+  <div style="text-align:center;font-size:18px;color:var(--text3);margin:2px 0">↓</div>
+  <div class="cf-row cf-row-total">
+    <div style="font-size:20px;margin-right:12px">${balance>=0?'🏦':'⚠️'}</div>
+    <div class="cf-label" style="color:#fff">Balance in Hand</div>
+    <div class="cf-amount ${balance>=0?'cf-amount-green':'cf-amount-red'}" style="font-size:17px;color:${balance>=0?'#6ee7b7':'#fca5a5'}">
+      ${balance>=0?'':'− '}₹${indian(Math.abs(balance))}
+    </div>
+  </div>
+  ${totalIncome>0?`<div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text3)">
+    Savings Rate: <strong style="color:${balance>=0?'var(--green)':'var(--red)'}">
+    ${Math.round(balance/totalIncome*100)}%
+    </strong> of income
+  </div>`:''}`;
+
+  renderCashFlowChart();
+}
+
+function renderCashFlowChart() {
+  const yr = document.getElementById('cfChartYear')?.value || new Date().getFullYear().toString();
+  const area = document.getElementById('cfChartArea');
+  if(!area) return;
+
+  const incByMonth = Array(12).fill(0);
+  const expByMonth = Array(12).fill(0);
+  incomeEntries.filter(e=>e.date&&e.date.substring(0,4)===yr)
+    .forEach(e=>{ incByMonth[new Date(e.date).getMonth()]+=Number(e.amount||0); });
+  expenses.filter(e=>e.date&&e.date.substring(0,4)===yr)
+    .forEach(e=>{ expByMonth[new Date(e.date).getMonth()]+=Number(e.amount||0); });
+
+  const balByMonth = incByMonth.map((v,i)=>v-expByMonth[i]);
+  const maxVal = Math.max(...incByMonth, ...expByMonth, 1);
+  const CHART_H = 120;
+  const GRID_STEPS = 4;
+
+  let gridHtml='';
+  for(let s=1;s<=GRID_STEPS;s++){
+    const pct=s/GRID_STEPS;
+    const top=CHART_H*(1-pct);
+    gridHtml+=`<div class="bar-grid-line" style="top:${top}px"></div>
+    <div class="bar-grid-label" style="top:${top}px">${compact(Math.round(maxVal*pct))}</div>`;
+  }
+
+  const barsHtml = shortM.map((m,i)=>{
+    const ih = Math.round((incByMonth[i]/maxVal)*CHART_H);
+    const eh = Math.round((expByMonth[i]/maxVal)*CHART_H);
+    const bal = balByMonth[i];
+    return `<div class="bc-col-v2" title="${m}: Inc ₹${indian(incByMonth[i])} Exp ₹${indian(expByMonth[i])}">
+      <div class="bc-val-label">${incByMonth[i]>0||expByMonth[i]>0?compact(incByMonth[i]):''}
+      </div>
+      <div style="width:100%;height:${CHART_H}px;display:flex;align-items:flex-end;justify-content:center;gap:2px;position:relative">
+        ${incByMonth[i]>0?`<div style="flex:1;height:${Math.max(ih,2)}px;background:#10b981;border-radius:4px 4px 0 0"></div>`:'<div style="flex:1"></div>'}
+        ${expByMonth[i]>0?`<div style="flex:1;height:${Math.max(eh,2)}px;background:#1a56db;border-radius:4px 4px 0 0"></div>`:'<div style="flex:1"></div>'}
+      </div>
+      <div class="bc-x-axis-line"></div>
+      <div class="bc-x-label">${m[0]}</div>
+    </div>`;
+  }).join('');
+
+  area.innerHTML = `<div class="bar-chart-outer">
+    <div class="bar-grid-lines" style="height:${CHART_H}px">${gridHtml}</div>
+    <div class="bars-row" style="height:${CHART_H+32}px;padding-right:28px">${barsHtml}</div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// ── BUDGET ENGINE ─────────────────────────────────────
+// ══════════════════════════════════════════════════════
+let budgets = {}; // { natureName: monthlyBudget }
+const BUDGET_CACHE = 'sb_budgets_cache';
+
+async function loadBudgets() {
+  try { budgets = JSON.parse(localStorage.getItem(BUDGET_CACHE)||'{}'); } catch(e){ budgets={}; }
+  try {
+    const res = await fetch(API_URL + '?sheet=Budgets');
+    const data = await res.json();
+    if(Array.isArray(data)) {
+      budgets = {};
+      data.forEach(row=>{ if(row.nature&&row.monthlyBudget) budgets[row.nature]=Number(row.monthlyBudget); });
+      localStorage.setItem(BUDGET_CACHE, JSON.stringify(budgets));
+    }
+  } catch(e){ console.log('Budget fetch error',e); }
+  renderBudgetPage();
+}
+
+async function saveBudgets() {
+  const inputs = document.querySelectorAll('.budget-set-input');
+  const payload = [];
+  budgets = {};
+  inputs.forEach(inp=>{
+    const nature = inp.dataset.nature;
+    const val = Number(inp.value||0);
+    if(val>0) {
+      budgets[nature] = val;
+      payload.push({nature, monthlyBudget:val, sheet:'Budgets'});
+    }
+  });
+  localStorage.setItem(BUDGET_CACHE, JSON.stringify(budgets));
+  try {
+    await fetch(API_URL, {method:'POST', body: JSON.stringify({action:'saveBudgets', budgets: payload, sheet:'Budgets'})});
+  } catch(e){}
+  alert('Budgets saved!');
+  renderBudgetPage();
+}
+
+function renderBudgetPage() {
+  renderBudgetInputList();
+  renderBudgetVsActuals();
+  renderBudgetAlerts();
+}
+
+function renderBudgetInputList() {
+  const el = document.getElementById('budgetInputList');
+  if(!el) return;
+  const allNatures = natures.length ? natures : Object.keys(budgets);
+  if(!allNatures.length) { el.innerHTML='<div style="color:var(--text3);font-size:13px">Add natures of expense first from the Home page.</div>'; return; }
+  el.innerHTML = allNatures.map(n=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="flex:1;font-size:13px;font-weight:600;color:var(--text)">${n}</div>
+      <input class="field-input budget-set-input" type="number" data-nature="${n}" placeholder="₹ / month"
+        value="${budgets[n]||''}" style="width:120px;text-align:right">
+    </div>`).join('');
+}
+
+function renderBudgetVsActuals() {
+  const el = document.getElementById('budgetVsActuals');
+  const scoreEl = document.getElementById('budgetScore');
+  if(!el) return;
+
+  // Populate year selector
+  const byEl = document.getElementById('budgetYear');
+  if(byEl && !byEl.innerHTML) {
+    years().forEach(y=>byEl.innerHTML+=`<option>${y}</option>`);
+    if(years().length) byEl.value=years()[0];
+  }
+
+  const mVal = document.getElementById('budgetMonth')?.value||'current';
+  const yr = document.getElementById('budgetYear')?.value||years()[0]||new Date().getFullYear().toString();
+  const now = new Date();
+
+  let targetMonth;
+  if(mVal==='current') targetMonth=now.getMonth();
+  else targetMonth=parseInt(mVal);
+
+  const data = expenses.filter(e=>{
+    if(!e.date) return false;
+    const d=new Date(e.date);
+    return d.getFullYear()==yr && d.getMonth()===targetMonth;
+  });
+
+  const budgetedNatures = Object.keys(budgets);
+  if(!budgetedNatures.length) {
+    el.innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">No budgets set yet. Expand "Set Monthly Budgets" above to add your budgets.</div>';
+    return;
+  }
+
+  let totalScore=0, scoredCount=0;
+  const rows = budgetedNatures.map(n=>{
+    const bud=budgets[n];
+    const actual=data.filter(e=>e.nature===n).reduce((s,e)=>s+Number(e.amount||0),0);
+    const pct=bud>0?Math.round(actual/bud*100):0;
+    const remaining=bud-actual;
+    let barClass='green', alertEmoji='🟢';
+    if(pct>=100){barClass='red';alertEmoji='🔴';}
+    else if(pct>=80){barClass='amber';alertEmoji='🟡';}
+
+    // Score: 100=perfect, 0=blown
+    const score=Math.max(0,Math.min(100,100-Math.max(0,pct-100)));
+    totalScore+=score; scoredCount++;
+
+    return `<div class="budget-item">
+      <div class="budget-item-header">
+        <div class="budget-item-name">${alertEmoji} ${n}</div>
+        <div class="budget-item-amounts">₹${indian(actual)} / ₹${indian(bud)}</div>
+      </div>
+      <div class="budget-bar-wrap"><div class="budget-bar ${barClass}" style="width:${Math.min(pct,100)}%"></div></div>
+      <div class="budget-item-meta">
+        <span>${pct}% used</span>
+        <span>${remaining>=0?'₹'+indian(remaining)+' left':'₹'+indian(Math.abs(remaining))+' over'}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = rows;
+
+  // Score card
+  if(scoreEl) {
+    const avg=scoredCount?Math.round(totalScore/scoredCount):0;
+    const scoreColor=avg>=80?'var(--green)':avg>=60?'var(--orange)':'var(--red)';
+    const scoreLabel=avg>=80?'Excellent 🏆':avg>=60?'On Track ✅':'Needs Attention ⚠️';
+    scoreEl.innerHTML=`<div style="text-align:center;padding:20px">
+      <div style="font-size:48px;font-weight:800;color:${scoreColor};font-family:'DM Mono',monospace">${avg}</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-top:4px">${scoreLabel}</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">Budget adherence score out of 100 for ${months[targetMonth]} ${yr}</div>
+    </div>`;
+  }
+}
+
+function renderBudgetAlerts() {
+  const banner = document.getElementById('budgetAlertBanner');
+  if(!banner) return;
+  banner.innerHTML = '';
+
+  const now = new Date();
+  const curMonth = now.getMonth();
+  const curYear = now.getFullYear().toString();
+  const data = expenses.filter(e=>{
+    if(!e.date)return false;
+    const d=new Date(e.date);
+    return d.getFullYear()==curYear && d.getMonth()===curMonth;
+  });
+
+  Object.entries(budgets).forEach(([nature, bud])=>{
+    const actual = data.filter(e=>e.nature===nature).reduce((s,e)=>s+Number(e.amount||0),0);
+    const pct = bud>0?Math.round(actual/bud*100):0;
+    if(pct>=80) {
+      const cls = pct>=100?'budget-alert-red':'';
+      const msg = pct>=100
+        ? `🔴 ${nature} exceeded budget by ₹${indian(actual-bud)}`
+        : `🟡 ${nature} at ${pct}% of budget — ₹${indian(bud-actual)} remaining`;
+      banner.innerHTML += `<div class="budget-banner-pill ${cls}">${msg}</div>`;
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// ── POPULATE YEAR SELECTS FOR NEW PAGES ───────────────
+// ══════════════════════════════════════════════════════
+function populateNewPageYears() {
+  const allYears = [...new Set([
+    ...expenses.map(e=>e.date&&e.date.substring(0,4)).filter(Boolean),
+    ...incomeEntries.map(e=>e.date&&e.date.substring(0,4)).filter(Boolean),
+    new Date().getFullYear().toString()
+  ])].sort().reverse();
+
+  ['cfYear','cfChartYear'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){
+      const prev=el.value;
+      el.innerHTML=allYears.map(y=>`<option>${y}</option>`).join('');
+      if(prev&&allYears.includes(prev))el.value=prev;
+      else if(allYears.length)el.value=allYears[0];
+    }
+  });
+}
+
 </script>
 
 <!-- ═══════════ RECURRING MASTER PAGE ═══════════ -->
@@ -2484,6 +3097,234 @@ async function bookRecurring(){
 
 </div>
 <!-- end recurring -->
+
+
+<!-- ══════════════════ INCOME PAGE ══════════════════ -->
+<div id="page-income" class="page">
+
+  <!-- Income Hero -->
+  <div class="income-hero">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="income-hero-label">Total Income</div>
+      <select class="hero-year-select" id="incTopYear" onchange="renderIncomePage()"></select>
+    </div>
+    <div class="income-hero-amount" id="incTotalAmount">₹0</div>
+    <div class="income-hero-sub" id="incTotalSub">Loading…</div>
+  </div>
+
+  <!-- Manage Income Members -->
+  <div class="card">
+    <div class="collapse-header" onclick="toggleCollapse('incMemberSection','incMemberChevron')">
+      <div class="card-title-text" style="font-size:14px;font-weight:700">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:var(--green);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Manage Members
+      </div>
+      <div class="collapse-chevron" id="incMemberChevron"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    </div>
+    <div id="incMemberSection" class="hidden" style="margin-top:14px">
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <input class="field-input" id="incMemberInput" placeholder="Member name (e.g. Vikas)" style="flex:1">
+        <button class="btn-small" onclick="addIncomeMember()" style="background:var(--green);color:#fff">+ Add</button>
+      </div>
+      <div id="incMemberList"></div>
+    </div>
+  </div>
+
+  <!-- Manage Income Heads -->
+  <div class="card">
+    <div class="collapse-header" onclick="toggleCollapse('incHeadSection','incHeadChevron')">
+      <div class="card-title-text" style="font-size:14px;font-weight:700">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:var(--green);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Manage Income Heads
+      </div>
+      <div class="collapse-chevron" id="incHeadChevron"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    </div>
+    <div id="incHeadSection" class="hidden" style="margin-top:14px">
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <input class="field-input" id="incHeadInput" placeholder="Head (e.g. Salary, Dividend)" style="flex:1">
+        <button class="btn-small" onclick="addIncomeHead()" style="background:var(--green);color:#fff">+ Add</button>
+      </div>
+      <div id="incHeadList"></div>
+    </div>
+  </div>
+
+  <!-- Add / Edit Income Entry -->
+  <div class="card">
+    <div class="collapse-header" onclick="toggleCollapse('incAddSection','incAddChevron')">
+      <div class="card-title-text" style="font-size:14px;font-weight:700">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:var(--green);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add / Edit Income
+      </div>
+      <div class="collapse-chevron" id="incAddChevron"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    </div>
+    <div id="incAddSection" class="hidden" style="margin-top:14px">
+      <input type="hidden" id="incEditId">
+      <div class="field-row">
+        <div class="field-group">
+          <div class="field-label">Date</div>
+          <input class="field-input" type="date" id="incDate">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Member</div>
+          <select class="field-input" id="incMemberDD"></select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <div class="field-label">Income Head</div>
+          <select class="field-input" id="incHeadDD"></select>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Paid Via</div>
+          <select class="field-input" id="incPaid">
+            <option>Bank Transfer</option><option>Cash</option><option>Cheque</option><option>UPI</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Amount (₹)</div>
+        <input class="field-input" type="number" id="incAmount" placeholder="0.00">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Notes</div>
+        <input class="field-input" id="incNotes" placeholder="Optional note">
+      </div>
+      <button class="btn-primary" id="incSaveBtn" onclick="saveIncomeEntry()" style="background:linear-gradient(135deg,#065f46,#10b981)">Add Income</button>
+    </div>
+  </div>
+
+  <!-- Income Entries -->
+  <div class="card">
+    <div class="collapse-header" onclick="toggleCollapse('incEntrySection','incEntryChevron')">
+      <div class="card-title-text" style="font-size:14px;font-weight:700">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:var(--green);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg>
+        Income Entries
+      </div>
+      <div class="collapse-chevron" id="incEntryChevron"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    </div>
+    <div id="incEntrySection" class="hidden" style="margin-top:14px;overflow-x:auto">
+      <div id="incEntries"></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center">Long press any row to Edit or Delete</div>
+    </div>
+  </div>
+
+  <!-- Income Summary by Member & Head -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-text">
+        <svg viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+        Income Summary
+      </div>
+      <select class="chart-select" id="incSummaryGroup" onchange="renderIncomeSummary()">
+        <option value="member">By Member</option>
+        <option value="head">By Head</option>
+      </select>
+    </div>
+    <div id="incSummaryArea"></div>
+  </div>
+
+</div>
+<!-- end INCOME -->
+
+<!-- ══════════════════ CASH FLOW PAGE ══════════════════ -->
+<div id="page-cashflow" class="page">
+
+  <div class="cf-month-select">
+    <div class="field-label" style="margin-bottom:0;white-space:nowrap">Period:</div>
+    <select class="field-input" id="cfYear" onchange="renderCashFlow()" style="flex:1;max-width:100px"></select>
+    <select class="field-input" id="cfMonth" onchange="renderCashFlow()" style="flex:1;max-width:130px">
+      <option value="all">Full Year</option>
+      <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+      <option value="3">April</option><option value="4">May</option><option value="5">June</option>
+      <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+      <option value="9">October</option><option value="10">November</option><option value="11">December</option>
+    </select>
+  </div>
+
+  <!-- Cash Flow Waterfall Card -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-text">
+        <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Money Flow
+      </div>
+    </div>
+    <div id="cfWaterfall"></div>
+  </div>
+
+  <!-- Monthly Cash Flow Bar Chart -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">Monthly Cash Flow Trend</div>
+      <select class="chart-select" id="cfChartYear" onchange="renderCashFlowChart()"></select>
+    </div>
+    <div id="cfChartArea"></div>
+    <div class="chart-legend" style="margin-top:12px">
+      <div class="legend-item"><div class="legend-box" style="background:#10b981"></div> Income</div>
+      <div class="legend-item"><div class="legend-box" style="background:#1a56db"></div> Expenses</div>
+      <div class="legend-item"><div class="legend-box" style="background:#f59e0b"></div> Balance</div>
+    </div>
+  </div>
+
+</div>
+<!-- end CASHFLOW -->
+
+<!-- ══════════════════ BUDGET PAGE ══════════════════ -->
+<div id="page-budget" class="page">
+
+  <!-- Budget Alerts Banner -->
+  <div id="budgetAlertBanner"></div>
+
+  <!-- Set Budgets -->
+  <div class="card">
+    <div class="collapse-header" onclick="toggleCollapse('budgetSetSection','budgetSetChevron')">
+      <div class="card-title-text" style="font-size:14px;font-weight:700">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        Set Monthly Budgets
+      </div>
+      <div class="collapse-chevron" id="budgetSetChevron"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    </div>
+    <div id="budgetSetSection" class="hidden" style="margin-top:14px">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Set a monthly budget per nature of expense. Leave blank or 0 to skip.</div>
+      <div id="budgetInputList"></div>
+      <button class="btn-primary" onclick="saveBudgets()" style="margin-top:8px">Save Budgets</button>
+    </div>
+  </div>
+
+  <!-- Budget vs Actuals -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-text">
+        <svg viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+        Budget vs Actuals
+      </div>
+      <div style="display:flex;gap:6px">
+        <select class="chart-select" id="budgetMonth">
+          <option value="current">This Month</option>
+          <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+          <option value="3">April</option><option value="4">May</option><option value="5">June</option>
+          <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+          <option value="9">October</option><option value="10">November</option><option value="11">December</option>
+        </select>
+        <select class="chart-select" id="budgetYear"></select>
+      </div>
+    </div>
+    <div id="budgetVsActuals"></div>
+  </div>
+
+  <!-- Budget Score -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-text">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Monthly Adherence Score
+      </div>
+    </div>
+    <div id="budgetScore"></div>
+  </div>
+
+</div>
+<!-- end BUDGET -->
 
 </body>
 </html>
