@@ -628,6 +628,10 @@ tbody tr:hover{background:var(--surface2)}
       <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       Analytics Dashboard
     </button>
+    <button class="drawer-item" id="nav-recurring" onclick="showPage('recurring')">
+      <svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+      Recurring Expenses
+    </button>
   </div>
   <div class="drawer-footer">
     <button class="drawer-logout" onclick="logout()">
@@ -710,7 +714,7 @@ tbody tr:hover{background:var(--surface2)}
       <div class="field-row">
         <div class="field-group">
           <div class="field-label">Category</div>
-          <select class="field-input" id="category" onchange="toggleRecurringControls()">
+          <select class="field-input" id="category">
             <option>Fixed</option>
             <option>Variable</option>
           </select>
@@ -724,35 +728,7 @@ tbody tr:hover{background:var(--surface2)}
           </select>
         </div>
       </div>
-      
-      <!-- Recurring Expense Controls (shown only for Fixed) -->
-      <div id="recurringControls" class="recurring-controls hidden">
-        <div class="recurring-label">🔁 Recurring Settings</div>
-        <div class="field-group" style="margin-bottom:8px">
-          <select class="field-input" id="recurringType" onchange="toggleMonthSelection()">
-            <option value="None">One-time (No Recurrence)</option>
-            <option value="AllYear">Throughout the Year (12 months)</option>
-            <option value="Specific">Specific Months</option>
-          </select>
-        </div>
-        <div id="monthSelectionArea" class="hidden">
-          <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600">Select Months:</div>
-          <div class="month-checkbox-grid">
-            <div class="month-checkbox"><input type="checkbox" id="m0" value="0"><label for="m0">Jan</label></div>
-            <div class="month-checkbox"><input type="checkbox" id="m1" value="1"><label for="m1">Feb</label></div>
-            <div class="month-checkbox"><input type="checkbox" id="m2" value="2"><label for="m2">Mar</label></div>
-            <div class="month-checkbox"><input type="checkbox" id="m3" value="3"><label for="m3">Apr</label></div>
-            <div class="month-checkbox"><input type="checkbox" id="m4" value="4"><label for="m4">May</label></div>
-            <div class="month-checkbox"><input type="checkbox" id="m5" value="5"><label for="m5">Jun</label></div>
-            <div class="month-checkbox"><input type="checkbox" id="m6" value="6"><label for="m6">Jul</label></div>
-            <div class="month-checkbox"><input type="checkbox" id="m7" value="7"><label for="m7">Aug</label></div>
-            <div class="month-checkbox"><input type="checkbox" id="m8" value="8"><label for="m8">Sep</label></div>
-            <div class="month-checkbox"><input type="checkbox" id="m9" value="9"><label for="m9">Oct</label></div>
-            <div class="month-checkbox"><input type="checkbox" id="m10" value="10"><label for="m10">Nov</label></div>
-            <div class="month-checkbox"><input type="checkbox" id="m11" value="11"><label for="m11">Dec</label></div>
-          </div>
-        </div>
-      </div>
+
 
       <div class="field-group">
         <div class="field-label">Description</div>
@@ -1006,6 +982,7 @@ function showPage(name){
   document.getElementById('page-'+name).classList.add('active');
   document.getElementById('nav-'+name).classList.add('active');
   if(name==='analytics')renderAnalytics();
+  if(name==='recurring')loadRecurringData();
 }
 
 // ── GREETING ──────────────────────────────────────────
@@ -1180,25 +1157,6 @@ function compact(n){
 }
 function years(){return [...new Set(expenses.map(e=>e.date&&e.date.substring(0,4)).filter(Boolean))].sort().reverse();}
 
-// ── RECURRING EXPENSE CONTROLS ────────────────────────
-function toggleRecurringControls(){
-  const cat=document.getElementById('category').value;
-  const rc=document.getElementById('recurringControls');
-  if(cat==='Fixed'){
-    rc.classList.remove('hidden');
-  }else{
-    rc.classList.add('hidden');
-  }
-}
-function toggleMonthSelection(){
-  const rt=document.getElementById('recurringType').value;
-  const ms=document.getElementById('monthSelectionArea');
-  if(rt==='Specific'){
-    ms.classList.remove('hidden');
-  }else{
-    ms.classList.add('hidden');
-  }
-}
 
 // ── MONTH FILTER PILLS ────────────────────────────────
 function renderMonthPills(){
@@ -1405,81 +1363,24 @@ function renderNatureSummary(){
 
 // ── SAVE EXPENSE ──────────────────────────────────────
 async function saveExpense(){
-  const cat=document.getElementById('category').value;
-  const recurringType=document.getElementById('recurringType').value;
+  const eid=document.getElementById('editId').value;
   const dateInput=document.getElementById('date').value;
   const nature=document.getElementById('natureDD').value;
+  const cat=document.getElementById('category').value;
   const description=document.getElementById('description').value;
   const amount=Number(document.getElementById('amount').value||0);
   const paid=document.getElementById('paid').value;
-  const eid=document.getElementById('editId').value;
-
-  // Build months list when recurring is selected
-  let monthsToCreate=[];
-  if(cat==='Fixed'&&recurringType!=='None'){
-    if(recurringType==='AllYear'){
-      monthsToCreate=[0,1,2,3,4,5,6,7,8,9,10,11];
-    }else if(recurringType==='Specific'){
-      for(let i=0;i<12;i++){
-        const cb=document.getElementById('m'+i);
-        if(cb&&cb.checked)monthsToCreate.push(i);
-      }
-    }
-    if(recurringType!=='None'&&monthsToCreate.length===0){
-      alert('Please select at least one month for recurring expense.');
-      return;
-    }
-  }
-
-  // Get year from date input (use local date parts — avoids UTC timezone shift)
-  const parsedDate=dateInput?new Date(dateInput+'T00:00:00'):new Date();
-  const year=parsedDate.getFullYear();
-
-  if(cat==='Fixed'&&monthsToCreate.length>0){
-    // ── RECURRING: create one entry per selected month ──
-    // If editing, DELETE the original entry first, then create fresh entries for all months.
-    if(eid){
-      expenses=expenses.filter(ex=>ex.id!=eid);
-      await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'delete',id:eid})});
-    }
-
-    const recurMonthsStr=monthsToCreate.join(',');
-
-    for(const month of monthsToCreate){
-      const mm=String(month+1).padStart(2,'0');
-      const dateStr=`${year}-${mm}-01`;
-      const newId=Date.now()+month+Math.random();
-      const newObj={
-        id:newId,date:dateStr,
-        nature,category:cat,description,amount,paid,
-        recurringType,recurringMonths:recurMonthsStr
-      };
-      expenses.push(newObj);
-      await fetch(API_URL,{method:'POST',body:JSON.stringify(newObj)});
-    }
-  }else{
-    // ── SINGLE ENTRY (new non-recurring, or edit without recurring) ──
-    const existingExp=eid?expenses.find(x=>x.id==eid):null;
-    // Build date string safely without UTC shift
-    let safeDate=dateInput;
-    if(!safeDate&&existingExp)safeDate=existingExp.date;
-    const obj={
-      id:eid||Date.now(),
-      date:safeDate,
-      nature,category:cat,description,amount,paid,
-      recurringType:cat==='Fixed'?recurringType:'None',
-      recurringMonths:cat==='Fixed'?(existingExp&&existingExp.recurringMonths?existingExp.recurringMonths:''):''
-    };
-    if(eid)expenses=expenses.map(ex=>ex.id==eid?obj:ex);
-    else expenses.push(obj);
-    await fetch(API_URL,{method:'POST',body:JSON.stringify(obj)});
-  }
-
+  if(!dateInput){alert('Please select a date.');return;}
+  if(!nature){alert('Please select a nature.');return;}
+  if(!amount){alert('Please enter an amount.');return;}
+  const obj={id:eid||Date.now(),date:dateInput,nature,category:cat,description,amount,paid,recurringType:'None',recurringMonths:''};
+  if(eid){expenses=expenses.map(ex=>ex.id==eid?obj:ex);}
+  else{expenses.push(obj);}
+  await fetch(API_URL,{method:'POST',body:JSON.stringify(obj)});
   await loadExpenses();
   clearForm();
-  // Open entries after save
   const es=document.getElementById('entrySection');
-  if(es.classList.contains('hidden')){es.classList.remove('hidden');document.getElementById('entryChevron').classList.add('open');}
+  if(es&&es.classList.contains('hidden')){es.classList.remove('hidden');document.getElementById('entryChevron').classList.add('open');}
 }
 
 function clearForm(){
@@ -1489,14 +1390,12 @@ function clearForm(){
   document.getElementById('amount').value='';
   document.getElementById('category').value='Fixed';
   document.getElementById('paid').value='Cash';
-  document.getElementById('recurringType').value='None';
   document.getElementById('saveBtn').textContent='Add Expense';
   // Uncheck all month checkboxes
   for(let i=0;i<12;i++){
     const cb=document.getElementById('m'+i);
     if(cb)cb.checked=false;
   }
-  toggleRecurringControls();
   toggleMonthSelection();
 }
 
@@ -1541,7 +1440,6 @@ function editExpense(id){
 
   document.getElementById('saveBtn').textContent='Save Changes';
 
-  toggleRecurringControls();
 
   if(typeof toggleMonthSelection==='function'){
     toggleMonthSelection();
@@ -1836,6 +1734,360 @@ fetchNatureMaster().then(()=>{
     loadExpenses();
   }
 });
+
+// ══════════════════════════════════════════════════════
+// RECURRING MASTER
+// ══════════════════════════════════════════════════════
+const RM_SHEET = 'RecurringMaster';
+const BL_SHEET = 'BookingLog';
+let recurringRules = [];
+let bookingLog = [];
+let rmSelectedMonths = [0,1,2,3,4,5,6,7,8,9,10,11]; // default = all year
+
+// ── Load both sheets ──────────────────────────────────
+async function loadRecurringData(){
+  try{
+    const [rmRes, blRes] = await Promise.all([
+      fetch(API_URL + '?sheet=' + RM_SHEET),
+      fetch(API_URL + '?sheet=' + BL_SHEET)
+    ]);
+    const rmData = await rmRes.json();
+    const blData = await blRes.json();
+    if(Array.isArray(rmData)) recurringRules = rmData;
+    if(Array.isArray(blData)) bookingLog = blData;
+  }catch(e){ console.log('Recurring load error', e); }
+  renderRecurringList();
+  populateBookYear();
+}
+
+// ── Populate book year select ─────────────────────────
+function populateBookYear(){
+  const sel = document.getElementById('bookYear');
+  if(!sel) return;
+  const cur = new Date().getFullYear();
+  sel.innerHTML = '';
+  [cur-1, cur, cur+1].forEach(y => sel.innerHTML += `<option value="${y}">${y}</option>`);
+  sel.value = cur;
+  // Default book month to current month
+  const bm = document.getElementById('bookMonth');
+  if(bm) bm.value = new Date().getMonth();
+}
+
+// ── Render recurring rules list ───────────────────────
+function renderRecurringList(){
+  const container = document.getElementById('recurringList');
+  if(!recurringRules.length){
+    container.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">No recurring rules yet. Tap + Add Rule to create one.</div>';
+    return;
+  }
+  const fullMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  container.innerHTML = recurringRules.map(r => {
+    const months = r.months === 'all' ? 'All 12 months' :
+      String(r.months).split(',').map(m => fullMonths[parseInt(m)]).join(', ');
+    const isActive = String(r.active) === 'true' || r.active === true;
+    return `<div class="rm-item">
+      <div class="rm-item-left">
+        <div class="rm-item-name">${r.name} <span class="${isActive?'rm-badge-active':'rm-badge-paused'}">${isActive?'Active':'Paused'}</span></div>
+        <div class="rm-item-meta">${r.nature} &middot; ${r.paid} &middot; ${months}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <div class="rm-item-amount">&#8377;${indian(r.amount)}</div>
+        <div class="rm-item-actions">
+          <button class="btn-small" onclick="editRecurringRule('${r.id}')">Edit</button>
+          <button class="btn-danger-sm" onclick="deleteRecurringRule('${r.id}')">Del</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Month grid for rule form ──────────────────────────
+function buildRmMonthGrid(){
+  const grid = document.getElementById('rmMonthGrid');
+  if(!grid) return;
+  const labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  let html = `<div class="month-grid-pill all-pill${rmSelectedMonths.length===12?' selected':''}" onclick="toggleRmAll()">All Year</div>`;
+  labels.forEach((m, i) => {
+    html += `<div class="month-grid-pill${rmSelectedMonths.includes(i)?' selected':''}" onclick="toggleRmMonth(${i})">${m}</div>`;
+  });
+  grid.innerHTML = html;
+}
+function toggleRmAll(){
+  if(rmSelectedMonths.length === 12) rmSelectedMonths = [];
+  else rmSelectedMonths = [0,1,2,3,4,5,6,7,8,9,10,11];
+  buildRmMonthGrid();
+}
+function toggleRmMonth(i){
+  if(rmSelectedMonths.includes(i)) rmSelectedMonths = rmSelectedMonths.filter(x=>x!==i);
+  else rmSelectedMonths.push(i);
+  // If all 12 selected, show as "All Year"
+  buildRmMonthGrid();
+}
+
+// ── Open Add form ─────────────────────────────────────
+function openAddRecurring(){
+  document.getElementById('rmEditId').value = '';
+  document.getElementById('rmName').value = '';
+  document.getElementById('rmAmount').value = '';
+  document.getElementById('rmPaid').value = 'Cash';
+  document.getElementById('rmActive').value = 'true';
+  document.getElementById('recurringFormTitle').textContent = 'New Recurring Rule';
+  rmSelectedMonths = [0,1,2,3,4,5,6,7,8,9,10,11];
+  // Populate nature dropdown
+  const rmNat = document.getElementById('rmNature');
+  rmNat.innerHTML = natures.map(n => `<option>${n}</option>`).join('');
+  buildRmMonthGrid();
+  document.getElementById('recurringFormCard').style.display = 'block';
+  document.getElementById('recurringFormCard').scrollIntoView({behavior:'smooth'});
+}
+
+// ── Open Edit form ────────────────────────────────────
+function editRecurringRule(id){
+  const r = recurringRules.find(x => String(x.id) === String(id));
+  if(!r) return;
+  document.getElementById('rmEditId').value = r.id;
+  document.getElementById('rmName').value = r.name;
+  document.getElementById('rmAmount').value = r.amount;
+  document.getElementById('rmPaid').value = r.paid;
+  document.getElementById('rmActive').value = String(r.active);
+  document.getElementById('recurringFormTitle').textContent = 'Edit Recurring Rule';
+  const rmNat = document.getElementById('rmNature');
+  rmNat.innerHTML = natures.map(n => `<option>${n}</option>`).join('');
+  if(r.nature) rmNat.value = r.nature;
+  // Parse months
+  if(r.months === 'all') rmSelectedMonths = [0,1,2,3,4,5,6,7,8,9,10,11];
+  else rmSelectedMonths = String(r.months).split(',').map(Number).filter(n=>!isNaN(n));
+  buildRmMonthGrid();
+  document.getElementById('recurringFormCard').style.display = 'block';
+  document.getElementById('recurringFormCard').scrollIntoView({behavior:'smooth'});
+}
+
+function closeRecurringForm(){
+  document.getElementById('recurringFormCard').style.display = 'none';
+}
+
+// ── Save recurring rule to DB ─────────────────────────
+async function saveRecurringRule(){
+  const name = document.getElementById('rmName').value.trim();
+  const nature = document.getElementById('rmNature').value;
+  const amount = Number(document.getElementById('rmAmount').value || 0);
+  const paid = document.getElementById('rmPaid').value;
+  const active = document.getElementById('rmActive').value === 'true';
+  const eid = document.getElementById('rmEditId').value;
+
+  if(!name){ alert('Please enter an expense name.'); return; }
+  if(!amount){ alert('Please enter an amount.'); return; }
+  if(!rmSelectedMonths.length){ alert('Please select at least one month.'); return; }
+
+  const monthsStr = rmSelectedMonths.length === 12 ? 'all' : rmSelectedMonths.sort((a,b)=>a-b).join(',');
+  const rule = {
+    id: eid || Date.now(),
+    name, nature, amount, paid,
+    months: monthsStr,
+    active,
+    createdOn: eid ? (recurringRules.find(r=>String(r.id)===eid)||{}).createdOn || new Date().toISOString().substring(0,10) : new Date().toISOString().substring(0,10),
+    sheet: RM_SHEET
+  };
+
+  if(eid){
+    recurringRules = recurringRules.map(r => String(r.id) === eid ? rule : r);
+  } else {
+    recurringRules.push(rule);
+  }
+
+  try{
+    await fetch(API_URL, {method:'POST', body: JSON.stringify(rule)});
+  }catch(e){ console.log('Save recurring error', e); }
+
+  renderRecurringList();
+  closeRecurringForm();
+}
+
+// ── Delete recurring rule ─────────────────────────────
+async function deleteRecurringRule(id){
+  if(!confirm('Delete this recurring rule? This will not affect expenses already booked.')) return;
+  recurringRules = recurringRules.filter(r => String(r.id) !== String(id));
+  try{
+    await fetch(API_URL, {method:'POST', body: JSON.stringify({sheet: RM_SHEET, action:'delete', id})});
+  }catch(e){}
+  renderRecurringList();
+}
+
+// ── BOOK RECURRING for a month ────────────────────────
+async function bookRecurring(){
+  const month = parseInt(document.getElementById('bookMonth').value);
+  const year = parseInt(document.getElementById('bookYear').value);
+  const fullMonthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const resultsEl = document.getElementById('bookResults');
+
+  // Filter active rules that apply to this month
+  const activeRules = recurringRules.filter(r => {
+    if(String(r.active) !== 'true' && r.active !== true) return false;
+    if(r.months === 'all') return true;
+    const applicableMonths = String(r.months).split(',').map(Number);
+    return applicableMonths.includes(month);
+  });
+
+  if(!activeRules.length){
+    resultsEl.innerHTML = '<div style="padding:12px;background:var(--surface2);border-radius:10px;font-size:13px;color:var(--text2);margin-top:8px">No active recurring rules apply to ' + fullMonthNames[month] + '.</div>';
+    return;
+  }
+
+  const results = [];
+  const savePromises = [];
+
+  for(const rule of activeRules){
+    // Check if already booked for this month+year
+    const alreadyBooked = bookingLog.some(b =>
+      String(b.recurringId) === String(rule.id) &&
+      parseInt(b.month) === month &&
+      parseInt(b.year) === year
+    );
+
+    if(alreadyBooked){
+      results.push({name: rule.name, status: 'skip', msg: 'Already booked for ' + fullMonthNames[month] + ' ' + year});
+      continue;
+    }
+
+    // Create expense entry
+    const mm = String(month+1).padStart(2,'0');
+    const dateStr = year + '-' + mm + '-01';
+    const expObj = {
+      id: Date.now() + Math.random(),
+      date: dateStr,
+      nature: rule.nature,
+      category: 'Fixed',
+      description: rule.name,
+      amount: Number(rule.amount),
+      paid: rule.paid,
+      recurringType: 'RecurringMaster',
+      recurringMonths: String(rule.id)
+    };
+    expenses.push(expObj);
+    savePromises.push(fetch(API_URL, {method:'POST', body: JSON.stringify(expObj)}));
+
+    // Log the booking
+    const logEntry = {
+      sheet: BL_SHEET,
+      recurringId: rule.id,
+      month,
+      year,
+      bookedOn: new Date().toISOString().substring(0,10)
+    };
+    bookingLog.push(logEntry);
+    savePromises.push(fetch(API_URL, {method:'POST', body: JSON.stringify(logEntry)}));
+
+    results.push({name: rule.name, amount: rule.amount, status: 'ok', msg: 'Booked \u20b9' + indian(rule.amount) + ' for ' + fullMonthNames[month] + ' ' + year});
+  }
+
+  await Promise.all(savePromises);
+  await loadExpenses();
+
+  // Show results
+  resultsEl.innerHTML = '<div style="margin-top:12px">' + results.map(r => {
+    const cls = r.status === 'ok' ? 'book-result-ok' : 'book-result-skip';
+    const icon = r.status === 'ok' ? '&#10003;' : '&#9888;';
+    return `<div class="book-result-item ${cls}"><span>${icon} ${r.name}</span><span>${r.msg}</span></div>`;
+  }).join('') + '</div>';
+}
+
+// ── showPage updated to load recurring data ───────────────────────────────────
 </script>
+
+<!-- ═══════════ RECURRING MASTER PAGE ═══════════ -->
+<div id="page-recurring" class="page">
+
+  <!-- Book Recurring for a Month -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-text">
+        <svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        Book Recurring Expenses
+      </div>
+    </div>
+    <div class="field-row" style="margin-bottom:12px">
+      <div class="field-group">
+        <div class="field-label">Month to Book</div>
+        <select class="field-input" id="bookMonth">
+          <option value="0">January</option><option value="1">February</option>
+          <option value="2">March</option><option value="3">April</option>
+          <option value="4">May</option><option value="5">June</option>
+          <option value="6">July</option><option value="7">August</option>
+          <option value="8">September</option><option value="9">October</option>
+          <option value="10">November</option><option value="11">December</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Year</div>
+        <select class="field-input" id="bookYear"></select>
+      </div>
+    </div>
+    <button class="book-btn" onclick="bookRecurring()">
+      &#9889; Book Recurring Expenses for Selected Month
+    </button>
+    <div id="bookResults"></div>
+  </div>
+
+  <!-- Manage Recurring Rules -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-text">
+        <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        My Recurring Rules
+      </div>
+      <button class="btn-small" onclick="openAddRecurring()">+ Add Rule</button>
+    </div>
+    <div id="recurringList"><div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Loading rules...</div></div>
+  </div>
+
+  <!-- Add / Edit Recurring Rule Form -->
+  <div class="card" id="recurringFormCard" style="display:none">
+    <div class="card-title">
+      <div class="card-title-text">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span id="recurringFormTitle">New Recurring Rule</span>
+      </div>
+      <button class="btn-danger-sm" onclick="closeRecurringForm()">Cancel</button>
+    </div>
+    <input type="hidden" id="rmEditId">
+    <div class="field-row">
+      <div class="field-group">
+        <div class="field-label">Expense Name</div>
+        <input class="field-input" id="rmName" placeholder="e.g. Milk, Rent, Netflix">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Nature</div>
+        <select class="field-input" id="rmNature"></select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <div class="field-label">Default Amount (Rs.)</div>
+        <input class="field-input" type="number" id="rmAmount" placeholder="0">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Paid Via</div>
+        <select class="field-input" id="rmPaid">
+          <option>Cash</option><option>Card</option><option>UPI</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Applicable Months</div>
+      <div class="month-grid" id="rmMonthGrid"></div>
+    </div>
+    <div class="field-group" style="margin-top:8px">
+      <div class="field-label">Status</div>
+      <select class="field-input" id="rmActive">
+        <option value="true">Active</option>
+        <option value="false">Paused</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="saveRecurringRule()" style="margin-top:8px">Save Rule</button>
+  </div>
+
+</div>
+<!-- end recurring -->
+
 </body>
 </html>
