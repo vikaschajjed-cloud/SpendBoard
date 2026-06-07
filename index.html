@@ -1477,8 +1477,9 @@ function closeActionModal(){
   pendingActionId=null;
 }
 function actionEdit(){
+  const id = pendingActionId; // capture BEFORE closeActionModal nulls it
   closeActionModal();
-  if(pendingActionId!==null)editExpense(pendingActionId);
+  if(id !== null && id !== undefined) editExpense(id);
 }
 async function actionDelete(){
   const id=pendingActionId;closeActionModal();
@@ -2588,11 +2589,56 @@ async function deleteIncomeHead(name) {
   renderIncomeControls();
 }
 
-function renderIncomePage() {
+let incHeroMode = 'ytd';
+let incSelectedMonths = [0,1,2,3,4,5,6,7,8,9,10,11];
+let incFiltersInitialised = false;
+
+function setIncHeroMode(mode) {
+  incHeroMode = mode;
+  const sw = document.getElementById('incHeroSwitch');
+  if(sw) sw.checked = (mode === 'month');
+  const ytdLbl = document.getElementById('incHeroLabelYTD');
+  const mLbl = document.getElementById('incHeroLabelMonth');
+  if(ytdLbl) ytdLbl.style.color = mode==='ytd' ? 'rgba(255,255,255,.95)' : 'rgba(255,255,255,.45)';
+  if(mLbl)   mLbl.style.color   = mode==='month' ? 'rgba(255,255,255,.95)' : 'rgba(255,255,255,.45)';
+  renderIncomeHero();
+}
+
+function toggleIncMonth(m) {
+  const idx = incSelectedMonths.indexOf(m);
+  if(idx >= 0) incSelectedMonths.splice(idx, 1);
+  else incSelectedMonths.push(m);
+  renderIncomeMonthPills();
+  renderIncomeHero();
+  renderIncomeEntries(document.getElementById('incTopYear')?.value);
+  renderIncomeSummary(document.getElementById('incTopYear')?.value);
+}
+
+function renderIncomeMonthPills() {
+  const container = document.getElementById('incMonthPills');
+  if(!container) return;
+  const yr = document.getElementById('incTopYear')?.value;
+  const byMonth = Array(12).fill(0);
+  incomeEntries.filter(e=>e.date&&e.date.substring(0,4)===yr)
+    .forEach(e=>{ byMonth[new Date(e.date).getMonth()] += Number(e.amount||0); });
+  container.innerHTML = shortM.map((m, i) => {
+    const active = incSelectedMonths.includes(i);
+    const hasData = byMonth[i] > 0;
+    return `<div onclick="toggleIncMonth(${i})" style="
+      padding:4px 9px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;
+      background:${active ? 'rgba(255,255,255,.92)' : 'rgba(255,255,255,.15)'};
+      color:${active ? '#065f46' : 'rgba(255,255,255,.6)'};
+      border:1px solid ${active ? 'transparent' : 'rgba(255,255,255,.2)'};
+      position:relative;
+    ">${m}${hasData ? '<span style="position:absolute;top:2px;right:3px;width:4px;height:4px;border-radius:50%;background:#6ee7b7"></span>' : ''}</div>`;
+  }).join('');
+}
+
+function renderIncomeHero() {
   // Populate year selector
   const allYears = [...new Set([
     ...incomeEntries.map(e=>e.date&&e.date.substring(0,4)).filter(Boolean),
-    ...expenses.map(e=>e.date&&e.date.substring(0,4)).filter(Boolean)
+    new Date().getFullYear().toString()
   ])].sort().reverse();
 
   const ity = document.getElementById('incTopYear');
@@ -2603,20 +2649,66 @@ function renderIncomePage() {
     else if(allYears.length) ity.value = allYears[0];
   }
 
-  const yr = document.getElementById('incTopYear')?.value || new Date().getFullYear();
-  const data = incomeEntries.filter(e=>e.date&&e.date.substring(0,4)==yr);
+  const yr = document.getElementById('incTopYear')?.value || new Date().getFullYear().toString();
+  const now = new Date();
+  const curMonth = now.getMonth();
+
+  let data;
+  if(incHeroMode === 'month') {
+    data = incomeEntries.filter(e=>{
+      if(!e.date) return false;
+      const d = new Date(e.date);
+      return d.getFullYear() == yr && d.getMonth() === curMonth;
+    });
+    const lbl = document.getElementById('incHeroLabel');
+    if(lbl) lbl.textContent = 'Income — ' + shortM[curMonth];
+  } else {
+    data = incomeEntries.filter(e=>e.date&&e.date.substring(0,4)===yr);
+    const lbl = document.getElementById('incHeroLabel');
+    if(lbl) lbl.textContent = 'Total Income ' + yr;
+  }
+
   const total = data.reduce((s,e)=>s+Number(e.amount||0), 0);
   const cnt = data.length;
 
   const el = document.getElementById('incTotalAmount');
   if(el) el.textContent = '₹' + indian(total);
   const sub = document.getElementById('incTotalSub');
-  if(cnt > 0) {
-    if(sub) sub.textContent = `${cnt} entries · Avg ₹${indian(Math.round(total/cnt))} each`;
-  } else {
-    if(sub) sub.textContent = 'No income recorded yet — add your first entry below';
+  if(sub) sub.textContent = cnt > 0
+    ? `${cnt} entries · Avg ₹${indian(Math.round(total/cnt))} each`
+    : 'No income recorded yet — add your first entry below';
+
+  // Mini bar chart
+  const monthly = Array(12).fill(0);
+  incomeEntries.filter(e=>e.date&&e.date.substring(0,4)===yr)
+    .forEach(e=>{ monthly[new Date(e.date).getMonth()] += Number(e.amount||0); });
+  const maxBar = Math.max(...monthly, 1);
+  const barsEl = document.getElementById('incBars');
+  if(barsEl) {
+    barsEl.innerHTML = '';
+    monthly.forEach((v, i) => {
+      const h = Math.round((v/maxBar) * 36);
+      const isActive = incHeroMode==='month' ? i===curMonth : incSelectedMonths.includes(i);
+      barsEl.innerHTML += `<div class="mini-bar-wrap">
+        <div class="mini-bar${isActive?' active-bar':''}" style="height:${Math.max(h,3)}px;background:${isActive?'#fff':'rgba(255,255,255,.35)'}"></div>
+        <div class="mini-label" style="color:rgba(255,255,255,.6)">${shortM[i][0]}</div>
+      </div>`;
+    });
   }
 
+  // Month pills (only in YTD mode)
+  if(!incFiltersInitialised) {
+    incSelectedMonths = [0,1,2,3,4,5,6,7,8,9,10,11];
+    incFiltersInitialised = true;
+  }
+  const pillsWrap = document.getElementById('incMonthPills');
+  if(pillsWrap) pillsWrap.style.display = incHeroMode==='ytd' ? 'flex' : 'none';
+  renderIncomeMonthPills();
+}
+
+function renderIncomePage() {
+  renderIncomeHero();
+  const yr = document.getElementById('incTopYear')?.value || new Date().getFullYear().toString();
   renderIncomeEntries(yr);
   renderIncomeSummary(yr);
 }
@@ -2624,8 +2716,13 @@ function renderIncomePage() {
 function renderIncomeEntries(yr) {
   const container = document.getElementById('incEntries');
   if(!container) return;
-  const data = incomeEntries.filter(e=>e.date&&e.date.substring(0,4)==yr)
-    .sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const data = incomeEntries.filter(e=>{
+    if(!e.date) return false;
+    const d = new Date(e.date);
+    if(d.getFullYear() != yr) return false;
+    if(incHeroMode === 'ytd') return incSelectedMonths.includes(d.getMonth());
+    return d.getMonth() === new Date().getMonth(); // month mode = this month only
+  }).sort((a,b)=>new Date(b.date)-new Date(a.date));
   if(!data.length) {
     container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px">No income entries for this year.</div>';
     return;
@@ -2645,8 +2742,16 @@ function renderIncomeEntries(yr) {
 }
 
 function renderIncomeSummary(yr) {
+  yr = yr || document.getElementById('incTopYear')?.value || new Date().getFullYear().toString();
   const group = document.getElementById('incSummaryGroup')?.value || 'member';
-  const data = incomeEntries.filter(e=>e.date&&e.date.substring(0,4)==yr);
+  yr = yr || document.getElementById('incTopYear')?.value || new Date().getFullYear().toString();
+  const data = incomeEntries.filter(e=>{
+    if(!e.date) return false;
+    const d = new Date(e.date);
+    if(d.getFullYear() != yr) return false;
+    if(incHeroMode === 'ytd') return incSelectedMonths.includes(d.getMonth());
+    return d.getMonth() === new Date().getMonth();
+  });
   const obj = {};
   data.forEach(e=>{
     const key = group==='member' ? (e.member||'Unknown') : (e.head||'Unknown');
@@ -3141,13 +3246,28 @@ function populateNewPageYears() {
 <div id="page-income" class="page">
 
   <!-- Income Hero -->
+  <!-- Income Hero Card (mirrors expense hero) -->
   <div class="income-hero">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-      <div class="income-hero-label">Total Income</div>
-      <select class="hero-year-select" id="incTopYear" onchange="renderIncomePage()"></select>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div class="income-hero-label" id="incHeroLabel">Total Income</div>
+      <select class="hero-year-select" id="incTopYear" onchange="renderIncomeHero()"></select>
+    </div>
+    <!-- YTD / This Month Switch -->
+    <div class="hero-switch-wrap">
+      <span class="hero-switch-label on" id="incHeroLabelYTD" style="color:rgba(255,255,255,.7)">YTD</span>
+      <label class="ios-switch">
+        <input type="checkbox" id="incHeroSwitch" onchange="setIncHeroMode(this.checked?'month':'ytd')">
+        <div class="ios-switch-track" style="background:rgba(255,255,255,.25)"></div>
+        <div class="ios-switch-thumb"></div>
+      </label>
+      <span class="hero-switch-label" id="incHeroLabelMonth" style="color:rgba(255,255,255,.45)">This Month</span>
     </div>
     <div class="income-hero-amount" id="incTotalAmount">₹0</div>
     <div class="income-hero-sub" id="incTotalSub">Loading…</div>
+    <!-- Mini bar chart -->
+    <div class="mini-bars" id="incBars" style="margin-top:10px"></div>
+    <!-- Month pills (multi-select filter) -->
+    <div id="incMonthPills" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px"></div>
   </div>
 
   <!-- Manage Income Members -->
