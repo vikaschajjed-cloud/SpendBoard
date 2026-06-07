@@ -835,6 +835,63 @@ tbody tr:hover{background:var(--surface2)}
 }
 @keyframes slideDown{from{transform:translateY(-12px);opacity:0}to{transform:translateY(0);opacity:1}}
 
+
+/* ── 3-WAY SEGMENT CONTROL (Tesla style) ── */
+.seg-control{
+  display:flex;background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:14px;padding:3px;gap:3px;margin-bottom:16px;
+}
+.seg-btn{
+  flex:1;padding:9px 4px;border:none;border-radius:11px;
+  font-size:12px;font-weight:700;cursor:pointer;
+  background:transparent;color:var(--text2);
+  transition:all .2s cubic-bezier(.34,1.26,.64,1);letter-spacing:.01em;
+}
+.seg-btn.active{
+  background:var(--surface);color:var(--accent);
+  box-shadow:0 2px 8px rgba(0,0,0,.1);
+}
+.seg-btn.active.green{color:var(--green);}
+.seg-btn.active.cf{color:#f59e0b;}
+
+/* ── WATERFALL CHART ── */
+.wf-chart-wrap{overflow-x:auto;padding-bottom:8px}
+.wf-row{display:flex;align-items:flex-end;gap:6px;padding:0 4px;min-width:max-content}
+.wf-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:52px}
+.wf-bar-wrap{position:relative;width:40px;display:flex;flex-direction:column;align-items:center}
+.wf-connector{position:absolute;border-top:1.5px dashed rgba(0,0,0,.15);z-index:0}
+.wf-label{font-size:9px;font-weight:700;color:var(--text2);text-align:center;line-height:1.2;max-width:54px;word-break:break-word}
+.wf-amount{font-size:9px;font-family:'DM Mono',monospace;font-weight:700;color:var(--text);text-align:center}
+.wf-bar-income{background:linear-gradient(180deg,#10b981,#059669);border-radius:5px 5px 0 0}
+.wf-bar-exp{background:linear-gradient(180deg,#ef4444,#dc2626);border-radius:5px 5px 0 0}
+.wf-bar-bal{border-radius:5px 5px 0 0}
+
+/* ── INCOME ANALYTICS STATS ── */
+.inc-stat-pill{
+  background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+  border:1px solid #bbf7d0;border-radius:14px;padding:14px 12px;
+}
+.inc-stat-pill .stat-pill-value{color:#065f46}
+
+/* ── CF SURPRISE CARD ── */
+.cf-big-number{
+  font-size:40px;font-weight:800;
+  font-family:'DM Mono',monospace;
+  letter-spacing:-2px;line-height:1;
+  margin:8px 0 4px;
+}
+.cf-month-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.cf-month-cell{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:10px;padding:10px 8px;text-align:center;
+}
+.cf-month-cell.surplus{border-color:#bbf7d0;background:#f0fdf4}
+.cf-month-cell.deficit{border-color:#fecaca;background:#fff1f2}
+.cf-month-name{font-size:10px;font-weight:700;color:var(--text3);margin-bottom:4px}
+.cf-month-val{font-size:12px;font-weight:800;font-family:'DM Mono',monospace}
+.cf-month-val.pos{color:var(--green)}
+.cf-month-val.neg{color:var(--red,#ef4444)}
+
 /* print */
 @media print{
   #loadingOverlay,#lockScreen,#topBar,#drawer,#drawerOverlay,#cacheBadge,#actionModal{display:none!important}
@@ -1191,97 +1248,151 @@ tbody tr:hover{background:var(--surface2)}
 <!-- ══════════════════ ANALYTICS PAGE ══════════════════ -->
 <div id="page-analytics" class="page">
 
-  <!-- Analytics period switch -->
-  <div class="stat-toggle-row">
-    <span class="stat-switch-label on" id="statLabelYTD">Year to Date</span>
-    <label class="ios-switch ios-switch-dark">
-      <input type="checkbox" id="statSwitch" onchange="setStatMode(this.checked?'month':'ytd')">
-      <div class="ios-switch-track"></div>
-      <div class="ios-switch-thumb"></div>
-    </label>
-    <span class="stat-switch-label" id="statLabelMonth">This Month</span>
+  <!-- 3-WAY SEGMENT CONTROL -->
+  <div class="seg-control">
+    <button class="seg-btn active" id="seg-expense" onclick="switchAnalyticsTab('expense')">
+      💸 Expense
+    </button>
+    <button class="seg-btn" id="seg-income" onclick="switchAnalyticsTab('income')">
+      💰 Income
+    </button>
+    <button class="seg-btn" id="seg-cashflow" onclick="switchAnalyticsTab('cashflow')">
+      📊 Cash Flow
+    </button>
   </div>
 
-  <div class="analytics-stat-row" id="analyticsStats"></div>
-
-  <!-- Monthly Expense Bar Chart -->
-  <div class="chart-card">
-    <div class="chart-header">
-      <div class="chart-title">Monthly Expenses</div>
-      <div class="chart-filters">
-        <select class="chart-select" id="chartYear" onchange="renderBarChart()"></select>
-        <select class="chart-select" id="chartMode" onchange="renderBarChart()">
-          <option value="monthly">Monthly</option>
-          <option value="weekly">Weekly</option>
-        </select>
-        <select class="chart-select" id="chartWeekMonth" onchange="renderBarChart()" style="display:none"></select>
+  <!-- ══ EXPENSE TAB ══ -->
+  <div id="analyticsTab-expense">
+    <div class="stat-toggle-row">
+      <span class="stat-switch-label on" id="statLabelYTD">Year to Date</span>
+      <label class="ios-switch ios-switch-dark">
+        <input type="checkbox" id="statSwitch" onchange="setStatMode(this.checked?'month':'ytd')">
+        <div class="ios-switch-track"></div>
+        <div class="ios-switch-thumb"></div>
+      </label>
+      <span class="stat-switch-label" id="statLabelMonth">This Month</span>
+    </div>
+    <div class="analytics-stat-row" id="analyticsStats"></div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Monthly Expenses</div>
+        <div class="chart-filters">
+          <select class="chart-select" id="chartYear" onchange="renderBarChart()"></select>
+          <select class="chart-select" id="chartMode" onchange="renderBarChart()">
+            <option value="monthly">Monthly</option>
+            <option value="weekly">Weekly</option>
+          </select>
+          <select class="chart-select" id="chartWeekMonth" onchange="renderBarChart()" style="display:none"></select>
+        </div>
+      </div>
+      <div id="barChartArea"></div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-box" style="background:var(--fixed-color)"></div><span>Fixed</span></div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--variable-color)"></div><span>Variable</span></div>
       </div>
     </div>
-    <div id="barChartArea"></div>
-    <div class="chart-legend">
-      <div class="legend-item">
-        <div class="legend-box" style="background:var(--fixed-color)"></div>
-        <span>Fixed</span>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Top Categories</div>
+        <div class="chart-filters">
+          <select class="chart-select" id="pieFilter" onchange="renderPieChart()">
+            <option value="current">This Month</option><option value="all">All Time</option>
+            <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+            <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+            <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+            <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+          </select>
+          <select class="chart-select" id="pieYear" onchange="renderPieChart()"></select>
+        </div>
       </div>
-      <div class="legend-item">
-        <div class="legend-box" style="background:var(--variable-color)"></div>
-        <span>Variable</span>
+      <div id="pieChartArea"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Fixed Expenses</div>
+        <div class="chart-filters">
+          <select class="chart-select" id="fixedFilter" onchange="renderFixedDash()">
+            <option value="current">This Month</option><option value="all">All Time</option>
+            <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+            <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+            <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+            <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+          </select>
+          <select class="chart-select" id="fixedYear" onchange="renderFixedDash()"></select>
+        </div>
       </div>
+      <div id="fixedDashArea"></div>
     </div>
   </div>
 
-  <!-- Top Category Pie Chart -->
-  <div class="chart-card">
-    <div class="chart-header">
-      <div class="chart-title">Top Categories</div>
-      <div class="chart-filters">
-        <select class="chart-select" id="pieFilter" onchange="renderPieChart()">
-          <option value="current">This Month</option>
-          <option value="all">All Time</option>
-          <option value="1">January</option>
-          <option value="2">February</option>
-          <option value="3">March</option>
-          <option value="4">April</option>
-          <option value="5">May</option>
-          <option value="6">June</option>
-          <option value="7">July</option>
-          <option value="8">August</option>
-          <option value="9">September</option>
-          <option value="10">October</option>
-          <option value="11">November</option>
-          <option value="12">December</option>
-        </select>
-        <select class="chart-select" id="pieYear" onchange="renderPieChart()"></select>
-      </div>
+  <!-- ══ INCOME TAB ══ -->
+  <div id="analyticsTab-income" style="display:none">
+    <div class="stat-toggle-row">
+      <span class="stat-switch-label on" id="incStatLabelYTD" style="color:var(--green)">Year to Date</span>
+      <label class="ios-switch ios-switch-dark">
+        <input type="checkbox" id="incStatSwitch" onchange="setIncStatMode(this.checked?'month':'ytd')">
+        <div class="ios-switch-track" style="background:var(--green)"></div>
+        <div class="ios-switch-thumb"></div>
+      </label>
+      <span class="stat-switch-label" id="incStatLabelMonth">This Month</span>
     </div>
-    <div id="pieChartArea"></div>
+    <!-- Quadrant stats -->
+    <div class="analytics-stat-row" id="incAnalyticsStats" style="margin-bottom:14px"></div>
+    <!-- Monthly income bar chart (stacked by head) -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Monthly Income</div>
+        <div class="chart-filters">
+          <select class="chart-select" id="incChartYear" onchange="renderIncBarChart()"></select>
+          <select class="chart-select" id="incChartMode" onchange="renderIncBarChart()">
+            <option value="monthly">Monthly</option>
+            <option value="weekly">Weekly</option>
+          </select>
+          <select class="chart-select" id="incChartWeekMonth" onchange="renderIncBarChart()" style="display:none"></select>
+        </div>
+      </div>
+      <div id="incBarChartArea"></div>
+      <div class="chart-legend" id="incBarLegend"></div>
+    </div>
+    <!-- Income breakdown donut -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Income by Head</div>
+        <div class="chart-filters">
+          <select class="chart-select" id="incPieFilter" onchange="renderIncPieChart()">
+            <option value="current">This Month</option><option value="all">All Time</option>
+            <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+            <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+            <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+            <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+          </select>
+          <select class="chart-select" id="incPieYear" onchange="renderIncPieChart()"></select>
+        </div>
+      </div>
+      <div id="incPieChartArea"></div>
+    </div>
+    <!-- Waterfall: Income → Expenses by nature -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Income vs Spend Waterfall</div>
+        <div class="chart-filters">
+          <select class="chart-select" id="wfFilter" onchange="renderWaterfall()">
+            <option value="current">This Month</option><option value="all">All Time</option>
+            <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+            <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+            <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+            <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+          </select>
+          <select class="chart-select" id="wfYear" onchange="renderWaterfall()"></select>
+        </div>
+      </div>
+      <div id="waterfallArea"></div>
+    </div>
   </div>
 
-  <!-- Fixed Expenses Dashboard -->
-  <div class="chart-card">
-    <div class="chart-header">
-      <div class="chart-title">Fixed Expenses</div>
-      <div class="chart-filters">
-        <select class="chart-select" id="fixedFilter" onchange="renderFixedDash()">
-          <option value="current">This Month</option>
-          <option value="all">All Time</option>
-          <option value="1">January</option>
-          <option value="2">February</option>
-          <option value="3">March</option>
-          <option value="4">April</option>
-          <option value="5">May</option>
-          <option value="6">June</option>
-          <option value="7">July</option>
-          <option value="8">August</option>
-          <option value="9">September</option>
-          <option value="10">October</option>
-          <option value="11">November</option>
-          <option value="12">December</option>
-        </select>
-        <select class="chart-select" id="fixedYear" onchange="renderFixedDash()"></select>
-      </div>
-    </div>
-    <div id="fixedDashArea"></div>
+  <!-- ══ CASH FLOW TAB (Surprise) ══ -->
+  <div id="analyticsTab-cashflow" style="display:none">
+    <div id="cfAnalyticsArea"></div>
   </div>
 
 </div>
@@ -3204,6 +3315,337 @@ function populateNewPageYears() {
     }
   });
 }
+// ══════════════════════════════════════════════════════
+// ── ANALYTICS TAB SWITCHER ────────────────────────────
+// ══════════════════════════════════════════════════════
+let analyticsTab = 'expense';
+let incStatMode = 'ytd';
+
+function switchAnalyticsTab(tab) {
+  analyticsTab = tab;
+  ['expense','income','cashflow'].forEach(t => {
+    const el = document.getElementById('analyticsTab-'+t);
+    const btn = document.getElementById('seg-'+t);
+    if(el) el.style.display = t === tab ? '' : 'none';
+    if(btn) {
+      btn.classList.toggle('active', t === tab);
+      btn.classList.remove('green','cf');
+      if(t === tab) {
+        if(t === 'income') btn.classList.add('green');
+        if(t === 'cashflow') btn.classList.add('cf');
+      }
+    }
+  });
+  if(tab === 'expense') { renderAnalyticsStats(); renderBarChart(); renderPieChart(); renderFixedDash(); }
+  if(tab === 'income')  renderIncomeAnalytics();
+  if(tab === 'cashflow') renderCFAnalytics();
+}
+
+function setIncStatMode(mode) {
+  incStatMode = mode;
+  const sw = document.getElementById('incStatSwitch');
+  if(sw) sw.checked = mode === 'month';
+  const y = document.getElementById('incStatLabelYTD');
+  const m = document.getElementById('incStatLabelMonth');
+  if(y) { y.style.color = mode==='ytd' ? 'var(--green)' : 'var(--text2)'; y.classList.toggle('on', mode==='ytd'); }
+  if(m) { m.style.color = mode==='month' ? 'var(--green)' : 'var(--text2)'; m.classList.toggle('on', mode==='month'); }
+  renderIncomeAnalytics();
+}
+
+function renderIncomeAnalytics() {
+  populateIncAnalyticsYears();
+  renderIncAnalyticsStats();
+  renderIncBarChart();
+  renderIncPieChart();
+  renderWaterfall();
+}
+
+function populateIncAnalyticsYears() {
+  const allYrs = [...new Set([
+    ...incomeEntries.map(e=>e.date&&e.date.substring(0,4)).filter(Boolean),
+    ...expenses.map(e=>e.date&&e.date.substring(0,4)).filter(Boolean),
+    new Date().getFullYear().toString()
+  ])].sort().reverse();
+  ['incChartYear','incPieYear','wfYear'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    const prev = el.value;
+    el.innerHTML = allYrs.map(y=>`<option>${y}</option>`).join('');
+    if(prev && allYrs.includes(prev)) el.value = prev;
+    else if(allYrs.length) el.value = allYrs[0];
+  });
+}
+
+function renderIncAnalyticsStats() {
+  const yr = document.getElementById('incChartYear')?.value || new Date().getFullYear().toString();
+  const now = new Date();
+  let data = incStatMode === 'month'
+    ? incomeEntries.filter(e=>{if(!e.date)return false;const d=new Date(e.date);return d.getFullYear()==yr&&d.getMonth()===now.getMonth();})
+    : incomeEntries.filter(e=>e.date&&e.date.substring(0,4)===yr);
+  let expData = incStatMode === 'month'
+    ? expenses.filter(e=>{if(!e.date)return false;const d=new Date(e.date);return d.getFullYear()==yr&&d.getMonth()===now.getMonth();})
+    : expenses.filter(e=>e.date&&e.date.substring(0,4)===yr);
+
+  const total = data.reduce((s,e)=>s+Number(e.amount||0),0);
+  const cnt = data.length;
+  const avg = cnt ? Math.round(total/cnt) : 0;
+  const totalExp = expData.reduce((s,e)=>s+Number(e.amount||0),0);
+  const savings = total - totalExp;
+  const savingsRate = total > 0 ? Math.round(savings/total*100) : 0;
+  const periodLabel = incStatMode==='month' ? shortM[now.getMonth()]+' '+yr : yr;
+
+  const el = document.getElementById('incAnalyticsStats');
+  if(!el) return;
+  el.innerHTML = `
+  <div class="stat-pill inc-stat-pill">
+    <div class="stat-pill-label">Total Income · ${periodLabel}</div>
+    <div class="stat-pill-value">₹${indian(total)}</div>
+    <div class="stat-pill-sub">${cnt} entries</div>
+  </div>
+  <div class="stat-pill inc-stat-pill">
+    <div class="stat-pill-label">Avg per Entry</div>
+    <div class="stat-pill-value">₹${indian(avg)}</div>
+    <div class="stat-pill-sub">across ${cnt} records</div>
+  </div>
+  <div class="stat-pill inc-stat-pill">
+    <div class="stat-pill-label">Balance</div>
+    <div class="stat-pill-value" style="color:${savings>=0?'var(--green)':'#ef4444'}">${savings>=0?'':'−'}₹${indian(Math.abs(savings))}</div>
+    <div class="stat-pill-sub">income − expenses</div>
+  </div>
+  <div class="stat-pill inc-stat-pill">
+    <div class="stat-pill-label">Savings Rate</div>
+    <div class="stat-pill-value" style="color:${savingsRate>=20?'var(--green)':savingsRate>=0?'#f59e0b':'#ef4444'}">${savingsRate}%</div>
+    <div class="stat-pill-sub">${savingsRate>=20?'On track 🏆':savingsRate>=0?'Could be better':'Deficit ⚠️'}</div>
+  </div>`;
+}
+
+function renderIncBarChart() {
+  const yr = document.getElementById('incChartYear')?.value || new Date().getFullYear().toString();
+  const mode = document.getElementById('incChartMode')?.value || 'monthly';
+  const wm = document.getElementById('incChartWeekMonth');
+  const area = document.getElementById('incBarChartArea');
+  const legendEl = document.getElementById('incBarLegend');
+  if(!area) return;
+  if(mode==='weekly'){wm.style.display='';if(!wm.innerHTML)wm.innerHTML=months.map((m,i)=>`<option value="${i}">${m}</option>`).join('');}
+  else{wm.style.display='none';}
+
+  const heads = [...new Set(incomeEntries.map(e=>e.head||'Other').filter(Boolean))];
+  const INC_COLORS = ["#10b981","#0ea5e9","#6366f1","#f59e0b","#ec4899","#8b5cf6","#06b6d4","#059669"];
+  let labels = [];
+  const headVals = heads.map(()=>[]);
+
+  if(mode==='monthly'){
+    labels = shortM.slice();
+    heads.forEach((h,hi)=>{headVals[hi]=Array(12).fill(0);});
+    incomeEntries.filter(e=>e.date&&e.date.substring(0,4)===yr).forEach(e=>{
+      const m=new Date(e.date).getMonth();
+      const hi=heads.indexOf(e.head||'Other');
+      if(hi>=0)headVals[hi][m]+=Number(e.amount||0);
+    });
+  } else {
+    const sm=parseInt(wm?.value||new Date().getMonth());
+    const firstDay=new Date(parseInt(yr),sm,1),lastDay=new Date(parseInt(yr),sm+1,0);
+    const weekBuckets=[];let cur=new Date(firstDay);
+    while(cur<=lastDay){
+      const wS=new Date(cur),dS=cur.getDay()===0?0:7-cur.getDay();
+      const wE=new Date(cur);wE.setDate(cur.getDate()+dS);
+      if(wE>lastDay)wE.setTime(lastDay.getTime());
+      weekBuckets.push({start:new Date(wS),end:new Date(wE),vals:heads.map(()=>0)});
+      cur=new Date(wE);cur.setDate(cur.getDate()+1);
+    }
+    incomeEntries.forEach(e=>{
+      if(!e.date)return;const d=new Date(e.date);
+      if(d.getFullYear()!=parseInt(yr)||d.getMonth()!==sm)return;
+      const hi=heads.indexOf(e.head||'Other');if(hi<0)return;
+      for(const wb of weekBuckets){if(d>=wb.start&&d<=wb.end){wb.vals[hi]+=Number(e.amount||0);break;}}
+    });
+    weekBuckets.forEach((wb,i)=>{labels.push('W'+(i+1));heads.forEach((h,hi)=>headVals[hi].push(wb.vals[hi]));});
+  }
+
+  const totals=labels.map((_,li)=>heads.reduce((s,h,hi)=>s+headVals[hi][li],0));
+  const maxVal=Math.max(...totals,1);
+  const CHART_H=140,GRID_STEPS=4;
+  let gridHtml='';
+  for(let s=1;s<=GRID_STEPS;s++){const pct=s/GRID_STEPS,top=CHART_H*(1-pct);gridHtml+=`<div class="bar-grid-line" style="top:${top}px"></div><div class="bar-grid-label" style="top:${top}px">${compact(Math.round(maxVal*pct))}</div>`;}
+
+  const barsHtml=labels.map((l,li)=>{
+    const tot=totals[li];
+    const segs=heads.map((h,hi)=>{const v=headVals[hi][li];const hpx=tot>0?Math.max(Math.round((v/maxVal)*CHART_H),v>0?2:0):0;return hpx>0?`<div style="height:${hpx}px;background:${INC_COLORS[hi%INC_COLORS.length]};width:100%"></div>`:''}).reverse().join('');
+    const tip=heads.map((h,hi)=>`${h}: ₹${indian(headVals[hi][li])}`).join('<br>');
+    return `<div class="bc-col-v2"><div class="bc-val-label">${tot>0?compact(tot):''}</div>
+    <div style="width:100%;height:${CHART_H}px;display:flex;flex-direction:column;justify-content:flex-end;position:relative">
+      <div class="bc-tooltip"><b>${l}</b><br>${tip}</div>
+      ${tot>0?`<div class="bc-stacked" style="height:${Math.min(Math.round((tot/maxVal)*CHART_H),CHART_H)}px;overflow:hidden;border-radius:5px 5px 0 0">${segs}</div>`:'<div class="bc-zero-stub"></div>'}
+    </div>
+    <div class="bc-x-axis-line"></div><div class="bc-x-label">${l}</div></div>`;
+  }).join('');
+
+  area.innerHTML=`<div class="bar-chart-outer"><div class="bar-grid-lines" style="height:${CHART_H}px">${gridHtml}</div><div class="bars-row" style="height:${CHART_H+32}px;padding-right:28px">${barsHtml}</div></div>`;
+  if(legendEl)legendEl.innerHTML=heads.map((h,i)=>`<div class="legend-item"><div class="legend-box" style="background:${INC_COLORS[i%INC_COLORS.length]}"></div><span>${h}</span></div>`).join('');
+}
+
+function renderIncPieChart() {
+  const area=document.getElementById('incPieChartArea');if(!area)return;
+  const yr=document.getElementById('incPieYear')?.value||new Date().getFullYear().toString();
+  const filter=document.getElementById('incPieFilter')?.value||'current';
+  let data=incomeEntries.filter(e=>e.date&&e.date.substring(0,4)===yr);
+  if(filter==='current'){const now=new Date().getMonth();data=data.filter(e=>new Date(e.date).getMonth()===now);}
+  else if(filter!=='all'){data=data.filter(e=>new Date(e.date).getMonth()===(parseInt(filter)-1));}
+  const obj={};
+  data.forEach(e=>{const k=e.head||'Other';obj[k]=(obj[k]||0)+Number(e.amount||0);});
+  const arr=Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+  if(!arr.length){area.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3)">No income data for this period</div>';return;}
+  const total=arr.reduce((s,[,v])=>s+v,0);
+  const COLORS=["#10b981","#0ea5e9","#6366f1","#f59e0b","#ec4899","#8b5cf6","#06b6d4","#059669"];
+  const W=200,H=200,cx=100,cy=100,R=80,innerR=52,GAP=0.025;
+  let startAngle=-Math.PI/2,slices='';
+  arr.forEach(([k,v],i)=>{
+    const pct=v/total,sweep=pct*2*Math.PI-GAP;if(sweep<=0)return;
+    const sa=startAngle+GAP/2,ea=sa+sweep;
+    const x1=cx+R*Math.cos(sa),y1=cy+R*Math.sin(sa),x2=cx+R*Math.cos(ea),y2=cy+R*Math.sin(ea);
+    const ix1=cx+innerR*Math.cos(sa),iy1=cy+innerR*Math.sin(sa),ix2=cx+innerR*Math.cos(ea),iy2=cy+innerR*Math.sin(ea);
+    const large=sweep>Math.PI?1:0,c=COLORS[i%COLORS.length];
+    slices+=`<path d="M${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R} 0 ${large},1 ${x2.toFixed(2)},${y2.toFixed(2)} L${ix2.toFixed(2)},${iy2.toFixed(2)} A${innerR},${innerR} 0 ${large},0 ${ix1.toFixed(2)},${iy1.toFixed(2)} Z" fill="${c}" class="pie-slice"/>`;
+    startAngle=ea+GAP/2;
+  });
+  const centreText=`<circle cx="${cx}" cy="${cy}" r="${innerR-2}" fill="var(--surface)"/>
+    <text x="${cx}" y="${cy-8}" text-anchor="middle" font-family="DM Mono,monospace" font-size="13" font-weight="800" fill="var(--text)">+₹${compact(total)}</text>
+    <text x="${cx}" y="${cy+8}" text-anchor="middle" font-family="Sora,sans-serif" font-size="8" fill="#10b981">Total Income</text>`;
+  const legendHtml=arr.map(([k,v],i)=>{
+    const pct=Math.round(v/total*100),c=COLORS[i%COLORS.length];
+    return `<div class="pie-v2-item"><div style="width:10px;height:10px;border-radius:3px;background:${c};flex-shrink:0;margin-top:1px"></div>
+    <div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px">
+    <span style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${k}</span>
+    <span style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700;color:var(--green);flex-shrink:0">₹${compact(v)}</span></div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+    <div style="flex:1;height:4px;background:var(--border);border-radius:99px;overflow:hidden"><div style="height:4px;width:${pct}%;background:${c};border-radius:99px"></div></div>
+    <span style="font-size:10px;color:var(--text3);font-weight:600;min-width:28px;text-align:right">${pct}%</span></div></div></div>`;
+  }).join('');
+  area.innerHTML=`<div class="pie-v2-wrap"><div class="pie-v2-svg-row">
+    <svg class="pie-v2-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="overflow:visible">
+      <defs><filter id="pieDS2"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(0,0,0,.12)"/></filter></defs>
+      <g filter="url(#pieDS2)">${slices}</g>${centreText}</svg></div>
+    <div class="pie-v2-legend">${legendHtml}</div></div>`;
+}
+
+function renderWaterfall() {
+  const area=document.getElementById('waterfallArea');if(!area)return;
+  const yr=document.getElementById('wfYear')?.value||new Date().getFullYear().toString();
+  const filter=document.getElementById('wfFilter')?.value||'current';
+  let incData=incomeEntries.filter(e=>e.date&&e.date.substring(0,4)===yr);
+  let expData=expenses.filter(e=>e.date&&e.date.substring(0,4)===yr);
+  if(filter==='current'){const now=new Date().getMonth();incData=incData.filter(e=>new Date(e.date).getMonth()===now);expData=expData.filter(e=>new Date(e.date).getMonth()===now);}
+  else if(filter!=='all'){const m=parseInt(filter)-1;incData=incData.filter(e=>new Date(e.date).getMonth()===m);expData=expData.filter(e=>new Date(e.date).getMonth()===m);}
+  const totalIncome=incData.reduce((s,e)=>s+Number(e.amount||0),0);
+  const natObj={};expData.forEach(e=>{const k=e.nature||'Other';natObj[k]=(natObj[k]||0)+Number(e.amount||0);});
+  const natArr=Object.entries(natObj).sort((a,b)=>b[1]-a[1]);
+  const totalExp=natArr.reduce((s,[,v])=>s+v,0);
+  const balance=totalIncome-totalExp;
+  if(!totalIncome&&!totalExp){area.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3)">No data for this period</div>';return;}
+
+  const CHART_H=120,maxVal=Math.max(totalIncome,1);
+  const EXP_COLORS=["#ef4444","#f97316","#f59e0b","#8b5cf6","#ec4899","#0ea5e9","#06b6d4","#84cc16"];
+  let runningY=CHART_H-Math.round((totalIncome/maxVal)*CHART_H);
+
+  const renderCol=(label,amount,type,color,ci)=>{
+    const bH=Math.max(Math.round((amount/maxVal)*CHART_H),amount>0?3:0);
+    let bottomOffset;
+    if(type==='income'){bottomOffset=0;}
+    else{bottomOffset=CHART_H-runningY-bH;if(type==='exp')runningY+=bH;}
+    const connector=ci>0?`<div style="position:absolute;top:${CHART_H-runningY+(type==='exp'?-bH:0)}px;left:-12px;width:12px;border-top:1.5px dashed rgba(0,0,0,.15)"></div>`:'';
+    return `<div class="wf-col">
+      <div class="wf-amount" style="color:${type==='income'?'var(--green)':type==='surplus'?'var(--green)':'#ef4444'}">${amount>0?(type==='exp'?'-':'')+'₹'+compact(amount):''}</div>
+      <div class="wf-bar-wrap" style="height:${CHART_H}px;position:relative;width:44px">
+        ${connector}
+        <div style="position:absolute;bottom:${bottomOffset}px;left:50%;transform:translateX(-50%);width:36px;height:${bH}px;background:${color};border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,.12)"></div>
+      </div>
+      <div class="wf-label">${label}</div>
+    </div>`;
+  };
+
+  let html=renderCol('Income',totalIncome,'income','#10b981',0);
+  runningY=CHART_H-Math.round((totalIncome/maxVal)*CHART_H);
+  natArr.forEach(([k,v],i)=>{html+=renderCol(k,v,'exp',EXP_COLORS[i%EXP_COLORS.length],i+1);});
+  html+=renderCol('Balance',Math.abs(balance),balance>=0?'surplus':'deficit',balance>=0?'#059669':'#dc2626',natArr.length+1);
+
+  area.innerHTML=`<div class="wf-chart-wrap"><div style="display:flex;gap:10px;align-items:flex-end;padding:0 4px;overflow-x:auto;min-height:${CHART_H+48}px">${html}</div></div>
+  <div style="margin-top:14px;padding:12px 14px;background:var(--surface2);border-radius:12px;border:1px solid var(--border)">
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;color:var(--text2)">Total Income</span><span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--green)">₹${indian(totalIncome)}</span></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;color:var(--text2)">Total Expenses</span><span style="font-family:'DM Mono',monospace;font-weight:700;color:#ef4444">₹${indian(totalExp)}</span></div>
+    <div style="height:1px;background:var(--border);margin:8px 0"></div>
+    <div style="display:flex;justify-content:space-between"><span style="font-size:13px;font-weight:700;color:var(--text)">Balance</span><span style="font-family:'DM Mono',monospace;font-weight:800;font-size:15px;color:${balance>=0?'var(--green)':'#ef4444'}">${balance>=0?'':'−'}₹${indian(Math.abs(balance))}</span></div>
+  </div>`;
+}
+
+function renderCFAnalytics() {
+  const area=document.getElementById('cfAnalyticsArea');if(!area)return;
+  const now=new Date(),curYr=now.getFullYear().toString(),curM=now.getMonth();
+  const incByM=Array(12).fill(0),expByM=Array(12).fill(0);
+  expenses.filter(e=>e.date&&e.date.substring(0,4)===curYr).forEach(e=>{expByM[new Date(e.date).getMonth()]+=Number(e.amount||0);});
+  incomeEntries.filter(e=>e.date&&e.date.substring(0,4)===curYr).forEach(e=>{incByM[new Date(e.date).getMonth()]+=Number(e.amount||0);});
+  const balByM=incByM.map((v,i)=>v-expByM[i]);
+  const ytdInc=incByM.slice(0,curM+1).reduce((a,b)=>a+b,0);
+  const ytdExp=expByM.slice(0,curM+1).reduce((a,b)=>a+b,0);
+  const ytdBal=ytdInc-ytdExp;
+  const ytdRate=ytdInc>0?Math.round(ytdBal/ytdInc*100):0;
+  const hasData=m=>incByM[m]>0||expByM[m]>0;
+  const validBals=balByM.filter((_,i)=>hasData(i));
+  const bestMIdx=validBals.length?balByM.indexOf(Math.max(...balByM.filter((_,i)=>hasData(i)))):-1;
+  const worstMIdx=validBals.length?balByM.indexOf(Math.min(...balByM.filter((_,i)=>hasData(i)))):-1;
+  let streak=0;for(let i=curM;i>=0;i--){if(balByM[i]>=0)streak++;else break;}
+
+  const gridCells=shortM.map((m,i)=>{
+    const bal=balByM[i];
+    if(!hasData(i))return `<div class="cf-month-cell"><div class="cf-month-name">${m}</div><div class="cf-month-val" style="color:var(--text3)">—</div></div>`;
+    return `<div class="cf-month-cell ${bal>=0?'surplus':'deficit'}"><div class="cf-month-name">${m}</div><div class="cf-month-val ${bal>=0?'pos':'neg'}">${bal>=0?'+':''}₹${compact(bal)}</div></div>`;
+  }).join('');
+
+  const SPARK_W=280,SPARK_H=56,midY=SPARK_H/2;
+  const maxSpark=Math.max(Math.abs(Math.max(...balByM)),Math.abs(Math.min(...balByM)),1);
+  const pts=balByM.map((v,i)=>`${((i/11)*SPARK_W).toFixed(1)},${(midY-(v/maxSpark)*(midY-5)).toFixed(1)}`).join(' ');
+  const dots=balByM.map((v,i)=>`<circle cx="${((i/11)*SPARK_W).toFixed(1)}" cy="${(midY-(v/maxSpark)*(midY-5)).toFixed(1)}" r="3" fill="${v>=0?'#10b981':'#ef4444'}"/>`).join('');
+
+  area.innerHTML=`
+  <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:22px;padding:24px 22px 20px;margin-bottom:14px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+    <div style="font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:6px">${curYr} Cash Flow</div>
+    <div class="cf-big-number" style="color:${ytdBal>=0?'#6ee7b7':'#fca5a5'}">${ytdBal>=0?'+':'−'}₹${indian(Math.abs(ytdBal))}</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:16px">Balance Jan–${shortM[curM]}</div>
+    <div style="display:flex;gap:20px">
+      <div><div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-transform:uppercase;letter-spacing:.08em">Income</div><div style="font-size:16px;font-weight:800;color:#6ee7b7;font-family:'DM Mono',monospace">₹${compact(ytdInc)}</div></div>
+      <div><div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-transform:uppercase;letter-spacing:.08em">Expense</div><div style="font-size:16px;font-weight:800;color:#fca5a5;font-family:'DM Mono',monospace">₹${compact(ytdExp)}</div></div>
+      <div><div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-transform:uppercase;letter-spacing:.08em">Save Rate</div><div style="font-size:16px;font-weight:800;color:#fde68a;font-family:'DM Mono',monospace">${ytdRate}%</div></div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+    ${bestMIdx>=0&&hasData(bestMIdx)?`<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:99px;padding:6px 14px;font-size:11px;font-weight:700;color:#065f46">🏆 Best: ${shortM[bestMIdx]} (+₹${compact(balByM[bestMIdx])})</div>`:''}
+    ${worstMIdx>=0&&hasData(worstMIdx)?`<div style="background:#fff1f2;border:1px solid #fecaca;border-radius:99px;padding:6px 14px;font-size:11px;font-weight:700;color:#7f1d1d">📉 Toughest: ${shortM[worstMIdx]} (${balByM[worstMIdx]>=0?'+':''}₹${compact(balByM[worstMIdx])})</div>`:''}
+    ${streak>1?`<div style="background:#fef9c3;border:1px solid #fde68a;border-radius:99px;padding:6px 14px;font-size:11px;font-weight:700;color:#78350f">🔥 ${streak}-month surplus streak</div>`:''}
+  </div>
+  <div class="chart-card" style="margin-bottom:14px">
+    <div class="chart-title" style="margin-bottom:12px">Monthly Balance Trend</div>
+    <div style="overflow-x:auto">
+      <svg width="${SPARK_W}" height="${SPARK_H}" viewBox="0 0 ${SPARK_W} ${SPARK_H}" style="overflow:visible">
+        <line x1="0" y1="${midY}" x2="${SPARK_W}" y2="${midY}" stroke="var(--border)" stroke-width="1" stroke-dasharray="4,3"/>
+        <polyline points="${pts}" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        ${dots}
+      </svg>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:4px"><span style="font-size:10px;color:var(--text3)">Jan</span><span style="font-size:10px;color:var(--text3)">Dec</span></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title" style="margin-bottom:12px">Month-by-Month Snapshot</div>
+    <div class="cf-month-grid">${gridCells}</div>
+  </div>`;
+}
+
+// Override renderAnalytics to respect active tab
+renderAnalytics = function() {
+  populateAnalyticsYearSelects();
+  if(analyticsTab==='expense'){renderAnalyticsStats();renderBarChart();renderPieChart();renderFixedDash();}
+  else if(analyticsTab==='income') renderIncomeAnalytics();
+  else if(analyticsTab==='cashflow') renderCFAnalytics();
+};
+
 
 </script>
 
