@@ -1695,6 +1695,8 @@ function renderEntries(){
   const data=filteredData();
   const entries=document.getElementById('entries');
   if(!data.length){entries.innerHTML='<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px">No expenses found for selected filters.</div>';return;}
+  // Sort descending by date — newest first
+  data.sort((a,b)=>new Date(b.date)-new Date(a.date));
   entries.innerHTML=`<table>
   <thead><tr><th>Date</th><th>Nature</th><th>Desc</th><th>Amount</th><th>Cat</th><th>Paid</th></tr></thead>
   <tbody>
@@ -2617,7 +2619,7 @@ function toggleIncMonth(m) {
 function renderIncomeMonthPills() {
   const container = document.getElementById('incMonthPills');
   if(!container) return;
-  const yr = document.getElementById('incTopYear')?.value;
+  const yr = document.getElementById('incTopYear')?.value || document.getElementById('incFilterYear')?.value;
   const byMonth = Array(12).fill(0);
   incomeEntries.filter(e=>e.date&&e.date.substring(0,4)===yr)
     .forEach(e=>{ byMonth[new Date(e.date).getMonth()] += Number(e.amount||0); });
@@ -2625,13 +2627,51 @@ function renderIncomeMonthPills() {
     const active = incSelectedMonths.includes(i);
     const hasData = byMonth[i] > 0;
     return `<div onclick="toggleIncMonth(${i})" style="
-      padding:4px 9px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;
-      background:${active ? 'rgba(255,255,255,.92)' : 'rgba(255,255,255,.15)'};
-      color:${active ? '#065f46' : 'rgba(255,255,255,.6)'};
-      border:1px solid ${active ? 'transparent' : 'rgba(255,255,255,.2)'};
-      position:relative;
-    ">${m}${hasData ? '<span style="position:absolute;top:2px;right:3px;width:4px;height:4px;border-radius:50%;background:#6ee7b7"></span>' : ''}</div>`;
+      padding:5px 12px;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;
+      background:${active ? 'var(--green)' : 'var(--surface2)'};
+      color:${active ? '#fff' : 'var(--text2)'};
+      border:1.5px solid ${active ? 'var(--green)' : 'var(--border)'};
+      position:relative;display:inline-flex;align-items:center;gap:4px;
+    ">${m}${hasData ? '<span style="width:5px;height:5px;border-radius:50%;background:' + (active?'rgba(255,255,255,.8)':'var(--green)') + ';display:inline-block"></span>' : ''}</div>`;
   }).join('');
+
+  // Also populate the filter year selector and member/head dropdowns
+  const fyEl = document.getElementById('incFilterYear');
+  if(fyEl) {
+    const allYrs = [...new Set([
+      ...incomeEntries.map(e=>e.date&&e.date.substring(0,4)).filter(Boolean),
+      new Date().getFullYear().toString()
+    ])].sort().reverse();
+    const prevFY = fyEl.value;
+    fyEl.innerHTML = allYrs.map(y=>`<option>${y}</option>`).join('');
+    if(prevFY && allYrs.includes(prevFY)) fyEl.value = prevFY;
+    else if(allYrs.length) fyEl.value = allYrs[0];
+  }
+
+  // Populate member/head filter dropdowns
+  const fm = document.getElementById('incFMember');
+  const fh = document.getElementById('incFHead');
+  if(fm) {
+    const prev = fm.value;
+    fm.innerHTML = '<option value="">All Members</option>' + incomeMembers.map(m=>`<option>${m}</option>`).join('');
+    if(prev) fm.value = prev;
+  }
+  if(fh) {
+    const prev = fh.value;
+    fh.innerHTML = '<option value="">All Heads</option>' + incomeHeads.map(h=>`<option>${h}</option>`).join('');
+    if(prev) fh.value = prev;
+  }
+}
+
+function onIncFilterYearChange() {
+  // Sync the hero year select too
+  const fy = document.getElementById('incFilterYear')?.value;
+  const ty = document.getElementById('incTopYear');
+  if(ty && fy) ty.value = fy;
+  incSelectedMonths = [0,1,2,3,4,5,6,7,8,9,10,11];
+  renderIncomeHero();
+  renderIncomeEntries(fy);
+  renderIncomeSummary(fy);
 }
 
 function renderIncomeHero() {
@@ -2701,8 +2741,6 @@ function renderIncomeHero() {
     incSelectedMonths = [0,1,2,3,4,5,6,7,8,9,10,11];
     incFiltersInitialised = true;
   }
-  const pillsWrap = document.getElementById('incMonthPills');
-  if(pillsWrap) pillsWrap.style.display = incHeroMode==='ytd' ? 'flex' : 'none';
   renderIncomeMonthPills();
 }
 
@@ -2716,13 +2754,26 @@ function renderIncomePage() {
 function renderIncomeEntries(yr) {
   const container = document.getElementById('incEntries');
   if(!container) return;
+  yr = yr || document.getElementById('incTopYear')?.value || new Date().getFullYear().toString();
+
+  // New filter values
+  const fMember = document.getElementById('incFMember')?.value || '';
+  const fHead   = document.getElementById('incFHead')?.value   || '';
+  const fAType  = document.getElementById('incFAmountType')?.value || '';
+  const fAmt    = Number(document.getElementById('incFAmount')?.value || 0);
+
   const data = incomeEntries.filter(e=>{
     if(!e.date) return false;
     const d = new Date(e.date);
     if(d.getFullYear() != yr) return false;
-    if(incHeroMode === 'ytd') return incSelectedMonths.includes(d.getMonth());
-    return d.getMonth() === new Date().getMonth(); // month mode = this month only
-  }).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    if(incHeroMode === 'ytd' && !incSelectedMonths.includes(d.getMonth())) return false;
+    if(incHeroMode === 'month' && d.getMonth() !== new Date().getMonth()) return false;
+    if(fMember && e.member !== fMember) return false;
+    if(fHead   && e.head   !== fHead)   return false;
+    if(fAType === 'gt' && !(Number(e.amount) > fAmt)) return false;
+    if(fAType === 'lt' && !(Number(e.amount) < fAmt)) return false;
+    return true;
+  }).sort((a,b)=>new Date(b.date)-new Date(a.date)); // newest first
   if(!data.length) {
     container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px">No income entries for this year.</div>';
     return;
@@ -2820,7 +2871,18 @@ function showIncActionModal(id) {
 function editIncomeEntry(id) {
   const e=incomeEntries.find(x=>x.id==id);if(!e)return;
   document.getElementById('incEditId').value=e.id;
-  document.getElementById('incDate').value=e.date||'';
+  // Normalise date to YYYY-MM-DD regardless of how it came back from the sheet
+  let incNormDate = e.date || '';
+  if(incNormDate && !String(incNormDate).match(/^\d{4}-\d{2}-\d{2}$/)) {
+    const pd = new Date(incNormDate);
+    if(!isNaN(pd.getTime())) {
+      const yy = pd.getFullYear();
+      const mm = String(pd.getMonth()+1).padStart(2,'0');
+      const dd = String(pd.getDate()).padStart(2,'0');
+      incNormDate = `${yy}-${mm}-${dd}`;
+    }
+  }
+  document.getElementById('incDate').value = incNormDate;
   if(document.getElementById('incMemberDD'))document.getElementById('incMemberDD').value=e.member||'';
   if(document.getElementById('incHeadDD'))document.getElementById('incHeadDD').value=e.head||'';
   document.getElementById('incAmount').value=e.amount||'';
@@ -3266,8 +3328,6 @@ function populateNewPageYears() {
     <div class="income-hero-sub" id="incTotalSub">Loading…</div>
     <!-- Mini bar chart -->
     <div class="mini-bars" id="incBars" style="margin-top:10px"></div>
-    <!-- Month pills (multi-select filter) -->
-    <div id="incMonthPills" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px"></div>
   </div>
 
   <!-- Manage Income Members -->
@@ -3348,6 +3408,45 @@ function populateNewPageYears() {
         <input class="field-input" id="incNotes" placeholder="Optional note">
       </div>
       <button class="btn-primary" id="incSaveBtn" onclick="saveIncomeEntry()" style="background:linear-gradient(135deg,#065f46,#10b981)">Add Income</button>
+    </div>
+  </div>
+
+  <!-- Income Filters Card -->
+  <div class="card">
+    <div class="collapse-header" onclick="toggleCollapse('incFilterSection','incFilterChevron')">
+      <div class="card-title-text" style="font-size:14px;font-weight:700">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:var(--green);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        View Period &amp; Filters
+      </div>
+      <div class="collapse-chevron" id="incFilterChevron"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    </div>
+    <div id="incFilterSection" class="hidden" style="margin-top:14px">
+      <!-- Year selector -->
+      <div class="field-group" style="margin-bottom:10px">
+        <div class="field-label">Year</div>
+        <select class="field-input" id="incFilterYear" onchange="onIncFilterYearChange()"></select>
+      </div>
+      <!-- Month pills multi-select -->
+      <div class="field-label" style="margin-bottom:6px">Months (tap to select / deselect)</div>
+      <div id="incMonthPills" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
+      <!-- Entry filters -->
+      <div class="field-label" style="margin-bottom:6px">Entry Filters</div>
+      <div class="filter-row" style="margin-bottom:8px">
+        <select id="incFMember" onchange="renderIncomeEntries()" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid var(--border);font-size:13px;background:var(--surface2);color:var(--text)">
+          <option value="">All Members</option>
+        </select>
+        <select id="incFHead" onchange="renderIncomeEntries()" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid var(--border);font-size:13px;background:var(--surface2);color:var(--text)">
+          <option value="">All Heads</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px">
+        <select class="field-input" id="incFAmountType" onchange="renderIncomeEntries()" style="flex:1">
+          <option value="">Amount Filter</option>
+          <option value="gt">Greater Than</option>
+          <option value="lt">Less Than</option>
+        </select>
+        <input class="field-input" id="incFAmount" type="number" placeholder="Amount" oninput="renderIncomeEntries()" style="flex:1">
+      </div>
     </div>
   </div>
 
