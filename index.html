@@ -2479,10 +2479,32 @@ const INC_MEM_CACHE = 'sb_income_members';
 const INC_HEAD_CACHE = 'sb_income_heads';
 
 async function loadIncomeData() {
-  // Load from cache first
-  try { incomeEntries = JSON.parse(localStorage.getItem(INC_CACHE)||'[]'); } catch(e){ incomeEntries=[]; }
-  try { incomeMembers = JSON.parse(localStorage.getItem(INC_MEM_CACHE)||'[]'); } catch(e){ incomeMembers=[]; }
-  try { incomeHeads = JSON.parse(localStorage.getItem(INC_HEAD_CACHE)||'[]'); } catch(e){ incomeHeads=[]; }
+  // One-time migration: clear old caches that may have stored raw {name:...} objects
+  // If members cache contains objects, wipe it so we reload fresh strings from cloud
+  try {
+    const mCache = JSON.parse(localStorage.getItem(INC_MEM_CACHE)||'[]');
+    if(mCache.length && typeof mCache[0] === 'object') localStorage.removeItem(INC_MEM_CACHE);
+    const hCache = JSON.parse(localStorage.getItem(INC_HEAD_CACHE)||'[]');
+    if(hCache.length && typeof hCache[0] === 'object') localStorage.removeItem(INC_HEAD_CACHE);
+    // Also clear income cache if it accidentally contains expense records (no member/head field)
+    const eCache = JSON.parse(localStorage.getItem(INC_CACHE)||'[]');
+    if(eCache.length && eCache[0] && eCache[0].member===undefined && eCache[0].head===undefined) {
+      localStorage.removeItem(INC_CACHE);
+    }
+  } catch(ex){}
+  // Load from cache first — always extract .name so we never store raw objects
+  try {
+    const cached = JSON.parse(localStorage.getItem(INC_CACHE)||'[]');
+    incomeEntries = Array.isArray(cached) ? cached.filter(e=>e&&e.date) : [];
+  } catch(e){ incomeEntries=[]; }
+  try {
+    const cached = JSON.parse(localStorage.getItem(INC_MEM_CACHE)||'[]');
+    incomeMembers = Array.isArray(cached) ? cached.map(x=>typeof x==='string'?x:(x&&x.name)||'').filter(Boolean) : [];
+  } catch(e){ incomeMembers=[]; }
+  try {
+    const cached = JSON.parse(localStorage.getItem(INC_HEAD_CACHE)||'[]');
+    incomeHeads = Array.isArray(cached) ? cached.map(x=>typeof x==='string'?x:(x&&x.name)||'').filter(Boolean) : [];
+  } catch(e){ incomeHeads=[]; }
 
   // Fetch fresh from cloud
   try {
@@ -2492,9 +2514,19 @@ async function loadIncomeData() {
       fetch(API_URL + '?sheet=IncomeHead')
     ]);
     const [eData, mData, hData] = await Promise.all([eRes.json(), mRes.json(), hRes.json()]);
-    if(Array.isArray(eData)) { incomeEntries = eData; localStorage.setItem(INC_CACHE, JSON.stringify(eData)); }
-    if(Array.isArray(mData)) { incomeMembers = mData.map(x=>x.name||x).filter(Boolean); localStorage.setItem(INC_MEM_CACHE, JSON.stringify(mData)); }
-    if(Array.isArray(hData)) { incomeHeads = hData.map(x=>x.name||x).filter(Boolean); localStorage.setItem(INC_HEAD_CACHE, JSON.stringify(hData)); }
+    // Only accept as income entries if they have 'head' or 'member' field (not expense records)
+    if(Array.isArray(eData)) {
+      incomeEntries = eData.filter(e=>e&&e.date&&(e.member!==undefined||e.head!==undefined));
+      localStorage.setItem(INC_CACHE, JSON.stringify(incomeEntries));
+    }
+    if(Array.isArray(mData)) {
+      incomeMembers = mData.map(x=>typeof x==='string'?x:(x&&x.name)||'').filter(Boolean);
+      localStorage.setItem(INC_MEM_CACHE, JSON.stringify(incomeMembers));
+    }
+    if(Array.isArray(hData)) {
+      incomeHeads = hData.map(x=>typeof x==='string'?x:(x&&x.name)||'').filter(Boolean);
+      localStorage.setItem(INC_HEAD_CACHE, JSON.stringify(incomeHeads));
+    }
   } catch(e) { console.log('Income fetch error', e); }
 
   renderIncomeControls();
@@ -2529,7 +2561,7 @@ async function addIncomeMember() {
   const v = document.getElementById('incMemberInput').value.trim();
   if(!v || incomeMembers.includes(v)) return;
   incomeMembers.push(v);
-  localStorage.setItem(INC_MEM_CACHE, JSON.stringify(incomeMembers.map(m=>({name:m}))));
+  localStorage.setItem(INC_MEM_CACHE, JSON.stringify(incomeMembers));
   try { await fetch(API_URL, {method:'POST', body: JSON.stringify({sheet:'IncomeMember', name:v})}); } catch(e){}
   document.getElementById('incMemberInput').value = '';
   renderIncomeControls();
@@ -2544,7 +2576,7 @@ async function addIncomeHead() {
   const v = document.getElementById('incHeadInput').value.trim();
   if(!v || incomeHeads.includes(v)) return;
   incomeHeads.push(v);
-  localStorage.setItem(INC_HEAD_CACHE, JSON.stringify(incomeHeads.map(h=>({name:h}))));
+  localStorage.setItem(INC_HEAD_CACHE, JSON.stringify(incomeHeads));
   try { await fetch(API_URL, {method:'POST', body: JSON.stringify({sheet:'IncomeHead', name:v})}); } catch(e){}
   document.getElementById('incHeadInput').value = '';
   renderIncomeControls();
@@ -2579,7 +2611,11 @@ function renderIncomePage() {
   const el = document.getElementById('incTotalAmount');
   if(el) el.textContent = '₹' + indian(total);
   const sub = document.getElementById('incTotalSub');
-  if(sub) sub.textContent = `${cnt} entries · Avg ₹${indian(cnt?Math.round(total/cnt):0)} each`;
+  if(cnt > 0) {
+    if(sub) sub.textContent = `${cnt} entries · Avg ₹${indian(Math.round(total/cnt))} each`;
+  } else {
+    if(sub) sub.textContent = 'No income recorded yet — add your first entry below';
+  }
 
   renderIncomeEntries(yr);
   renderIncomeSummary(yr);
@@ -2728,12 +2764,14 @@ function renderCashFlow() {
   const wf = document.getElementById('cfWaterfall');
   if(!wf) return;
 
-  const fmt = (n,positive=true) => {
-    const cl = n>=0 ? 'cf-amount-green' : 'cf-amount-red';
-    return `<span class="${cl}">₹${indian(Math.abs(n))}</span>`;
-  };
+  const incomeNote = totalIncome === 0
+    ? `<div style="background:#fef9c3;border:1px solid #f59e0b;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#92400e;display:flex;gap:8px;align-items:flex-start">
+        <span style="font-size:16px">💡</span>
+        <span>No income entries recorded yet. Add income entries from the <strong>Income</strong> page to see your full cash flow. Balance shown below reflects expenses only.</span>
+       </div>`
+    : '';
 
-  wf.innerHTML = `
+  wf.innerHTML = incomeNote + `
   <div class="cf-row cf-row-main">
     <div style="font-size:20px;margin-right:12px">💰</div>
     <div class="cf-label">Total Income</div>
@@ -2767,7 +2805,7 @@ function renderCashFlow() {
     Savings Rate: <strong style="color:${balance>=0?'var(--green)':'var(--red)'}">
     ${Math.round(balance/totalIncome*100)}%
     </strong> of income
-  </div>`:''}`;
+  </div>`:'<div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text3)">Record income to see your savings rate</div>'}`;
 
   renderCashFlowChart();
 }
