@@ -832,7 +832,17 @@ tbody tr:hover{background:var(--surface2)}
   font-size:12px;font-weight:600;
   pointer-events:all;
   animation:slideDown .3s cubic-bezier(.34,1.26,.64,1);
+  transition:opacity .35s,transform .35s;
 }
+.budget-banner-pill.pill-fade-out{
+  opacity:0;transform:translateY(-10px) scale(.97);
+}
+.banner-pill-close{
+  background:none;border:none;cursor:pointer;
+  color:var(--text3);font-size:13px;line-height:1;
+  padding:2px 4px;flex-shrink:0;
+}
+.banner-pill-close:hover{color:var(--text)}
 @keyframes slideDown{from{transform:translateY(-12px);opacity:0}to{transform:translateY(0);opacity:1}}
 
 
@@ -2305,6 +2315,10 @@ fetchNatureMaster().then(()=>{
   renderNatureControls();
   if(localStorage.getItem('sb_auth')==='yes'){
     loadExpenses();
+    // Pre-load Income and Budgets in the background so Analytics/Cash Flow are correct
+    // immediately, without requiring the user to visit those tabs first.
+    if(typeof loadIncomeData==='function')loadIncomeData();
+    if(typeof loadBudgets==='function')loadBudgets();
   }
 });
 
@@ -3282,6 +3296,7 @@ function renderBudgetAlerts() {
     return d.getFullYear()==curYear && d.getMonth()===curMonth;
   });
 
+  const pills=[];
   Object.entries(budgets).forEach(([nature, bud])=>{
     const actual = data.filter(e=>e.nature===nature).reduce((s,e)=>s+Number(e.amount||0),0);
     const pct = bud>0?Math.round(actual/bud*100):0;
@@ -3290,8 +3305,22 @@ function renderBudgetAlerts() {
       const msg = pct>=100
         ? `🔴 ${nature} exceeded budget by ₹${indian(actual-bud)}`
         : `🟡 ${nature} at ${pct}% of budget — ₹${indian(bud-actual)} remaining`;
-      banner.innerHTML += `<div class="budget-banner-pill ${cls}">${msg}</div>`;
+      pills.push({cls,msg});
     }
+  });
+
+  if(!pills.length)return;
+
+  pills.forEach((p,i)=>{
+    const pillEl=document.createElement('div');
+    pillEl.className=`budget-banner-pill ${p.cls}`;
+    pillEl.innerHTML=`<span style="flex:1">${p.msg}</span><button class="banner-pill-close" onclick="this.parentElement.remove()" aria-label="Dismiss">✕</button>`;
+    banner.appendChild(pillEl);
+    // Auto-dismiss after 4.5s (staggered slightly per pill) with a fade-out
+    setTimeout(()=>{
+      pillEl.classList.add('pill-fade-out');
+      setTimeout(()=>{ if(pillEl.parentElement) pillEl.remove(); }, 350);
+    }, 4500 + i*300);
   });
 }
 
