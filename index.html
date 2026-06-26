@@ -902,8 +902,29 @@ tbody tr:hover{background:var(--surface2)}
 .cf-month-val.pos{color:var(--green)}
 .cf-month-val.neg{color:var(--red,#ef4444)}
 
-/* print */
-@media print{
+/* ── INVESTMENTS PAGE ── */
+.inv-hero{
+  background:linear-gradient(135deg,#4c1d95 0%,#7c3aed 60%,#8b5cf6 100%);
+  border-radius:22px;padding:24px 22px 20px;margin-bottom:16px;
+  position:relative;overflow:hidden;
+  box-shadow:0 8px 32px rgba(139,92,246,.3);
+}
+.inv-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.07);}
+.inv-hero-label{font-size:11px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.inv-hero-amount{font-size:44px;font-weight:800;color:#fff;letter-spacing:-2px;line-height:1;margin:8px 0 6px;position:relative;z-index:1}
+.inv-hero-sub{font-size:12px;color:rgba(255,255,255,.55)}
+.inv-stat-pill{background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1px solid #ddd6fe;border-radius:14px;padding:14px 12px;}
+.inv-stat-pill .stat-pill-value{color:#5b21b6}
+.badge-inv-type{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;background:#ede9fe;color:#5b21b6}
+.inv-recur-box{margin-top:12px;padding:14px;background:#f5f3ff;border:1.5px solid #c4b5fd;border-radius:12px}
+.inv-recur-months{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.inv-recur-chip{padding:4px 10px;border-radius:99px;border:1.5px solid var(--border);background:#fff;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;user-select:none;transition:all .15s}
+.inv-recur-chip.selected{background:#7c3aed;border-color:#7c3aed;color:#fff}
+.inv-name-suggestions{position:absolute;z-index:200;background:#fff;border:1.5px solid var(--border);border-radius:10px;box-shadow:var(--shadow);max-height:160px;overflow-y:auto;width:100%;top:100%;left:0}
+.inv-name-suggestion-item{padding:10px 14px;font-size:13px;cursor:pointer;color:var(--text)}
+.inv-name-suggestion-item:hover{background:var(--accent-soft);color:var(--accent)}
+.inv-name-field-wrap{position:relative}
+
   #loadingOverlay,#lockScreen,#topBar,#drawer,#drawerOverlay,#cacheBadge,#actionModal{display:none!important}
   .page{display:block!important;padding:0}
   body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
@@ -1026,6 +1047,7 @@ tbody tr:hover{background:var(--surface2)}
     <button class="drawer-item" id="nav-income" onclick="showPage('income')"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Income</button>
     <button class="drawer-item" id="nav-cashflow" onclick="showPage('cashflow')"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Cash Flow</button>
     <button class="drawer-item" id="nav-budget" onclick="showPage('budget')"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Budgets</button>
+    <button class="drawer-item" id="nav-investments" onclick="showPage('investments')"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>Investments</button>
   </div>
   <div class="drawer-footer">
     <button class="drawer-logout" onclick="logout()">
@@ -1464,6 +1486,7 @@ function showPage(name){
     loadBudgets();
     renderBudgetPage();
   }
+  if(name==='investments'){loadInvestmentsPage();}
 }
 
 // ── GREETING ──────────────────────────────────────────
@@ -4053,6 +4076,627 @@ renderAnalytics = function() {
 
 </div>
 <!-- end BUDGET -->
+
+<!-- ══════════════════ INVESTMENTS PAGE ══════════════════ -->
+<div id="page-investments" class="page">
+
+  <!-- Hero -->
+  <div class="inv-hero">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="inv-hero-label">Total Invested</div>
+      <select class="hero-year-select" id="invTopYear" onchange="renderInvHero()"></select>
+    </div>
+    <div class="inv-hero-amount" id="invHeroAmount">₹0</div>
+    <div class="inv-hero-sub" id="invHeroSub">Loading…</div>
+  </div>
+
+  <!-- Stat Pills -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px" id="invStatRow"></div>
+
+  <!-- Add / Edit Investment -->
+  <div class="card">
+    <div class="collapse-header" onclick="toggleCollapse('invAddSection','invAddChevron')">
+      <div class="card-title-text" style="font-size:14px;font-weight:700">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:#7c3aed;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add / Edit Investment
+      </div>
+      <div class="collapse-chevron" id="invAddChevron"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    </div>
+    <div id="invAddSection" class="hidden" style="margin-top:14px">
+      <input type="hidden" id="invEditId">
+      <input type="hidden" id="invIsRecurringEdit">
+      <div class="field-row">
+        <div class="field-group">
+          <div class="field-label">Date</div>
+          <input class="field-input" type="date" id="invDate">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Investment Type</div>
+          <select class="field-input" id="invType">
+            <option>Mutual Fund</option><option>Stocks</option><option>ETF</option>
+            <option>PPF</option><option>EPF</option><option>NPS</option>
+            <option>Fixed Deposit</option><option>Gold</option><option>Crypto</option>
+            <option>Bonds</option><option>Others</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Investment Name</div>
+        <div class="inv-name-field-wrap">
+          <input class="field-input" id="invName" placeholder="e.g. Nifty 50 Index Fund" autocomplete="off" oninput="showInvNameSuggestions()" onfocus="showInvNameSuggestions()" onblur="setTimeout(hideInvSuggestions,200)">
+          <div class="inv-name-suggestions hidden" id="invNameSuggestions"></div>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Description</div>
+        <input class="field-input" id="invDesc" placeholder="Optional notes…">
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <div class="field-label">Amount (₹)</div>
+          <input class="field-input" type="number" id="invAmount" placeholder="0.00">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Payment Method</div>
+          <select class="field-input" id="invPaid">
+            <option>UPI</option><option>Bank Transfer</option><option>Auto Debit</option><option>Card</option><option>Cash</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Recurring toggle -->
+      <div style="display:flex;align-items:center;gap:10px;margin:12px 0 0;padding:12px;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border)">
+        <input type="checkbox" id="invIsRecurring" onchange="toggleInvRecurring()" style="width:16px;height:16px;accent-color:#7c3aed;cursor:pointer">
+        <label for="invIsRecurring" style="font-size:13px;font-weight:600;color:var(--text);cursor:pointer">🔁 Recurring Investment</label>
+      </div>
+
+      <!-- Recurring options (hidden by default) -->
+      <div class="inv-recur-box hidden" id="invRecurBox">
+        <div style="font-size:12px;font-weight:700;color:#5b21b6;margin-bottom:8px">Recurring Settings</div>
+        <div class="field-group" style="margin-bottom:10px">
+          <div class="field-label">Frequency</div>
+          <select class="field-input" id="invFrequency">
+            <option value="Monthly">Monthly</option>
+            <option value="Quarterly">Quarterly</option>
+            <option value="Half-Yearly">Half-Yearly</option>
+            <option value="Yearly">Yearly</option>
+          </select>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Applies To</div>
+        <div style="display:flex;gap:12px;margin-bottom:10px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;cursor:pointer">
+            <input type="radio" name="invMonthScope" value="all" id="invScopeAll" checked onchange="toggleInvMonthScope()" style="accent-color:#7c3aed"> Throughout Year
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;cursor:pointer">
+            <input type="radio" name="invMonthScope" value="specific" id="invScopeSpecific" onchange="toggleInvMonthScope()" style="accent-color:#7c3aed"> Specific Months
+          </label>
+        </div>
+        <div class="inv-recur-months hidden" id="invRecurMonths">
+          <div style="font-size:11px;color:var(--text2);margin-bottom:6px">Select months:</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <div class="inv-recur-chip" onclick="toggleInvChip(this,0)">Jan</div>
+            <div class="inv-recur-chip" onclick="toggleInvChip(this,1)">Feb</div>
+            <div class="inv-recur-chip" onclick="toggleInvChip(this,2)">Mar</div>
+            <div class="inv-recur-chip" onclick="toggleInvChip(this,3)">Apr</div>
+            <div class="inv-recur-chip" onclick="toggleInvChip(this,4)">May</div>
+            <div class="inv-recur-chip" onclick="toggleInvChip(this,5)">Jun</div>
+            <div class="inv-recur-chip" onclick="toggleInvChip(this,6)">Jul</div>
+            <div class="inv-recur-chip" onclick="toggleInvChip(this,7)">Aug</div>
+            <div class="inv-recur-chip" onclick="toggleInvChip(this,8)">Sep</div>
+            <div class="inv-recur-chip" onclick="toggleInvChip(this,9)">Oct</div>
+            <div class="inv-recur-chip" onclick="toggleInvChip(this,10)">Nov</div>
+            <div class="inv-recur-chip" onclick="toggleInvChip(this,11)">Dec</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+          <input type="checkbox" id="invRecurActive" checked style="accent-color:#7c3aed;width:15px;height:15px">
+          <label for="invRecurActive" style="font-size:13px;font-weight:600;color:var(--text);cursor:pointer">Active</label>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="invSaveBtn" onclick="saveInvestment()" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6);margin-top:14px">Add Investment</button>
+    </div>
+  </div>
+
+  <!-- Book Recurring -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom:12px">
+      <div class="card-title-text" style="font-size:14px;font-weight:700">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:#7c3aed;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        Book Recurring Investments
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+      <select class="field-input" id="invBookMonth" style="flex:1;max-width:160px">
+        <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+        <option value="3">April</option><option value="4">May</option><option value="5">June</option>
+        <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+        <option value="9">October</option><option value="10">November</option><option value="11">December</option>
+      </select>
+      <select class="field-input" id="invBookYear" style="flex:1;max-width:120px"></select>
+      <button class="btn-primary" onclick="bookRecurringInvestments()" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6);flex:1;min-width:120px">⚡ Book Now</button>
+    </div>
+    <div id="invBookResult"></div>
+  </div>
+
+  <!-- Investment List -->
+  <div class="card">
+    <div class="collapse-header" onclick="toggleCollapse('invListSection','invListChevron')">
+      <div class="card-title-text" style="font-size:14px;font-weight:700">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:#7c3aed;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Investment Entries
+      </div>
+      <div class="collapse-chevron" id="invListChevron"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    </div>
+    <div id="invListSection" class="hidden" style="margin-top:14px">
+      <div class="filter-row" style="margin-bottom:10px">
+        <select id="invFilterYear" onchange="renderInvList()"></select>
+        <select id="invFilterType" onchange="renderInvList()">
+          <option value="">All Types</option>
+          <option>Mutual Fund</option><option>Stocks</option><option>ETF</option>
+          <option>PPF</option><option>EPF</option><option>NPS</option>
+          <option>Fixed Deposit</option><option>Gold</option><option>Crypto</option>
+          <option>Bonds</option><option>Others</option>
+        </select>
+      </div>
+      <div id="invList" style="overflow-x:auto"></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center">Long press any row to Edit or Delete</div>
+    </div>
+  </div>
+
+  <!-- Investment Summary -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-text">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:#7c3aed;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+        Investment Summary
+      </div>
+      <select class="chart-select" id="invSumYear" onchange="renderInvSummary()"></select>
+    </div>
+    <div id="invSummary"></div>
+  </div>
+
+  <!-- Recurring Rules -->
+  <div class="card">
+    <div class="collapse-header" onclick="toggleCollapse('invRecurListSection','invRecurListChevron')">
+      <div class="card-title-text" style="font-size:14px;font-weight:700">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:#7c3aed;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/></svg>
+        Recurring Investment Rules
+      </div>
+      <div class="collapse-chevron" id="invRecurListChevron"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    </div>
+    <div id="invRecurListSection" class="hidden" style="margin-top:14px">
+      <div id="invRecurList"></div>
+    </div>
+  </div>
+
+</div>
+<!-- end INVESTMENTS -->
+
+<!-- Investment Action Modal -->
+<div id="invActionModal" class="hidden">
+  <div class="action-sheet">
+    <div class="action-sheet-title">
+      <strong id="invActionModalDesc">Investment</strong>
+      Choose an action
+    </div>
+    <div class="action-btns">
+      <button class="action-btn edit-btn" onclick="invActionEdit()">
+        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit
+      </button>
+      <button class="action-btn delete-btn" onclick="invActionDelete()">
+        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        Delete
+      </button>
+    </div>
+    <button class="action-cancel" onclick="closeInvActionModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// INVESTMENTS MODULE
+// ══════════════════════════════════════════════════════
+let investments = [];
+let recurringInvestments = [];
+let invNames = []; // known investment names for autocomplete
+let pendingInvActionId = null;
+let invPressTimer = null;
+
+const INV_TYPE_COLORS = {
+  'Mutual Fund':'#7c3aed','Stocks':'#10b981','ETF':'#0ea5e9','PPF':'#f59e0b',
+  'EPF':'#f97316','NPS':'#ec4899','Fixed Deposit':'#06b6d4','Gold':'#d97706',
+  'Crypto':'#6366f1','Bonds':'#64748b','Others':'#94a3b8'
+};
+
+// ── PAGE INIT ─────────────────────────────────────────
+async function loadInvestmentsPage(){
+  await Promise.all([loadInvestments(), loadRecurringInvestments()]);
+  populateInvYears();
+  renderInvHero();
+  renderInvStats();
+  renderInvList();
+  renderInvSummary();
+  renderInvRecurList();
+  // Set book month/year to current
+  const now=new Date();
+  document.getElementById('invBookMonth').value=now.getMonth();
+  document.getElementById('invBookYear').value=now.getFullYear();
+}
+
+async function loadInvestments(){
+  const CACHE='sb_investments_cache';
+  const cached=localStorage.getItem(CACHE);
+  if(cached){try{investments=JSON.parse(cached)||[];}catch(e){investments=[];}}
+  try{
+    const res=await fetch(API_URL+'?sheet=Investments');
+    const d=await res.json();
+    if(Array.isArray(d)){
+      investments=d;
+      localStorage.setItem(CACHE,JSON.stringify(d));
+    }
+  }catch(e){}
+  // Build known names list
+  invNames=[...new Set(investments.map(i=>i.name).filter(Boolean))];
+}
+
+async function loadRecurringInvestments(){
+  const CACHE='sb_recinv_cache';
+  const cached=localStorage.getItem(CACHE);
+  if(cached){try{recurringInvestments=JSON.parse(cached)||[];}catch(e){recurringInvestments=[];}}
+  try{
+    const res=await fetch(API_URL+'?sheet=RecurringInvestments');
+    const d=await res.json();
+    if(Array.isArray(d)){
+      recurringInvestments=d;
+      localStorage.setItem(CACHE,JSON.stringify(d));
+    }
+  }catch(e){}
+}
+
+// ── YEAR HELPERS ──────────────────────────────────────
+function invYears(){
+  const ys=[...new Set(investments.map(i=>i.date&&i.date.substring(0,4)).filter(Boolean))];
+  if(!ys.length)ys.push(String(new Date().getFullYear()));
+  return ys.sort().reverse();
+}
+
+function populateInvYears(){
+  const ys=invYears();
+  ['invTopYear','invFilterYear','invSumYear','invBookYear'].forEach(id=>{
+    const el=document.getElementById(id); if(!el)return;
+    const prev=el.value;
+    el.innerHTML=ys.map(y=>`<option>${y}</option>`).join('');
+    if(prev&&ys.includes(prev))el.value=prev;
+    else el.value=ys[0];
+  });
+}
+
+// ── HERO ──────────────────────────────────────────────
+function renderInvHero(){
+  const yr=document.getElementById('invTopYear').value;
+  const data=investments.filter(i=>i.date&&i.date.substring(0,4)===yr);
+  const total=data.reduce((s,i)=>s+Number(i.amount||0),0);
+  document.getElementById('invHeroAmount').textContent='₹'+indian(total);
+  document.getElementById('invHeroSub').textContent=data.length+' investments in '+yr;
+}
+
+function renderInvStats(){
+  const yr=invYears()[0];
+  const data=investments.filter(i=>i.date&&i.date.substring(0,4)===yr);
+  const total=data.reduce((s,i)=>s+Number(i.amount||0),0);
+  const avg=data.length?Math.round(total/data.length):0;
+  const largest=data.length?Math.max(...data.map(i=>Number(i.amount||0))):0;
+  document.getElementById('invStatRow').innerHTML=`
+  <div class="stat-pill inv-stat-pill"><div class="stat-pill-label">Avg Investment</div><div class="stat-pill-value">₹${compact(avg)}</div><div class="stat-pill-sub">per entry</div></div>
+  <div class="stat-pill inv-stat-pill"><div class="stat-pill-label">Largest</div><div class="stat-pill-value">₹${compact(largest)}</div><div class="stat-pill-sub">single investment</div></div>`;
+}
+
+// ── INVESTMENT LIST ───────────────────────────────────
+function renderInvList(){
+  populateInvYears();
+  const yr=document.getElementById('invFilterYear').value;
+  const ft=document.getElementById('invFilterType').value;
+  let data=investments.filter(i=>i.date&&i.date.substring(0,4)===yr);
+  if(ft)data=data.filter(i=>i.type===ft);
+  data=[...data].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const el=document.getElementById('invList');
+  if(!data.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">No investments found.</div>';return;}
+  el.innerHTML=`<table>
+  <thead><tr><th>Date</th><th>Name</th><th>Type</th><th>Amount</th><th>Via</th></tr></thead>
+  <tbody>${data.map(i=>{
+    const d=new Date(i.date);
+    return `<tr ontouchstart="invPressStart(${i.id})" ontouchend="invPressEnd()" onmousedown="invPressStart(${i.id})" onmouseup="invPressEnd()">
+      <td style="white-space:nowrap">${String(d.getDate()).padStart(2,'0')} ${shortM[d.getMonth()]}<br><span style="color:var(--text3);font-size:10px">${d.getFullYear()}</span></td>
+      <td style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600">${i.name||''}</td>
+      <td><span class="badge-inv-type" style="background:${(INV_TYPE_COLORS[i.type]||'#94a3b8')}22;color:${INV_TYPE_COLORS[i.type]||'#94a3b8'}">${i.type||''}</span></td>
+      <td class="amount-cell" style="color:#7c3aed">₹${indian(i.amount)}</td>
+      <td style="font-size:12px;color:var(--text2)">${i.paid||''}</td>
+    </tr>`;
+  }).join('')}</tbody></table>`;
+}
+
+// ── SUMMARY ───────────────────────────────────────────
+function renderInvSummary(){
+  const yr=document.getElementById('invSumYear').value;
+  const data=investments.filter(i=>i.date&&i.date.substring(0,4)===yr);
+  const el=document.getElementById('invSummary');
+  if(!data.length){el.innerHTML='<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px">No data for '+yr+'</div>';return;}
+  const total=data.reduce((s,i)=>s+Number(i.amount||0),0);
+  const avg=Math.round(total/data.length);
+  const largest=Math.max(...data.map(i=>Number(i.amount||0)));
+  // By type
+  const byType={};
+  data.forEach(i=>{byType[i.type]=(byType[i.type]||0)+Number(i.amount||0);});
+  const typeRows=Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,v])=>`
+  <div class="summary-row">
+    <div><div class="summary-label">${t}</div></div>
+    <div style="text-align:right"><div class="summary-amount" style="color:#7c3aed">₹${indian(v)}</div><div class="summary-avg">${Math.round(v/total*100)}%</div></div>
+  </div>`).join('');
+  el.innerHTML=`
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+    <div class="stat-pill inv-stat-pill"><div class="stat-pill-label">Total</div><div class="stat-pill-value">₹${compact(total)}</div><div class="stat-pill-sub">${data.length} investments</div></div>
+    <div class="stat-pill inv-stat-pill"><div class="stat-pill-label">Average</div><div class="stat-pill-value">₹${compact(avg)}</div><div class="stat-pill-sub">per investment</div></div>
+    <div class="stat-pill inv-stat-pill"><div class="stat-pill-label">Largest</div><div class="stat-pill-value">₹${compact(largest)}</div><div class="stat-pill-sub">single entry</div></div>
+    <div class="stat-pill inv-stat-pill"><div class="stat-pill-label">Count</div><div class="stat-pill-value">${data.length}</div><div class="stat-pill-sub">entries</div></div>
+  </div>
+  <div class="summary-grid">${typeRows}</div>`;
+}
+
+// ── RECURRING RULES LIST ──────────────────────────────
+function renderInvRecurList(){
+  const el=document.getElementById('invRecurList');
+  if(!recurringInvestments.length){
+    el.innerHTML='<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px">No recurring investment rules yet.</div>';return;
+  }
+  el.innerHTML=recurringInvestments.map(r=>{
+    const isActive=String(r.active)==='true'||r.active===true;
+    const months=r.months==='all'?'All 12 months':r.months;
+    return `<div class="rm-item">
+      <div class="rm-item-left">
+        <div class="rm-item-name">
+          ${r.name}
+          <span class="${isActive?'rm-badge-active':'rm-badge-paused'}">${isActive?'Active':'Paused'}</span>
+        </div>
+        <div class="rm-item-meta">${r.type} · ${r.paid} · ${r.frequency} · ${months}</div>
+        <div class="rm-item-amount" style="color:#7c3aed">₹${indian(r.amount)}</div>
+        <div class="rm-item-actions">
+          <button class="btn-small" onclick="editRecurringInv(${r.id})">✏️ Edit</button>
+          <button class="btn-danger-sm" onclick="deleteRecurringInv(${r.id})">🗑 Del</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── FORM CONTROLS ─────────────────────────────────────
+function toggleInvRecurring(){
+  const checked=document.getElementById('invIsRecurring').checked;
+  document.getElementById('invRecurBox').classList.toggle('hidden',!checked);
+}
+function toggleInvMonthScope(){
+  const specific=document.getElementById('invScopeSpecific').checked;
+  document.getElementById('invRecurMonths').classList.toggle('hidden',!specific);
+}
+function toggleInvChip(el){el.classList.toggle('selected');}
+function getInvRecurMonths(){
+  if(document.getElementById('invScopeAll').checked)return 'all';
+  const sel=[...document.querySelectorAll('.inv-recur-chip.selected')].map(c=>c.textContent);
+  return sel.length?sel.join(','):'all';
+}
+function resetInvRecurChips(){
+  document.querySelectorAll('.inv-recur-chip').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('invScopeAll').checked=true;
+  document.getElementById('invScopeSpecific').checked=false;
+  document.getElementById('invRecurMonths').classList.add('hidden');
+}
+
+// ── AUTOCOMPLETE ──────────────────────────────────────
+function showInvNameSuggestions(){
+  const val=document.getElementById('invName').value.toLowerCase();
+  const matches=invNames.filter(n=>n.toLowerCase().includes(val)&&n.toLowerCase()!==val);
+  const box=document.getElementById('invNameSuggestions');
+  if(!matches.length){box.classList.add('hidden');return;}
+  box.innerHTML=matches.slice(0,6).map(n=>`<div class="inv-name-suggestion-item" onmousedown="selectInvName('${n.replace(/'/,"\\'")}')">${n}</div>`).join('');
+  box.classList.remove('hidden');
+}
+function hideInvSuggestions(){document.getElementById('invNameSuggestions').classList.add('hidden');}
+function selectInvName(n){document.getElementById('invName').value=n;hideInvSuggestions();}
+
+// ── SAVE INVESTMENT ───────────────────────────────────
+async function saveInvestment(){
+  const eid=document.getElementById('invEditId').value;
+  const isRecurEdit=document.getElementById('invIsRecurringEdit').value==='1';
+  const date=document.getElementById('invDate').value;
+  const type=document.getElementById('invType').value;
+  const name=document.getElementById('invName').value.trim();
+  const desc=document.getElementById('invDesc').value;
+  const amount=Number(document.getElementById('invAmount').value||0);
+  const paid=document.getElementById('invPaid').value;
+  const isRecurring=document.getElementById('invIsRecurring').checked;
+
+  if(!date&&!isRecurring){alert('Please select a date.');return;}
+  if(!name){alert('Please enter an investment name.');return;}
+  if(!amount){alert('Please enter an amount.');return;}
+
+  if(isRecurring){
+    // Save to RecurringInvestments
+    const frequency=document.getElementById('invFrequency').value;
+    const months=getInvRecurMonths();
+    const active=document.getElementById('invRecurActive').checked;
+    const robj={
+      id:eid&&isRecurEdit?eid:Date.now(),
+      name,type,amount,paid,frequency,months,
+      active,description:desc,
+      startDate:date||new Date().toISOString().substring(0,10),
+      sheet:'RecurringInvestments'
+    };
+    if(eid&&isRecurEdit) recurringInvestments=recurringInvestments.map(r=>r.id==eid?robj:r);
+    else recurringInvestments.push(robj);
+    try{await fetch(API_URL,{method:'POST',body:JSON.stringify(robj)});}catch(e){}
+    localStorage.setItem('sb_recinv_cache',JSON.stringify(recurringInvestments));
+    renderInvRecurList();
+  } else {
+    // Save to Investments
+    const obj={id:eid&&!isRecurEdit?eid:Date.now(),date,type,name,description:desc,amount,paid,sheet:'Investments'};
+    if(eid&&!isRecurEdit) investments=investments.map(i=>i.id==eid?obj:i);
+    else investments.push(obj);
+    try{await fetch(API_URL,{method:'POST',body:JSON.stringify(obj)});}catch(e){}
+    localStorage.setItem('sb_investments_cache',JSON.stringify(investments));
+    if(!invNames.includes(name))invNames.push(name);
+    populateInvYears();
+    renderInvHero();renderInvStats();renderInvList();renderInvSummary();
+  }
+  clearInvForm();
+}
+
+function clearInvForm(){
+  document.getElementById('invEditId').value='';
+  document.getElementById('invIsRecurringEdit').value='';
+  document.getElementById('invDate').value='';
+  document.getElementById('invName').value='';
+  document.getElementById('invDesc').value='';
+  document.getElementById('invAmount').value='';
+  document.getElementById('invIsRecurring').checked=false;
+  document.getElementById('invRecurBox').classList.add('hidden');
+  document.getElementById('invSaveBtn').textContent='Add Investment';
+  resetInvRecurChips();
+  document.getElementById('invRecurActive').checked=true;
+}
+
+function editInvestmentEntry(id){
+  const inv=investments.find(i=>i.id==id);if(!inv)return;
+  document.getElementById('invEditId').value=inv.id;
+  document.getElementById('invIsRecurringEdit').value='0';
+  document.getElementById('invDate').value=inv.date;
+  document.getElementById('invType').value=inv.type;
+  document.getElementById('invName').value=inv.name||'';
+  document.getElementById('invDesc').value=inv.description||'';
+  document.getElementById('invAmount').value=inv.amount;
+  document.getElementById('invPaid').value=inv.paid;
+  document.getElementById('invIsRecurring').checked=false;
+  document.getElementById('invRecurBox').classList.add('hidden');
+  document.getElementById('invSaveBtn').textContent='Save Changes';
+  const s=document.getElementById('invAddSection');
+  if(s.classList.contains('hidden')){s.classList.remove('hidden');document.getElementById('invAddChevron').classList.add('open');}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function editRecurringInv(id){
+  const r=recurringInvestments.find(x=>x.id==id);if(!r)return;
+  document.getElementById('invEditId').value=r.id;
+  document.getElementById('invIsRecurringEdit').value='1';
+  document.getElementById('invDate').value=r.startDate||'';
+  document.getElementById('invType').value=r.type;
+  document.getElementById('invName').value=r.name||'';
+  document.getElementById('invDesc').value=r.description||'';
+  document.getElementById('invAmount').value=r.amount;
+  document.getElementById('invPaid').value=r.paid;
+  document.getElementById('invFrequency').value=r.frequency||'Monthly';
+  document.getElementById('invIsRecurring').checked=true;
+  document.getElementById('invRecurBox').classList.remove('hidden');
+  document.getElementById('invRecurActive').checked=(String(r.active)==='true'||r.active===true);
+  // Restore months
+  if(r.months==='all'){
+    document.getElementById('invScopeAll').checked=true;
+    document.getElementById('invRecurMonths').classList.add('hidden');
+  } else {
+    document.getElementById('invScopeSpecific').checked=true;
+    document.getElementById('invRecurMonths').classList.remove('hidden');
+    const sel=String(r.months).split(',');
+    document.querySelectorAll('.inv-recur-chip').forEach(c=>{
+      if(sel.includes(c.textContent))c.classList.add('selected');
+    });
+  }
+  document.getElementById('invSaveBtn').textContent='Save Changes';
+  const s=document.getElementById('invAddSection');
+  if(s.classList.contains('hidden')){s.classList.remove('hidden');document.getElementById('invAddChevron').classList.add('open');}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+async function deleteRecurringInv(id){
+  if(!confirm('Delete this recurring investment rule?'))return;
+  recurringInvestments=recurringInvestments.filter(r=>r.id!=id);
+  localStorage.setItem('sb_recinv_cache',JSON.stringify(recurringInvestments));
+  try{await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'delete',id,sheet:'RecurringInvestments'})});}catch(e){}
+  renderInvRecurList();
+}
+
+// ── LONG PRESS ────────────────────────────────────────
+function invPressStart(id){invPressTimer=setTimeout(()=>showInvActionModal(id),700);}
+function invPressEnd(){clearTimeout(invPressTimer);}
+function showInvActionModal(id){
+  pendingInvActionId=id;
+  const inv=investments.find(i=>i.id==id);
+  document.getElementById('invActionModalDesc').textContent=inv?(inv.name||inv.type||'Investment'):'Investment';
+  document.getElementById('invActionModal').classList.remove('hidden');
+}
+function closeInvActionModal(){document.getElementById('invActionModal').classList.add('hidden');pendingInvActionId=null;}
+function invActionEdit(){const id=pendingInvActionId;closeInvActionModal();if(id!=null)editInvestmentEntry(id);}
+async function invActionDelete(){
+  const id=pendingInvActionId;closeInvActionModal();
+  if(id==null)return;
+  if(!confirm('Delete this investment?'))return;
+  investments=investments.filter(i=>i.id!=id);
+  localStorage.setItem('sb_investments_cache',JSON.stringify(investments));
+  try{await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'delete',id,sheet:'Investments'})});}catch(e){}
+  populateInvYears();renderInvHero();renderInvStats();renderInvList();renderInvSummary();
+}
+
+// ── BOOK RECURRING ────────────────────────────────────
+async function bookRecurringInvestments(){
+  const month=parseInt(document.getElementById('invBookMonth').value);
+  const year=parseInt(document.getElementById('invBookYear').value);
+  const el=document.getElementById('invBookResult');
+
+  const active=recurringInvestments.filter(r=>{
+    if(String(r.active)!=='true'&&r.active!==true)return false;
+    if(r.months==='all')return true;
+    const ms=String(r.months).split(',');
+    return ms.includes(shortM[month]);
+  });
+
+  if(!active.length){
+    el.innerHTML='<div style="padding:10px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--text2)">No active recurring rules apply to '+months[month]+'.</div>';
+    return;
+  }
+
+  const results=[];
+  const saves=[];
+  const mm=String(month+1).padStart(2,'0');
+
+  for(const r of active){
+    // Duplicate check
+    const alreadyBooked=investments.some(i=>
+      i.recurringId==r.id&&
+      i.date&&i.date.substring(0,7)===`${year}-${mm}`
+    );
+    if(alreadyBooked){results.push({name:r.name,status:'skip'});continue;}
+    const obj={
+      id:Date.now()+Math.random(),
+      date:`${year}-${mm}-01`,
+      type:r.type,name:r.name,
+      description:r.description||'',
+      amount:r.amount,paid:r.paid,
+      recurringId:r.id,sheet:'Investments'
+    };
+    investments.push(obj);
+    saves.push(fetch(API_URL,{method:'POST',body:JSON.stringify(obj)}));
+    results.push({name:r.name,amount:r.amount,status:'ok'});
+  }
+
+  await Promise.all(saves);
+  localStorage.setItem('sb_investments_cache',JSON.stringify(investments));
+  populateInvYears();renderInvHero();renderInvStats();renderInvList();renderInvSummary();
+
+  el.innerHTML=results.map(r=>
+    r.status==='ok'
+      ?`<div style="padding:8px 12px;background:#d1fae5;border-radius:8px;font-size:12px;font-weight:600;color:#065f46;margin-bottom:4px">✓ ${r.name} — ₹${indian(r.amount)} booked</div>`
+      :`<div style="padding:8px 12px;background:#fef3c7;border-radius:8px;font-size:12px;font-weight:600;color:#92400e;margin-bottom:4px">⚠ ${r.name} — already booked</div>`
+  ).join('');
+}
+</script>
 
 </body>
 </html>
