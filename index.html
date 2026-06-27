@@ -4084,16 +4084,45 @@ renderAnalytics = function() {
 
   <!-- Hero -->
   <div class="inv-hero">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-      <div class="inv-hero-label">Total Invested</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div class="inv-hero-label" id="invHeroLabel">Total Invested</div>
       <select class="hero-year-select" id="invTopYear" onchange="renderInvHero()"></select>
+    </div>
+    <!-- Month / YTD Switch -->
+    <div class="hero-switch-wrap">
+      <span class="hero-switch-label on" id="invHeroLabelYTD">YTD</span>
+      <label class="ios-switch">
+        <input type="checkbox" id="invHeroSwitch" onchange="setInvHeroMode(this.checked?'month':'ytd')">
+        <div class="ios-switch-track"></div>
+        <div class="ios-switch-thumb"></div>
+      </label>
+      <span class="hero-switch-label" id="invHeroLabelMonth">This Month</span>
     </div>
     <div class="inv-hero-amount" id="invHeroAmount">₹0</div>
     <div class="inv-hero-sub" id="invHeroSub">Loading…</div>
+    <div class="mini-bars" id="invBars"></div>
   </div>
 
   <!-- Stat Pills -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px" id="invStatRow"></div>
+
+  <!-- Manage Investment Types -->
+  <div class="card">
+    <div class="collapse-header" onclick="toggleCollapse('invTypeSection','invTypeChevron')">
+      <div class="card-title-text" style="font-size:14px;font-weight:700">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:#7c3aed;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Manage Investment Types
+      </div>
+      <div class="collapse-chevron" id="invTypeChevron"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    </div>
+    <div id="invTypeSection" class="hidden" style="margin-top:14px">
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <input class="field-input" id="invTypeInput" placeholder="New investment type…" style="flex:1">
+        <button class="btn-small" onclick="addInvType()" style="background:#ede9fe;color:#7c3aed">+ Add</button>
+      </div>
+      <div id="invTypeList"></div>
+    </div>
+  </div>
 
   <!-- Add / Edit Investment -->
   <div class="card">
@@ -4114,13 +4143,12 @@ renderAnalytics = function() {
         </div>
         <div class="field-group">
           <div class="field-label">Investment Type</div>
-          <select class="field-input" id="invType">
-            <option>Mutual Fund</option><option>Stocks</option><option>ETF</option>
-            <option>PPF</option><option>EPF</option><option>NPS</option>
-            <option>Fixed Deposit</option><option>Gold</option><option>Crypto</option>
-            <option>Bonds</option><option>Others</option>
-          </select>
+          <select class="field-input" id="invType"></select>
         </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Member</div>
+        <select class="field-input" id="invMemberDD"></select>
       </div>
       <div class="field-group">
         <div class="field-label">Investment Name</div>
@@ -4235,10 +4263,9 @@ renderAnalytics = function() {
         <select id="invFilterYear" onchange="renderInvList()"></select>
         <select id="invFilterType" onchange="renderInvList()">
           <option value="">All Types</option>
-          <option>Mutual Fund</option><option>Stocks</option><option>ETF</option>
-          <option>PPF</option><option>EPF</option><option>NPS</option>
-          <option>Fixed Deposit</option><option>Gold</option><option>Crypto</option>
-          <option>Bonds</option><option>Others</option>
+        </select>
+        <select id="invFilterMember" onchange="renderInvList()">
+          <option value="">All Members</option>
         </select>
       </div>
       <div id="invList" style="overflow-x:auto"></div>
@@ -4302,19 +4329,90 @@ renderAnalytics = function() {
 // ══════════════════════════════════════════════════════
 let investments = [];
 let recurringInvestments = [];
+let invTypes = []; // editable investment type list (cloud-synced)
 let invNames = []; // known investment names for autocomplete
 let pendingInvActionId = null;
 let invPressTimer = null;
 
-const INV_TYPE_COLORS = {
-  'Mutual Fund':'#7c3aed','Stocks':'#10b981','ETF':'#0ea5e9','PPF':'#f59e0b',
-  'EPF':'#f97316','NPS':'#ec4899','Fixed Deposit':'#06b6d4','Gold':'#d97706',
-  'Crypto':'#6366f1','Bonds':'#64748b','Others':'#94a3b8'
-};
+// Fallback color palette assigned to types in the order they were created
+const INV_TYPE_PALETTE = ['#7c3aed','#10b981','#0ea5e9','#f59e0b','#f97316','#ec4899','#06b6d4','#d97706','#6366f1','#64748b','#84cc16','#e11d48'];
+function invTypeColor(type){
+  const idx = invTypes.indexOf(type);
+  return INV_TYPE_PALETTE[(idx>=0?idx:0) % INV_TYPE_PALETTE.length];
+}
+// kept for any old reference; now resolved dynamically via invTypeColor()
+const INV_TYPE_COLORS = {};
+
+const DEFAULT_INV_TYPES = ['Mutual Fund','Stocks','ETF','PPF','EPF','NPS','Fixed Deposit','Gold','Crypto','Bonds','Others'];
+
+// ── MANAGE INVESTMENT TYPES (cloud-synced, same pattern as NatureMaster) ──
+async function fetchInvTypeMaster(){
+  try{
+    const res=await fetch(API_URL+'?sheet=InvestTypeMaster');
+    const data=await res.json();
+    if(Array.isArray(data)&&data.length){
+      invTypes=data.map(x=>typeof x==='string'?x:(x&&x.name)||'').filter(Boolean);
+    } else if(!invTypes.length){
+      invTypes=DEFAULT_INV_TYPES.slice();
+    }
+  }catch(e){ if(!invTypes.length) invTypes=DEFAULT_INV_TYPES.slice(); }
+}
+async function addInvType(){
+  const inp=document.getElementById('invTypeInput');
+  const v=inp.value.trim();
+  if(v&&!invTypes.includes(v)){
+    try{await fetch(API_URL,{method:'POST',body:JSON.stringify({sheet:'InvestTypeMaster',name:v})});}catch(e){}
+  }
+  inp.value='';
+  await fetchInvTypeMaster();renderInvTypeControls();
+}
+async function editInvType(oldName){
+  const nv=prompt('Edit Investment Type',oldName);
+  if(!nv||!nv.trim())return;
+  try{await fetch(API_URL,{method:'POST',body:JSON.stringify({sheet:'InvestTypeMaster',action:'rename',oldName,newName:nv.trim()})});}catch(e){}
+  await fetchInvTypeMaster();renderInvTypeControls();renderInvList();
+}
+async function deleteInvType(name){
+  if(!confirm('Delete investment type "'+name+'"?'))return;
+  try{await fetch(API_URL,{method:'POST',body:JSON.stringify({sheet:'InvestTypeMaster',action:'delete',name})});}catch(e){}
+  await fetchInvTypeMaster();renderInvTypeControls();
+}
+function renderInvTypeControls(){
+  const tl=document.getElementById('invTypeList');
+  const td=document.getElementById('invType');
+  const ft=document.getElementById('invFilterType');
+  if(!tl||!td||!ft)return;
+  tl.innerHTML='';td.innerHTML='';
+  ft.innerHTML='<option value="">All Types</option>';
+  invTypes.forEach(t=>{
+    tl.innerHTML+=`<div class="nature-chip"><span class="nature-chip-name">${t}</span><div class="nature-chip-actions"><button class="btn-small" onclick="editInvType('${t}')">✏️</button><button class="btn-danger-sm" onclick="deleteInvType('${t}')">🗑</button></div></div>`;
+    td.innerHTML+=`<option>${t}</option>`;
+    ft.innerHTML+=`<option>${t}</option>`;
+  });
+}
+
+// ── MEMBER DROPDOWN (reuses the shared incomeMembers family list) ──
+function renderInvMemberControls(){
+  const md=document.getElementById('invMemberDD');
+  const fm=document.getElementById('invFilterMember');
+  if(md){
+    md.innerHTML = incomeMembers.length
+      ? incomeMembers.map(m=>`<option>${m}</option>`).join('')
+      : '<option value="">Self</option>';
+  }
+  if(fm){
+    fm.innerHTML = '<option value="">All Members</option>' + incomeMembers.map(m=>`<option>${m}</option>`).join('');
+  }
+}
 
 // ── PAGE INIT ─────────────────────────────────────────
 async function loadInvestmentsPage(){
-  await Promise.all([loadInvestments(), loadRecurringInvestments()]);
+  const tasks=[loadInvestments(), loadRecurringInvestments(), fetchInvTypeMaster()];
+  // Ensure the shared family member list is available (in case Income page hasn't loaded yet)
+  if(!incomeMembers.length && typeof loadIncomeData==='function') tasks.push(loadIncomeData());
+  await Promise.all(tasks);
+  renderInvTypeControls();
+  renderInvMemberControls();
   populateInvYears();
   renderInvHero();
   renderInvStats();
@@ -4376,12 +4474,51 @@ function populateInvYears(){
 }
 
 // ── HERO ──────────────────────────────────────────────
+let invHeroMode='ytd';
+function setInvHeroMode(mode){
+  invHeroMode=mode;
+  const sw=document.getElementById('invHeroSwitch');
+  if(sw)sw.checked=(mode==='month');
+  document.getElementById('invHeroLabelYTD').classList.toggle('on',mode==='ytd');
+  document.getElementById('invHeroLabelMonth').classList.toggle('on',mode==='month');
+  renderInvHero();
+}
 function renderInvHero(){
   const yr=document.getElementById('invTopYear').value;
-  const data=investments.filter(i=>i.date&&i.date.substring(0,4)===yr);
+  const now=new Date();
+  const curMonth=now.getMonth();
+
+  let data;
+  if(invHeroMode==='month'){
+    data=investments.filter(i=>{
+      if(!i.date)return false;
+      const d=new Date(i.date);
+      return d.getFullYear()==yr && d.getMonth()===curMonth;
+    });
+    document.getElementById('invHeroLabel').textContent='This Month — '+shortM[curMonth];
+  }else{
+    data=investments.filter(i=>i.date&&i.date.substring(0,4)===yr);
+    document.getElementById('invHeroLabel').textContent='Total Invested '+yr;
+  }
+
   const total=data.reduce((s,i)=>s+Number(i.amount||0),0);
   document.getElementById('invHeroAmount').textContent='₹'+indian(total);
-  document.getElementById('invHeroSub').textContent=data.length+' investments in '+yr;
+  document.getElementById('invHeroSub').textContent=data.length+' investment'+(data.length!==1?'s':'')+(invHeroMode==='month'?' this month':' in '+yr);
+
+  // Mini monthly bars (always reflect full-year distribution for that year)
+  const monthly=Array(12).fill(0);
+  const allYearData=investments.filter(i=>i.date&&i.date.substring(0,4)===yr);
+  allYearData.forEach(i=>{monthly[new Date(i.date).getMonth()]+=Number(i.amount||0);});
+  const max=Math.max(...monthly,1);
+  const bars=document.getElementById('invBars');
+  if(bars){
+    bars.innerHTML='';
+    monthly.forEach((v,i)=>{
+      const h=Math.round((v/max)*36);
+      const isActive=invHeroMode==='month'?i===curMonth:false;
+      bars.innerHTML+=`<div class="mini-bar-wrap"><div class="mini-bar${isActive?' active-bar':''}" style="height:${Math.max(h,3)}px"></div><div class="mini-label">${shortM[i][0]}</div></div>`;
+    });
+  }
 }
 
 function renderInvStats(){
@@ -4400,19 +4537,23 @@ function renderInvList(){
   populateInvYears();
   const yr=document.getElementById('invFilterYear').value;
   const ft=document.getElementById('invFilterType').value;
+  const fm=document.getElementById('invFilterMember')?document.getElementById('invFilterMember').value:'';
   let data=investments.filter(i=>i.date&&i.date.substring(0,4)===yr);
   if(ft)data=data.filter(i=>i.type===ft);
+  if(fm)data=data.filter(i=>(i.member||'')===fm);
   data=[...data].sort((a,b)=>new Date(b.date)-new Date(a.date));
   const el=document.getElementById('invList');
   if(!data.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">No investments found.</div>';return;}
   el.innerHTML=`<table>
-  <thead><tr><th>Date</th><th>Name</th><th>Type</th><th>Amount</th><th>Via</th></tr></thead>
+  <thead><tr><th>Date</th><th>Name</th><th>Type</th><th>Member</th><th>Amount</th><th>Via</th></tr></thead>
   <tbody>${data.map(i=>{
     const d=new Date(i.date);
+    const c=invTypeColor(i.type);
     return `<tr ontouchstart="invPressStart(${i.id})" ontouchend="invPressEnd()" onmousedown="invPressStart(${i.id})" onmouseup="invPressEnd()">
       <td style="white-space:nowrap">${String(d.getDate()).padStart(2,'0')} ${shortM[d.getMonth()]}<br><span style="color:var(--text3);font-size:10px">${d.getFullYear()}</span></td>
       <td style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600">${i.name||''}</td>
-      <td><span class="badge-inv-type" style="background:${(INV_TYPE_COLORS[i.type]||'#94a3b8')}22;color:${INV_TYPE_COLORS[i.type]||'#94a3b8'}">${i.type||''}</span></td>
+      <td><span class="badge-inv-type" style="background:${c}22;color:${c}">${i.type||''}</span></td>
+      <td style="font-size:12px;color:var(--text2)">${i.member||'—'}</td>
       <td class="amount-cell" style="color:#7c3aed">₹${indian(i.amount)}</td>
       <td style="font-size:12px;color:var(--text2)">${i.paid||''}</td>
     </tr>`;
@@ -4512,6 +4653,7 @@ async function saveInvestment(){
   const isRecurEdit=document.getElementById('invIsRecurringEdit').value==='1';
   const date=document.getElementById('invDate').value;
   const type=document.getElementById('invType').value;
+  const member=document.getElementById('invMemberDD')?document.getElementById('invMemberDD').value:'';
   const name=document.getElementById('invName').value.trim();
   const desc=document.getElementById('invDesc').value;
   const amount=Number(document.getElementById('invAmount').value||0);
@@ -4529,7 +4671,7 @@ async function saveInvestment(){
     const active=document.getElementById('invRecurActive').checked;
     const robj={
       id:eid&&isRecurEdit?eid:Date.now(),
-      name,type,amount,paid,frequency,months,
+      name,type,member,amount,paid,frequency,months,
       active,description:desc,
       startDate:date||new Date().toISOString().substring(0,10),
       sheet:'RecurringInvestments'
@@ -4541,7 +4683,7 @@ async function saveInvestment(){
     renderInvRecurList();
   } else {
     // Save to Investments
-    const obj={id:eid&&!isRecurEdit?eid:Date.now(),date,type,name,description:desc,amount,paid,sheet:'Investments'};
+    const obj={id:eid&&!isRecurEdit?eid:Date.now(),date,type,member,name,description:desc,amount,paid,sheet:'Investments'};
     if(eid&&!isRecurEdit) investments=investments.map(i=>i.id==eid?obj:i);
     else investments.push(obj);
     try{await fetch(API_URL,{method:'POST',body:JSON.stringify(obj)});}catch(e){}
@@ -4573,6 +4715,7 @@ function editInvestmentEntry(id){
   document.getElementById('invIsRecurringEdit').value='0';
   document.getElementById('invDate').value=inv.date;
   document.getElementById('invType').value=inv.type;
+  if(document.getElementById('invMemberDD'))document.getElementById('invMemberDD').value=inv.member||'';
   document.getElementById('invName').value=inv.name||'';
   document.getElementById('invDesc').value=inv.description||'';
   document.getElementById('invAmount').value=inv.amount;
@@ -4591,6 +4734,7 @@ function editRecurringInv(id){
   document.getElementById('invIsRecurringEdit').value='1';
   document.getElementById('invDate').value=r.startDate||'';
   document.getElementById('invType').value=r.type;
+  if(document.getElementById('invMemberDD'))document.getElementById('invMemberDD').value=r.member||'';
   document.getElementById('invName').value=r.name||'';
   document.getElementById('invDesc').value=r.description||'';
   document.getElementById('invAmount').value=r.amount;
@@ -4678,7 +4822,7 @@ async function bookRecurringInvestments(){
     const obj={
       id:Date.now()+Math.random(),
       date:`${year}-${mm}-01`,
-      type:r.type,name:r.name,
+      type:r.type,member:r.member||'',name:r.name,
       description:r.description||'',
       amount:r.amount,paid:r.paid,
       recurringId:r.id,sheet:'Investments'
