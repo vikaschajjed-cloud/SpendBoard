@@ -818,6 +818,77 @@ tbody tr:hover{background:var(--surface2)}
 .cf-arrow{font-size:10px;color:var(--text3);margin:0 6px}
 .cf-month-select{display:flex;gap:8px;margin-bottom:16px;align-items:center;flex-wrap:wrap}
 
+/* ── Financial Snapshot (premium summary cards) ── */
+.cf-snapshot-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px}
+.cf-snap-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.cf-snap-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.cf-snap-value{font-size:16px;font-weight:800;font-family:'DM Mono',monospace}
+
+/* ── Premium Money Flow stages ── */
+.cf-flow-stage{display:flex;align-items:center;gap:12px;padding:10px 4px}
+.cf-flow-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.cf-flow-mid{flex:1;min-width:0}
+.cf-flow-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+.cf-flow-name{font-size:13px;font-weight:700;color:var(--text)}
+.cf-flow-amt{font-family:'DM Mono',monospace;font-weight:700;font-size:14px}
+.cf-flow-track{height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:4px}
+.cf-flow-fill{height:6px;border-radius:99px;transition:width .6s ease}
+.cf-flow-pct{font-size:10px;color:var(--text3)}
+.cf-flow-arrow{text-align:center;font-size:14px;color:var(--text3);padding:0;margin:-2px 0}
+
+/* ── Financial Health Score dial ── */
+.cf-score-wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:16px}
+.cf-score-dial{position:relative;width:130px;height:130px;flex-shrink:0}
+.cf-score-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cf-score-num{font-size:30px;font-weight:800;color:var(--text);font-family:'DM Mono',monospace;line-height:1}
+.cf-score-max{font-size:11px;color:var(--text3);margin-top:2px}
+.cf-score-info{flex:1;min-width:140px}
+.cf-score-status{font-size:18px;font-weight:800;margin-bottom:4px}
+.cf-score-explain{font-size:12px;color:var(--text2);line-height:1.5}
+.cf-score-breakdown{display:flex;flex-direction:column;gap:10px}
+.cf-score-bd-row{display:flex;align-items:center;gap:10px}
+.cf-score-bd-label{font-size:11px;color:var(--text2);width:120px;flex-shrink:0}
+.cf-score-bd-track{flex:1;height:6px;background:var(--border);border-radius:99px;overflow:hidden}
+.cf-score-bd-fill{height:6px;background:var(--accent);border-radius:99px;transition:width .6s ease}
+.cf-score-bd-val{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;width:46px;text-align:right;flex-shrink:0}
+
+/* ── Monthly Financial Health timeline ── */
+.cf-month-health-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.cf-month-health-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px;min-width:140px;flex-shrink:0}
+.cf-mh-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.cf-mh-month{font-size:13px;font-weight:700;color:var(--text)}
+.cf-mh-tag{font-size:10px;font-weight:700;white-space:nowrap}
+.cf-mh-row{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:3px;font-family:'DM Mono',monospace}
+
+/* ── Financial Ratios ── */
+.cf-ratio-grid{display:flex;flex-direction:column;gap:12px}
+.cf-ratio-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px}
+.cf-ratio-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.cf-ratio-label{font-size:12px;font-weight:600;color:var(--text)}
+.cf-ratio-val{font-size:14px;font-weight:800;font-family:'DM Mono',monospace}
+.cf-ratio-track{height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.cf-ratio-fill{height:6px;border-radius:99px;transition:width .6s ease}
+.cf-ratio-explain{font-size:11px;color:var(--text3);line-height:1.4}
+
+/* ── Spending Distribution ── */
+.cf-dist-bar{width:100%;height:24px;border-radius:99px;margin-bottom:14px}
+.cf-dist-legend{display:flex;flex-direction:column;gap:8px}
+.cf-dist-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)}
+.cf-dist-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.cf-dist-item strong{margin-left:auto;color:var(--text);font-family:'DM Mono',monospace}
+
+/* ── Smart Insights ── */
+.cf-insight-card{display:flex;align-items:flex-start;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px}
+.cf-insight-icon{font-size:16px;flex-shrink:0;line-height:1.4}
+.cf-insight-text{font-size:12.5px;color:var(--text2);line-height:1.5}
+.cf-insight-text strong{color:var(--text)}
+
+/* ── Cash Flow Forecast ── */
+.cf-forecast-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.cf-forecast-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px}
+.cf-forecast-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.cf-forecast-val{font-size:15px;font-weight:800;font-family:'DM Mono',monospace}
+
 /* notification banner */
 #budgetAlertBanner{
   position:fixed;top:60px;left:0;right:0;z-index:500;
@@ -1482,6 +1553,14 @@ function showPage(name){
   if(name==='income'){loadIncomeData();}
   if(name==='cashflow'){
     populateNewPageYears();
+    // Make sure investment + recurring data are available so the new Cash Flow
+    // sections (Health Score, Forecast, Investment Consistency) are accurate
+    // even on a fresh visit, without duplicating any existing loader.
+    const cfTasks=[];
+    if(typeof investments!=='undefined' && !investments.length && typeof loadInvestments==='function') cfTasks.push(loadInvestments());
+    if(typeof recurringInvestments!=='undefined' && !recurringInvestments.length && typeof loadRecurringInvestments==='function') cfTasks.push(loadRecurringInvestments());
+    if(typeof recurringRules!=='undefined' && !recurringRules.length && typeof loadRecurringData==='function') cfTasks.push(loadRecurringData());
+    if(cfTasks.length){ Promise.all(cfTasks).then(renderCashFlow); }
     renderCashFlow();
   }
   if(name==='budget'){
@@ -2340,10 +2419,14 @@ fetchNatureMaster().then(()=>{
   renderNatureControls();
   if(localStorage.getItem('sb_auth')==='yes'){
     loadExpenses();
-    // Pre-load Income and Budgets in the background so Analytics/Cash Flow are correct
-    // immediately, without requiring the user to visit those tabs first.
+    // Pre-load Income, Budgets, Investments and Recurring rules in the background so
+    // Cash Flow / Financial Score are correct immediately, without requiring the user
+    // to visit those tabs first.
     if(typeof loadIncomeData==='function')loadIncomeData();
     if(typeof loadBudgets==='function')loadBudgets();
+    if(typeof loadInvestments==='function')loadInvestments();
+    if(typeof loadRecurringInvestments==='function')loadRecurringInvestments();
+    if(typeof loadRecurringData==='function')loadRecurringData();
   }
 });
 
@@ -3065,18 +3148,29 @@ function renderCashFlow() {
 
   let incData = incomeEntries.filter(e=>e.date&&e.date.substring(0,4)===yr);
   let expData = expenses.filter(e=>e.date&&e.date.substring(0,4)===yr);
+  let invData = (typeof investments!=='undefined'?investments:[]).filter(i=>i.date&&i.date.substring(0,4)===yr);
 
   if(mVal !== 'all') {
     const m = parseInt(mVal);
     incData = incData.filter(e=>new Date(e.date).getMonth()===m);
     expData = expData.filter(e=>new Date(e.date).getMonth()===m);
+    invData = invData.filter(i=>new Date(i.date).getMonth()===m);
   }
 
   const totalIncome = incData.reduce((s,e)=>s+Number(e.amount||0),0);
   const totalExpense = expData.reduce((s,e)=>s+Number(e.amount||0),0);
+  const totalInvestment = invData.reduce((s,i)=>s+Number(i.amount||0),0);
   const fixedExp = expData.filter(e=>e.category==='Fixed').reduce((s,e)=>s+Number(e.amount||0),0);
   const varExp = totalExpense - fixedExp;
-  const balance = totalIncome - totalExpense;
+
+  // Pay-yourself-first style flow: Income → Expenses → Savings → Investments → Net Cash
+  const savings = totalIncome - totalExpense;          // what's left after living expenses
+  const netCash = savings - totalInvestment;            // what's left after also investing
+  const balance = netCash;                              // kept for backward compatibility (old var name)
+
+  // ── Percentages (guard against divide-by-zero) ──
+  const pct = (v) => totalIncome>0 ? Math.round((v/totalIncome)*100) : 0;
+  const expPct = pct(totalExpense), savPct = pct(savings), invPct = pct(totalInvestment), netPct = pct(netCash);
 
   const wf = document.getElementById('cfWaterfall');
   if(!wf) return;
@@ -3088,59 +3182,489 @@ function renderCashFlow() {
        </div>`
     : '';
 
-  wf.innerHTML = incomeNote + `
-  <div class="cf-row cf-row-main">
-    <div style="font-size:20px;margin-right:12px">💰</div>
-    <div class="cf-label">Total Income</div>
-    <div class="cf-amount cf-amount-green">₹${indian(totalIncome)}</div>
-  </div>
-  <div style="text-align:center;font-size:18px;color:var(--text3);margin:2px 0">↓</div>
-  <div class="cf-row cf-row-main">
-    <div style="font-size:20px;margin-right:12px">💸</div>
-    <div class="cf-label">Total Expenses</div>
-    <div class="cf-amount cf-amount-red">− ₹${indian(totalExpense)}</div>
-  </div>
-  <div style="padding:0 16px;margin-bottom:8px">
-    <div class="cf-row cf-row-sub">
-      <div class="cf-label-sub">Fixed</div>
-      <div class="cf-amount" style="font-size:13px;color:var(--text2)">₹${indian(fixedExp)}</div>
+  // ── Premium Financial Snapshot cards (Req #2) ──
+  const snapshotHtml = `
+  <div class="cf-snapshot-grid">
+    <div class="cf-snap-card"><div class="cf-snap-label">Total Income</div><div class="cf-snap-value" style="color:var(--green)">₹${compact(totalIncome)}</div></div>
+    <div class="cf-snap-card"><div class="cf-snap-label">Total Expenses</div><div class="cf-snap-value" style="color:var(--red)">₹${compact(totalExpense)}</div></div>
+    <div class="cf-snap-card"><div class="cf-snap-label">Savings</div><div class="cf-snap-value" style="color:${savings>=0?'var(--green)':'var(--red)'}">₹${compact(Math.abs(savings))}</div></div>
+    <div class="cf-snap-card"><div class="cf-snap-label">Investments</div><div class="cf-snap-value" style="color:#7c3aed">₹${compact(totalInvestment)}</div></div>
+    <div class="cf-snap-card"><div class="cf-snap-label">Cash Remaining</div><div class="cf-snap-value" style="color:${netCash>=0?'var(--accent)':'var(--red)'}">₹${compact(Math.abs(netCash))}</div></div>
+    <div class="cf-snap-card"><div class="cf-snap-label">Savings %</div><div class="cf-snap-value" style="color:var(--orange)">${savPct}%</div></div>
+  </div>`;
+
+  // ── Premium Money Flow waterfall: Income → Expenses → Savings → Investments → Net Cash (Req #1) ──
+  wf.innerHTML = incomeNote + snapshotHtml + `
+  <div class="cf-flow-stage">
+    <div class="cf-flow-icon" style="background:#d1fae5">💰</div>
+    <div class="cf-flow-mid">
+      <div class="cf-flow-top"><span class="cf-flow-name">Income</span><span class="cf-flow-amt" style="color:var(--green)">₹${indian(totalIncome)}</span></div>
+      <div class="cf-flow-track"><div class="cf-flow-fill" style="width:100%;background:var(--green)"></div></div>
+      <div class="cf-flow-pct">100% of income</div>
     </div>
-    <div class="cf-row cf-row-sub">
-      <div class="cf-label-sub">Variable</div>
-      <div class="cf-amount" style="font-size:13px;color:var(--text2)">₹${indian(varExp)}</div>
+  </div>
+  <div class="cf-flow-arrow">↓</div>
+  <div class="cf-flow-stage">
+    <div class="cf-flow-icon" style="background:#fee2e2">💸</div>
+    <div class="cf-flow-mid">
+      <div class="cf-flow-top"><span class="cf-flow-name">Expenses</span><span class="cf-flow-amt" style="color:var(--red)">− ₹${indian(totalExpense)}</span></div>
+      <div class="cf-flow-track"><div class="cf-flow-fill" style="width:${Math.min(expPct,100)}%;background:var(--red)"></div></div>
+      <div class="cf-flow-pct">${expPct}% of income &middot; Fixed ₹${indian(fixedExp)} / Variable ₹${indian(varExp)}</div>
     </div>
   </div>
-  <div style="text-align:center;font-size:18px;color:var(--text3);margin:2px 0">↓</div>
-  <div class="cf-row cf-row-total">
-    <div style="font-size:20px;margin-right:12px">${balance>=0?'🏦':'⚠️'}</div>
-    <div class="cf-label" style="color:#fff">Balance in Hand</div>
-    <div class="cf-amount ${balance>=0?'cf-amount-green':'cf-amount-red'}" style="font-size:17px;color:${balance>=0?'#6ee7b7':'#fca5a5'}">
-      ${balance>=0?'':'− '}₹${indian(Math.abs(balance))}
+  <div class="cf-flow-arrow">↓</div>
+  <div class="cf-flow-stage">
+    <div class="cf-flow-icon" style="background:${savings>=0?'#d1fae5':'#fee2e2'}">${savings>=0?'🏦':'⚠️'}</div>
+    <div class="cf-flow-mid">
+      <div class="cf-flow-top"><span class="cf-flow-name">Savings</span><span class="cf-flow-amt" style="color:${savings>=0?'var(--green)':'var(--red)'}">${savings>=0?'':'− '}₹${indian(Math.abs(savings))}</span></div>
+      <div class="cf-flow-track"><div class="cf-flow-fill" style="width:${Math.min(Math.abs(savPct),100)}%;background:${savings>=0?'var(--green)':'var(--red)'}"></div></div>
+      <div class="cf-flow-pct">${savPct}% of income remaining after expenses</div>
+    </div>
+  </div>
+  <div class="cf-flow-arrow">↓</div>
+  <div class="cf-flow-stage">
+    <div class="cf-flow-icon" style="background:#ede9fe">📈</div>
+    <div class="cf-flow-mid">
+      <div class="cf-flow-top"><span class="cf-flow-name">Investments</span><span class="cf-flow-amt" style="color:#7c3aed">− ₹${indian(totalInvestment)}</span></div>
+      <div class="cf-flow-track"><div class="cf-flow-fill" style="width:${Math.min(invPct,100)}%;background:#7c3aed"></div></div>
+      <div class="cf-flow-pct">${invPct}% of income invested</div>
+    </div>
+  </div>
+  <div class="cf-flow-arrow">↓</div>
+  <div class="cf-row-total" style="display:flex;align-items:center;padding:14px 16px;margin-top:4px">
+    <div style="font-size:22px;margin-right:12px">${netCash>=0?'✅':'⚠️'}</div>
+    <div style="flex:1">
+      <div class="cf-label" style="color:#fff;margin-bottom:2px">Net Cash Available</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6)">${netPct}% of income left after expenses &amp; investments</div>
+    </div>
+    <div class="cf-amount" style="font-size:19px;color:${netCash>=0?'#6ee7b7':'#fca5a5'}">
+      ${netCash>=0?'':'− '}₹${indian(Math.abs(netCash))}
     </div>
   </div>
   ${totalIncome>0?`<div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text3)">
-    Savings Rate: <strong style="color:${balance>=0?'var(--green)':'var(--red)'}">
-    ${Math.round(balance/totalIncome*100)}%
-    </strong> of income
+    Savings Rate: <strong style="color:${savings>=0?'var(--green)':'var(--red)'}">${savPct}%</strong>
+    &middot; Investment Rate: <strong style="color:#7c3aed">${invPct}%</strong>
   </div>`:'<div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text3)">Record income to see your savings rate</div>'}`;
 
   renderCashFlowChart();
+  renderFinancialHealthScore(yr, mVal);
+  renderMonthlyFinancialHealth(yr);
+  renderFinancialRatios(totalIncome, totalExpense, savings, totalInvestment, netCash, fixedExp);
+  renderSpendingDistribution(totalIncome, totalExpense, savings, totalInvestment, netCash);
+  renderSmartInsights(yr);
+  renderInvestmentConsistency(yr);
+  renderCashFlowForecast();
+}
+
+// ══════════════════════════════════════════════════════
+// ── FINANCIAL HEALTH SCORE (Req #3) ───────────────────
+// ══════════════════════════════════════════════════════
+function computeFinancialHealthScore(totalIncome, totalExpense, savings, totalInvestment, netCash, recurringCommitted){
+  if(totalIncome<=0) return {score:0, status:'No Data', color:'var(--text3)', breakdown:[]};
+
+  const savingsRate = savings/totalIncome;          // ideal: >=20%
+  const investmentRate = totalInvestment/totalIncome; // ideal: >=15%
+  const expenseRatio = totalExpense/totalIncome;      // ideal: <=70%
+  const cashOk = netCash>=0 ? 1 : 0;
+  const recurringRatio = totalIncome>0 ? Math.min(recurringCommitted/totalIncome,1) : 0; // lower is better
+
+  // Each factor scored 0-25, total out of 100
+  const savingsScore = Math.max(0, Math.min(25, (savingsRate/0.20)*25));
+  const investScore = Math.max(0, Math.min(25, (investmentRate/0.15)*25));
+  const expenseScore = Math.max(0, Math.min(25, ((1-expenseRatio)/(1-0.70))*25 ));
+  const cashScore = cashOk*15;
+  const recurringScore = Math.max(0, 10 - recurringRatio*10);
+
+  let score = Math.round(savingsScore + investScore + expenseScore + cashScore + recurringScore);
+  score = Math.max(0, Math.min(100, score));
+
+  let status, color, explanation;
+  if(score>=80){status='Excellent';color='var(--green)';explanation='Strong savings, healthy investing, and expenses well under control.';}
+  else if(score>=60){status='Good';color='#0ea5e9';explanation='Solid financial habits with some room to optimise savings or investments.';}
+  else if(score>=40){status='Average';color='var(--orange)';explanation='Your finances are stable, but expenses or low investing are holding back progress.';}
+  else {status='Needs Attention';color='var(--red)';explanation='Expenses are consuming most of your income — consider reviewing your budget.';}
+
+  return {
+    score, status, color, explanation,
+    breakdown:[
+      {label:'Savings Rate', value:Math.round(savingsRate*100)+'%', score:Math.round(savingsScore), max:25},
+      {label:'Investment Rate', value:Math.round(investmentRate*100)+'%', score:Math.round(investScore), max:25},
+      {label:'Expense Control', value:Math.round(expenseRatio*100)+'%', score:Math.round(expenseScore), max:25},
+      {label:'Cash Position', value:netCash>=0?'Positive':'Negative', score:cashScore, max:15},
+      {label:'Recurring Load', value:Math.round(recurringRatio*100)+'%', score:Math.round(recurringScore), max:10}
+    ]
+  };
+}
+
+function getRecurringCommittedForPeriod(yr, mVal){
+  // Sum of active recurring expense rules + active recurring investment rules,
+  // approximated as monthly commitment (used only for the health score "recurring load" factor)
+  let total = 0;
+  if(typeof recurringRules!=='undefined'){
+    recurringRules.forEach(r=>{
+      const isActive = String(r.active)==='true'||r.active===true;
+      if(isActive) total += Number(r.amount||0);
+    });
+  }
+  if(typeof recurringInvestments!=='undefined'){
+    recurringInvestments.forEach(r=>{
+      const isActive = String(r.active)==='true'||r.active===true;
+      if(isActive) total += Number(r.amount||0);
+    });
+  }
+  // If viewing "Full Year", scale monthly commitment up to a year for a fair ratio
+  if(mVal==='all') total = total*12;
+  return total;
+}
+
+function renderFinancialHealthScore(yr, mVal){
+  const el = document.getElementById('cfHealthScore');
+  if(!el) return;
+
+  let incData = incomeEntries.filter(e=>e.date&&e.date.substring(0,4)===yr);
+  let expData = expenses.filter(e=>e.date&&e.date.substring(0,4)===yr);
+  let invData = (typeof investments!=='undefined'?investments:[]).filter(i=>i.date&&i.date.substring(0,4)===yr);
+  if(mVal!=='all'){
+    const m=parseInt(mVal);
+    incData=incData.filter(e=>new Date(e.date).getMonth()===m);
+    expData=expData.filter(e=>new Date(e.date).getMonth()===m);
+    invData=invData.filter(i=>new Date(i.date).getMonth()===m);
+  }
+  const totalIncome = incData.reduce((s,e)=>s+Number(e.amount||0),0);
+  const totalExpense = expData.reduce((s,e)=>s+Number(e.amount||0),0);
+  const totalInvestment = invData.reduce((s,i)=>s+Number(i.amount||0),0);
+  const savings = totalIncome-totalExpense;
+  const netCash = savings-totalInvestment;
+  const recurringCommitted = getRecurringCommittedForPeriod(yr, mVal);
+
+  const result = computeFinancialHealthScore(totalIncome, totalExpense, savings, totalInvestment, netCash, recurringCommitted);
+
+  const circumference = 2*Math.PI*54;
+  const dashOffset = circumference - (result.score/100)*circumference;
+
+  el.innerHTML = `
+  <div class="cf-score-wrap">
+    <div class="cf-score-dial">
+      <svg width="130" height="130" viewBox="0 0 130 130">
+        <circle cx="65" cy="65" r="54" fill="none" stroke="var(--border)" stroke-width="10"/>
+        <circle cx="65" cy="65" r="54" fill="none" stroke="${result.color}" stroke-width="10"
+          stroke-dasharray="${circumference}" stroke-dashoffset="${dashOffset}"
+          stroke-linecap="round" transform="rotate(-90 65 65)" style="transition:stroke-dashoffset .8s ease"/>
+      </svg>
+      <div class="cf-score-center">
+        <div class="cf-score-num">${result.score}</div>
+        <div class="cf-score-max">/100</div>
+      </div>
+    </div>
+    <div class="cf-score-info">
+      <div class="cf-score-status" style="color:${result.color}">${result.status}</div>
+      <div class="cf-score-explain">${result.explanation}</div>
+    </div>
+  </div>
+  <div class="cf-score-breakdown">
+    ${result.breakdown.map(b=>`
+      <div class="cf-score-bd-row">
+        <div class="cf-score-bd-label">${b.label}</div>
+        <div class="cf-score-bd-track"><div class="cf-score-bd-fill" style="width:${(b.score/b.max)*100}%"></div></div>
+        <div class="cf-score-bd-val">${b.value}</div>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// ── MONTHLY FINANCIAL HEALTH TIMELINE (Req #4) ────────
+// ══════════════════════════════════════════════════════
+function renderMonthlyFinancialHealth(yr){
+  const el = document.getElementById('cfMonthlyHealth');
+  if(!el) return;
+
+  const cards = shortM.map((m,i)=>{
+    const inc = incomeEntries.filter(e=>e.date&&e.date.substring(0,4)===yr&&new Date(e.date).getMonth()===i).reduce((s,e)=>s+Number(e.amount||0),0);
+    const exp = expenses.filter(e=>e.date&&e.date.substring(0,4)===yr&&new Date(e.date).getMonth()===i).reduce((s,e)=>s+Number(e.amount||0),0);
+    const inv = (typeof investments!=='undefined'?investments:[]).filter(x=>x.date&&x.date.substring(0,4)===yr&&new Date(x.date).getMonth()===i).reduce((s,x)=>s+Number(x.amount||0),0);
+    if(inc===0 && exp===0 && inv===0) return null;
+
+    const savings = inc-exp;
+    const netCash = savings-inv;
+    const savPct = inc>0?(savings/inc):0;
+    const invPct = inc>0?(inv/inc):0;
+
+    let tag,color,emoji;
+    if(inc===0){ tag='No Income Data'; color='var(--text3)'; emoji='⚪'; }
+    else if(netCash>=0 && savPct>=0.20 && invPct>=0.10){ tag='Excellent'; color='var(--green)'; emoji='🟢'; }
+    else if(netCash>=0 && savPct>=0.05){ tag='Good'; color='#0ea5e9'; emoji='🟢'; }
+    else if(netCash>=0){ tag='Average'; color='var(--orange)'; emoji='🟡'; }
+    else { tag='Needs Attention'; color='var(--red)'; emoji='🔴'; }
+
+    return `<div class="cf-month-health-card">
+      <div class="cf-mh-top"><span class="cf-mh-month">${m}</span><span class="cf-mh-tag" style="color:${color}">${emoji} ${tag}</span></div>
+      <div class="cf-mh-row"><span>Income</span><span style="color:var(--green)">₹${compact(inc)}</span></div>
+      <div class="cf-mh-row"><span>Expense</span><span style="color:var(--red)">₹${compact(exp)}</span></div>
+      <div class="cf-mh-row"><span>Net Cash</span><span style="color:${netCash>=0?'var(--accent)':'var(--red)'}">₹${compact(Math.abs(netCash))}</span></div>
+    </div>`;
+  }).filter(Boolean);
+
+  el.innerHTML = cards.length
+    ? `<div class="cf-month-health-scroll">${cards.join('')}</div>`
+    : '<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px">No data yet for '+yr+'.</div>';
+}
+
+// ══════════════════════════════════════════════════════
+// ── FINANCIAL RATIOS (Req #7) ─────────────────────────
+// ══════════════════════════════════════════════════════
+function renderFinancialRatios(totalIncome, totalExpense, savings, totalInvestment, netCash, fixedExp){
+  const el = document.getElementById('cfRatios');
+  if(!el) return;
+  if(totalIncome<=0){ el.innerHTML='<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px">Add income entries to see your financial ratios.</div>'; return; }
+
+  const savingsRate = Math.round((savings/totalIncome)*100);
+  const investRate = Math.round((totalInvestment/totalIncome)*100);
+  const expenseRatio = Math.round((totalExpense/totalIncome)*100);
+  const recurringExpRatio = totalExpense>0 ? Math.round((fixedExp/totalExpense)*100) : 0;
+  const incomeUtilisation = Math.round(((totalExpense+totalInvestment)/totalIncome)*100);
+  const recurringCommitMonthly = getRecurringCommittedForPeriod(new Date().getFullYear().toString(),'current');
+  const recurringCommitPct = totalIncome>0 ? Math.round((recurringCommitMonthly/totalIncome)*100) : 0;
+
+  const ratios = [
+    {label:'Savings Rate', val:savingsRate, good:savingsRate>=20, explain:'Portion of income saved after expenses. Aim for 20%+.'},
+    {label:'Investment Rate', val:investRate, good:investRate>=15, explain:'Portion of income invested. Aim for 15%+.'},
+    {label:'Expense Ratio', val:expenseRatio, good:expenseRatio<=70, explain:'Portion of income spent on expenses. Lower is better.'},
+    {label:'Recurring Expense Ratio', val:recurringExpRatio, good:recurringExpRatio<=60, explain:'Share of expenses that are fixed/recurring vs variable.'},
+    {label:'Income Utilisation', val:incomeUtilisation, good:incomeUtilisation<=90, explain:'Combined expenses + investments as % of income.'},
+    {label:'Recurring Commitment %', val:recurringCommitPct, good:recurringCommitPct<=40, explain:'Monthly recurring expense+investment rules vs income.'}
+  ];
+
+  el.innerHTML = `<div class="cf-ratio-grid">${ratios.map(r=>`
+    <div class="cf-ratio-card">
+      <div class="cf-ratio-top"><span class="cf-ratio-label">${r.label}</span><span class="cf-ratio-val" style="color:${r.good?'var(--green)':'var(--orange)'}">${r.val}%</span></div>
+      <div class="cf-ratio-track"><div class="cf-ratio-fill" style="width:${Math.min(Math.abs(r.val),100)}%;background:${r.good?'var(--green)':'var(--orange)'}"></div></div>
+      <div class="cf-ratio-explain">${r.explain}</div>
+    </div>`).join('')}</div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// ── SPENDING DISTRIBUTION (Req #8) ────────────────────
+// ══════════════════════════════════════════════════════
+function renderSpendingDistribution(totalIncome, totalExpense, savings, totalInvestment, netCash){
+  const el = document.getElementById('cfDistribution');
+  if(!el) return;
+  if(totalIncome<=0){ el.innerHTML='<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px">Add income entries to see spending distribution.</div>'; return; }
+
+  // Distribution always sums to 100%: Expenses, Investments, Cash Remaining (savings already nets into these)
+  const expPart = Math.max(0, Math.min(100, Math.round((totalExpense/totalIncome)*100)));
+  const invPart = Math.max(0, Math.min(100-expPart, Math.round((totalInvestment/totalIncome)*100)));
+  const cashPart = Math.max(0, 100 - expPart - invPart);
+
+  const segments = [
+    {label:'Expenses', pct:expPart, color:'var(--red)'},
+    {label:'Investments', pct:invPart, color:'#7c3aed'},
+    {label:'Cash Remaining', pct:cashPart, color:'var(--green)'}
+  ];
+
+  let cumulative = 0;
+  const gradientStops = segments.map(s=>{
+    const start = cumulative;
+    cumulative += s.pct;
+    return `${s.color} ${start}% ${cumulative}%`;
+  }).join(', ');
+
+  el.innerHTML = `
+  <div class="cf-dist-bar" style="background:conic-gradient(${gradientStops})"></div>
+  <div class="cf-dist-legend">
+    ${segments.map(s=>`<div class="cf-dist-item"><div class="cf-dist-dot" style="background:${s.color}"></div><span>${s.label}</span><strong>${s.pct}%</strong></div>`).join('')}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// ── SMART FINANCIAL INSIGHTS (Req #9) ─────────────────
+// ══════════════════════════════════════════════════════
+function renderSmartInsights(yr){
+  const el = document.getElementById('cfInsights');
+  if(!el) return;
+
+  const monthly = shortM.map((m,i)=>{
+    const inc = incomeEntries.filter(e=>e.date&&e.date.substring(0,4)===yr&&new Date(e.date).getMonth()===i).reduce((s,e)=>s+Number(e.amount||0),0);
+    const exp = expenses.filter(e=>e.date&&e.date.substring(0,4)===yr&&new Date(e.date).getMonth()===i).reduce((s,e)=>s+Number(e.amount||0),0);
+    const inv = (typeof investments!=='undefined'?investments:[]).filter(x=>x.date&&x.date.substring(0,4)===yr&&new Date(x.date).getMonth()===i).reduce((s,x)=>s+Number(x.amount||0),0);
+    const fixedExp = expenses.filter(e=>e.date&&e.date.substring(0,4)===yr&&new Date(e.date).getMonth()===i&&e.category==='Fixed').reduce((s,e)=>s+Number(e.amount||0),0);
+    return {m, i, inc, exp, inv, fixedExp, savings:inc-exp, cash:inc-exp-inv};
+  });
+
+  const withData = monthly.filter(x=>x.inc>0||x.exp>0||x.inv>0);
+  const insights = [];
+
+  if(withData.length){
+    const maxExp = withData.reduce((a,b)=>b.exp>a.exp?b:a);
+    if(maxExp.exp>0) insights.push({icon:'📊', text:`<strong>${maxExp.m}</strong> was your highest spending month at ₹${indian(maxExp.exp)}.`});
+
+    const maxSav = withData.reduce((a,b)=>b.savings>a.savings?b:a);
+    if(maxSav.savings>0) insights.push({icon:'💰', text:`<strong>${maxSav.m}</strong> was your highest savings month — you saved ₹${indian(maxSav.savings)}.`});
+
+    const maxInv = withData.reduce((a,b)=>b.inv>a.inv?b:a);
+    if(maxInv.inv>0) insights.push({icon:'📈', text:`<strong>${maxInv.m}</strong> had your highest investment activity at ₹${indian(maxInv.inv)}.`});
+
+    const minCash = withData.reduce((a,b)=>b.cash<a.cash?b:a);
+    if(minCash.cash<0) insights.push({icon:'⚠️', text:`<strong>${minCash.m}</strong> had your lowest cash balance — you were ₹${indian(Math.abs(minCash.cash))} short after expenses and investments.`});
+
+    // Month-over-month comparison (last two months with data)
+    if(withData.length>=2){
+      const last2 = withData.slice(-2);
+      const [prev, curr] = last2;
+      if(prev.inc>0){
+        const incChange = Math.round(((curr.inc-prev.inc)/prev.inc)*100);
+        if(incChange>=10) insights.push({icon:'📈', text:`Income increased <strong>${incChange}%</strong> in ${curr.m} compared to ${prev.m}.`});
+      }
+      if(prev.exp>0){
+        const expChange = Math.round(((curr.exp-prev.exp)/prev.exp)*100);
+        if(expChange>=15) insights.push({icon:'🔺', text:`Expenses rose <strong>${expChange}%</strong> in ${curr.m} compared to ${prev.m}.`});
+        if(expChange<=-15) insights.push({icon:'🔻', text:`Expenses dropped <strong>${Math.abs(expChange)}%</strong> in ${curr.m} compared to ${prev.m}.`});
+      }
+      if(curr.savings>prev.savings && prev.savings!==0) insights.push({icon:'✅', text:`Savings improved from ₹${indian(prev.savings)} in ${prev.m} to ₹${indian(curr.savings)} in ${curr.m}.`});
+      if(curr.savings<prev.savings && prev.savings>0) insights.push({icon:'⚠️', text:`Savings declined from ₹${indian(prev.savings)} in ${prev.m} to ₹${indian(curr.savings)} in ${curr.m}.`});
+    }
+
+    // Recurring expense dominance
+    const totalExpAll = withData.reduce((s,x)=>s+x.exp,0);
+    const totalFixedAll = withData.reduce((s,x)=>s+x.fixedExp,0);
+    if(totalExpAll>0 && (totalFixedAll/totalExpAll)>=0.6){
+      insights.push({icon:'🔁', text:`Recurring (fixed) expenses make up <strong>${Math.round((totalFixedAll/totalExpAll)*100)}%</strong> of your total spending this year.`});
+    }
+
+    // Investment consistency
+    const monthsInvested = withData.filter(x=>x.inv>0).length;
+    if(withData.length>=3){
+      if(monthsInvested===withData.length) insights.push({icon:'🏆', text:`You invested consistently in all <strong>${withData.length}</strong> active months this year.`});
+      else if(monthsInvested>=Math.ceil(withData.length*0.7)) insights.push({icon:'👍', text:`Investment consistency improved — you invested in <strong>${monthsInvested} of ${withData.length}</strong> active months.`});
+    }
+  }
+
+  el.innerHTML = insights.length
+    ? insights.map(ins=>`<div class="cf-insight-card"><div class="cf-insight-icon">${ins.icon}</div><div class="cf-insight-text">${ins.text}</div></div>`).join('')
+    : '<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px">Add more income, expense and investment entries to unlock insights.</div>';
+}
+
+// ══════════════════════════════════════════════════════
+// ── INVESTMENT CONSISTENCY (Req #11) ──────────────────
+// ══════════════════════════════════════════════════════
+function renderInvestmentConsistency(yr){
+  const el = document.getElementById('cfInvestConsistency');
+  if(!el) return;
+  const data = (typeof investments!=='undefined'?investments:[]).filter(i=>i.date&&i.date.substring(0,4)===yr);
+  if(!data.length){ el.innerHTML='<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px">No investment records yet for '+yr+'.</div>'; return; }
+
+  const byMonth = Array(12).fill(0);
+  data.forEach(i=>{ byMonth[new Date(i.date).getMonth()] += Number(i.amount||0); });
+
+  const now = new Date();
+  const monthsElapsed = (yr===String(now.getFullYear())) ? now.getMonth()+1 : 12;
+  const investedMonths = byMonth.slice(0, monthsElapsed).filter(v=>v>0).length;
+  const skippedMonths = monthsElapsed - investedMonths;
+  const total = byMonth.reduce((s,v)=>s+v,0);
+  const avgMonthly = investedMonths>0 ? Math.round(total/investedMonths) : 0;
+
+  let maxIdx = 0;
+  byMonth.forEach((v,i)=>{ if(v>byMonth[maxIdx]) maxIdx=i; });
+
+  // Current streak: consecutive months (ending at most recent invested month) with investment > 0
+  let streak = 0;
+  for(let i=monthsElapsed-1;i>=0;i--){
+    if(byMonth[i]>0) streak++;
+    else break;
+  }
+
+  el.innerHTML = `
+  <div class="stat-pill-row" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+    <div class="stat-pill"><div class="stat-pill-label">Avg Monthly</div><div class="stat-pill-value">₹${compact(avgMonthly)}</div><div class="stat-pill-sub">${investedMonths} active months</div></div>
+    <div class="stat-pill"><div class="stat-pill-label">Highest Month</div><div class="stat-pill-value">${shortM[maxIdx]}</div><div class="stat-pill-sub">₹${compact(byMonth[maxIdx])}</div></div>
+    <div class="stat-pill"><div class="stat-pill-label">Current Streak</div><div class="stat-pill-value">${streak} mo${streak!==1?'s':''}</div><div class="stat-pill-sub">consecutive investing</div></div>
+    <div class="stat-pill"><div class="stat-pill-label">Months Skipped</div><div class="stat-pill-value">${skippedMonths}</div><div class="stat-pill-sub">of ${monthsElapsed} this year</div></div>
+  </div>
+  <div style="margin-top:10px;text-align:center;font-size:12px;color:var(--text3)">Yearly Total: <strong style="color:#7c3aed;font-family:'DM Mono',monospace">₹${indian(total)}</strong></div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// ── CASH FLOW FORECAST (Req #12) ──────────────────────
+// ══════════════════════════════════════════════════════
+function renderCashFlowForecast(){
+  const el = document.getElementById('cfForecast');
+  if(!el) return;
+
+  // Expected income: average of last 3 months' actual income (no recurring income engine exists)
+  const now = new Date();
+  const last3 = [];
+  for(let k=1;k<=3;k++){
+    const d = new Date(now.getFullYear(), now.getMonth()-k, 1);
+    const yr = String(d.getFullYear()), mo = d.getMonth();
+    const inc = incomeEntries.filter(e=>e.date&&e.date.substring(0,4)===yr&&new Date(e.date).getMonth()===mo).reduce((s,e)=>s+Number(e.amount||0),0);
+    last3.push(inc);
+  }
+  const validMonths = last3.filter(v=>v>0);
+  const expectedIncome = validMonths.length ? Math.round(validMonths.reduce((a,b)=>a+b,0)/validMonths.length) : 0;
+
+  // Expected expenses: sum of active recurring expense rules for next month
+  const nextMonthDate = new Date(now.getFullYear(), now.getMonth()+1, 1);
+  const nextMonthIdx = nextMonthDate.getMonth();
+  let expectedExpense = 0;
+  if(typeof recurringRules!=='undefined'){
+    recurringRules.forEach(r=>{
+      const isActive = String(r.active)==='true'||r.active===true;
+      if(!isActive) return;
+      const applies = r.months==='all' || String(r.months).split(',').map(Number).includes(nextMonthIdx);
+      if(applies) expectedExpense += Number(r.amount||0);
+    });
+  }
+
+  // Expected investments: sum of active recurring investment rules for next month
+  // Note: recurringInvestments stores months as 'all' or comma-separated short month
+  // NAMES (e.g. "Jan,Mar"), unlike recurringRules which uses numeric indices — so we
+  // match against shortM[nextMonthIdx] here rather than the index itself.
+  let expectedInvestment = 0;
+  if(typeof recurringInvestments!=='undefined'){
+    const nextMonthName = shortM[nextMonthIdx];
+    recurringInvestments.forEach(r=>{
+      const isActive = String(r.active)==='true'||r.active===true;
+      if(!isActive) return;
+      const months = r.months;
+      const applies = months==='all' || (months!==undefined && String(months).split(',').map(s=>s.trim()).includes(nextMonthName));
+      if(applies) expectedInvestment += Number(r.amount||0);
+    });
+  }
+
+  const expectedCash = expectedIncome - expectedExpense - expectedInvestment;
+  const nextMonthName = ['January','February','March','April','May','June','July','August','September','October','November','December'][nextMonthIdx];
+
+  el.innerHTML = `
+  <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Forecast for <strong style="color:var(--text)">${nextMonthName}</strong>, based on your active recurring expenses and investments, and your average income over the last 3 months.</div>
+  <div class="cf-forecast-grid">
+    <div class="cf-forecast-card"><div class="cf-forecast-label">Expected Income</div><div class="cf-forecast-val" style="color:var(--green)">₹${indian(expectedIncome)}</div></div>
+    <div class="cf-forecast-card"><div class="cf-forecast-label">Expected Expenses</div><div class="cf-forecast-val" style="color:var(--red)">₹${indian(expectedExpense)}</div></div>
+    <div class="cf-forecast-card"><div class="cf-forecast-label">Expected Investments</div><div class="cf-forecast-val" style="color:#7c3aed">₹${indian(expectedInvestment)}</div></div>
+    <div class="cf-forecast-card"><div class="cf-forecast-label">Expected Cash Remaining</div><div class="cf-forecast-val" style="color:${expectedCash>=0?'var(--accent)':'var(--red)'}">₹${indian(Math.abs(expectedCash))}</div></div>
+  </div>
+  <div style="margin-top:10px;font-size:11px;color:var(--text3);text-align:center">📌 This forecast only accounts for recurring transactions — one-time expenses or investments next month aren't included.</div>`;
 }
 
 function renderCashFlowChart() {
+
   const yr = document.getElementById('cfChartYear')?.value || new Date().getFullYear().toString();
   const area = document.getElementById('cfChartArea');
   if(!area) return;
 
   const incByMonth = Array(12).fill(0);
   const expByMonth = Array(12).fill(0);
+  const invByMonth = Array(12).fill(0);
   incomeEntries.filter(e=>e.date&&e.date.substring(0,4)===yr)
     .forEach(e=>{ incByMonth[new Date(e.date).getMonth()]+=Number(e.amount||0); });
   expenses.filter(e=>e.date&&e.date.substring(0,4)===yr)
     .forEach(e=>{ expByMonth[new Date(e.date).getMonth()]+=Number(e.amount||0); });
+  (typeof investments!=='undefined'?investments:[]).filter(i=>i.date&&i.date.substring(0,4)===yr)
+    .forEach(i=>{ invByMonth[new Date(i.date).getMonth()]+=Number(i.amount||0); });
 
-  const balByMonth = incByMonth.map((v,i)=>v-expByMonth[i]);
-  const maxVal = Math.max(...incByMonth, ...expByMonth, 1);
+  const savByMonth = incByMonth.map((v,i)=>v-expByMonth[i]);          // Savings = Income - Expenses
+  const cashByMonth = savByMonth.map((v,i)=>v-invByMonth[i]);          // Cash Remaining = Savings - Investments
+  const balByMonth = cashByMonth; // kept for backward compatibility with any external reference
+  const maxVal = Math.max(...incByMonth, ...expByMonth, ...invByMonth, ...savByMonth.map(Math.abs), 1);
   const CHART_H = 120;
   const GRID_STEPS = 4;
 
@@ -3155,13 +3679,17 @@ function renderCashFlowChart() {
   const barsHtml = shortM.map((m,i)=>{
     const ih = Math.round((incByMonth[i]/maxVal)*CHART_H);
     const eh = Math.round((expByMonth[i]/maxVal)*CHART_H);
-    const bal = balByMonth[i];
-    return `<div class="bc-col-v2" title="${m}: Inc ₹${indian(incByMonth[i])} Exp ₹${indian(expByMonth[i])}">
+    const ivh = Math.round((invByMonth[i]/maxVal)*CHART_H);
+    const sh = Math.round((Math.abs(savByMonth[i])/maxVal)*CHART_H);
+    const cash = cashByMonth[i];
+    return `<div class="bc-col-v2" title="${m}: Inc ₹${indian(incByMonth[i])} · Exp ₹${indian(expByMonth[i])} · Sav ₹${indian(savByMonth[i])} · Inv ₹${indian(invByMonth[i])} · Cash ₹${indian(cash)}">
       <div class="bc-val-label">${incByMonth[i]>0||expByMonth[i]>0?compact(incByMonth[i]):''}
       </div>
-      <div style="width:100%;height:${CHART_H}px;display:flex;align-items:flex-end;justify-content:center;gap:2px;position:relative">
-        ${incByMonth[i]>0?`<div style="flex:1;height:${Math.max(ih,2)}px;background:#10b981;border-radius:4px 4px 0 0"></div>`:'<div style="flex:1"></div>'}
-        ${expByMonth[i]>0?`<div style="flex:1;height:${Math.max(eh,2)}px;background:#1a56db;border-radius:4px 4px 0 0"></div>`:'<div style="flex:1"></div>'}
+      <div style="width:100%;height:${CHART_H}px;display:flex;align-items:flex-end;justify-content:center;gap:1.5px;position:relative">
+        ${incByMonth[i]>0?`<div style="flex:1;height:${Math.max(ih,2)}px;background:#10b981;border-radius:3px 3px 0 0"></div>`:'<div style="flex:1"></div>'}
+        ${expByMonth[i]>0?`<div style="flex:1;height:${Math.max(eh,2)}px;background:#1a56db;border-radius:3px 3px 0 0"></div>`:'<div style="flex:1"></div>'}
+        ${savByMonth[i]!==0?`<div style="flex:1;height:${Math.max(sh,2)}px;background:${savByMonth[i]>=0?'#f59e0b':'#fca5a5'};border-radius:3px 3px 0 0"></div>`:'<div style="flex:1"></div>'}
+        ${invByMonth[i]>0?`<div style="flex:1;height:${Math.max(ivh,2)}px;background:#7c3aed;border-radius:3px 3px 0 0"></div>`:'<div style="flex:1"></div>'}
       </div>
       <div class="bc-x-axis-line"></div>
       <div class="bc-x-label">${m[0]}</div>
@@ -3356,6 +3884,7 @@ function populateNewPageYears() {
   const allYears = [...new Set([
     ...expenses.map(e=>e.date&&e.date.substring(0,4)).filter(Boolean),
     ...incomeEntries.map(e=>e.date&&e.date.substring(0,4)).filter(Boolean),
+    ...(typeof investments!=='undefined'?investments.map(i=>i.date&&i.date.substring(0,4)).filter(Boolean):[]),
     new Date().getFullYear().toString()
   ])].sort().reverse();
 
@@ -4012,11 +4541,89 @@ renderAnalytics = function() {
       <select class="chart-select" id="cfChartYear" onchange="renderCashFlowChart()"></select>
     </div>
     <div id="cfChartArea"></div>
-    <div class="chart-legend" style="margin-top:12px">
+    <div class="chart-legend" style="margin-top:12px;flex-wrap:wrap;gap:10px 16px">
       <div class="legend-item"><div class="legend-box" style="background:#10b981"></div> Income</div>
       <div class="legend-item"><div class="legend-box" style="background:#1a56db"></div> Expenses</div>
-      <div class="legend-item"><div class="legend-box" style="background:#f59e0b"></div> Balance</div>
+      <div class="legend-item"><div class="legend-box" style="background:#f59e0b"></div> Savings</div>
+      <div class="legend-item"><div class="legend-box" style="background:#7c3aed"></div> Investments</div>
     </div>
+  </div>
+
+  <!-- Financial Health Score -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-text">
+        <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Financial Health Score
+      </div>
+    </div>
+    <div id="cfHealthScore"></div>
+  </div>
+
+  <!-- Monthly Financial Health Timeline -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-text">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Monthly Financial Health
+      </div>
+    </div>
+    <div id="cfMonthlyHealth"></div>
+  </div>
+
+  <!-- Financial Ratios -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-text">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Financial Ratios
+      </div>
+    </div>
+    <div id="cfRatios"></div>
+  </div>
+
+  <!-- Spending Distribution -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-text">
+        <svg viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+        Spending Distribution
+      </div>
+    </div>
+    <div id="cfDistribution"></div>
+  </div>
+
+  <!-- Smart Financial Insights -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-text">
+        <svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 2.4 1.2 4.5 3 5.7V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.3c1.8-1.2 3-3.3 3-5.7a7 7 0 0 0-7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>
+        Smart Insights
+      </div>
+    </div>
+    <div id="cfInsights"></div>
+  </div>
+
+  <!-- Investment Consistency -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-text">
+        <svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        Investment Consistency
+      </div>
+    </div>
+    <div id="cfInvestConsistency"></div>
+  </div>
+
+  <!-- Cash Flow Forecast -->
+  <div class="card">
+    <div class="card-title">
+      <div class="card-title-text">
+        <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        Next Month Forecast
+      </div>
+    </div>
+    <div id="cfForecast"></div>
   </div>
 
 </div>
